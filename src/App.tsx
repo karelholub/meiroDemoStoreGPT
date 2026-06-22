@@ -376,31 +376,6 @@ function RecommendationRail({
   );
 }
 
-function formatSignalName(name: string) {
-  return name.replaceAll("_", " ");
-}
-
-function SignalStrip() {
-  const state = useAppState();
-  const lastEvent = state.recentEvents[0];
-  const lastSdkCall = state.meiroSdkCalls[0];
-  const consentSummary = `Analytics ${state.consent.analytics ? "on" : "off"} / Personalization ${state.consent.personalization ? "on" : "off"}`;
-
-  return (
-    <section className="signal-strip" aria-label="Live tracking summary">
-      <div className="signal-primary">
-        <span className="eyebrow">Live demo signal</span>
-        <strong>{lastEvent ? `Last event: ${formatSignalName(lastEvent.event_name)}` : "Browse to generate the first event"}</strong>
-      </div>
-      <div className="signal-meta">
-        <span>{consentSummary}</span>
-        <span>{lastSdkCall ? `MPT ${lastSdkCall.command}: ${lastSdkCall.label}` : "MPT SDK waiting"}</span>
-      </div>
-      <Link to="/demo-control" className="signal-link">Inspect signals</Link>
-    </section>
-  );
-}
-
 function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
   const state = useAppState();
   const recentCategories = state.profile.recentlyViewedCategories;
@@ -468,7 +443,6 @@ function HomePage() {
           </div>
         </div>
       </section>
-      <SignalStrip />
       <section className="category-strip">
         {categories.map((category) => (
           <Link key={category.slug} to={`/category/${category.slug}`} className="category-card">
