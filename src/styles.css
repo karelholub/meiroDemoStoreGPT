@@ -1047,6 +1047,112 @@ dd {
   box-shadow: 0 20px 70px rgba(30, 27, 24, 0.06);
 }
 
+.account-page {
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.48fr);
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 2.6rem);
+}
+
+.account-page .profile-card {
+  align-content: start;
+  min-height: 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.account-page .profile-card h1 {
+  max-width: 8.5ch;
+  font-size: clamp(2.4rem, 5.2vw, 4.25rem);
+}
+
+.account-page .profile-card .banner {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.account-behavior {
+  min-width: 0;
+}
+
+.account-behavior h2 {
+  max-width: 13ch;
+  margin-top: 1.25rem;
+  font-size: clamp(1.45rem, 2.2vw, 1.85rem);
+  line-height: 1.05;
+}
+
+.account-behavior .empty-state {
+  margin: var(--space-4) 0 0;
+}
+
+.account-behavior .product-grid {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.account-behavior .product-card {
+  grid-template-columns: 118px minmax(0, 1fr);
+  grid-template-rows: auto;
+}
+
+.account-behavior .product-visual {
+  height: 100%;
+  min-height: 150px;
+  aspect-ratio: auto;
+}
+
+.account-behavior .product-visual .visual-overlay,
+.account-behavior .product-visual .visual-badge {
+  display: none;
+}
+
+.account-behavior .product-visual .visual-monogram {
+  top: 0.55rem;
+  right: 0.55rem;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  font-size: 0.72rem;
+}
+
+.account-behavior .card-copy {
+  min-width: 0;
+  grid-template-rows: auto auto 1fr;
+  padding: 0.9rem;
+}
+
+.account-behavior .product-name {
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+}
+
+.account-behavior .product-card p {
+  font-size: 0.9rem;
+  line-height: 1.42;
+}
+
+.account-behavior .price-row,
+.account-behavior .product-card button {
+  display: none;
+}
+
+.account-page .journey-slots,
+.account-page .profile-api-card {
+  grid-column: 1 / -1;
+}
+
+.account-page .profile-api-card {
+  grid-template-columns: minmax(0, 0.68fr) minmax(260px, 0.32fr);
+  align-items: end;
+}
+
+.account-page .profile-api-card .eyebrow {
+  grid-column: 1 / -1;
+}
+
+.account-page .profile-api-card .playbook-fields {
+  justify-content: flex-end;
+}
+
 .playbook-card h2,
 .journey-slot h2,
 .profile-api-card h2 {
@@ -1505,6 +1611,19 @@ body.consent-visible .debug-toggle {
     gap: var(--space-5);
   }
 
+  .account-page {
+    gap: var(--space-5);
+  }
+
+  .account-page .profile-api-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .account-page .profile-api-card .playbook-fields {
+    justify-content: flex-start;
+  }
+
   .summary {
     position: static;
   }
@@ -1616,6 +1735,24 @@ body.consent-visible .debug-toggle {
   .persona {
     min-height: 0;
     padding: 0.95rem;
+  }
+
+  .account-page .profile-card h1 {
+    max-width: 7.5ch;
+    font-size: clamp(2.25rem, 12vw, 3.3rem);
+  }
+
+  .account-behavior h2 {
+    max-width: 100%;
+    margin-top: 0;
+  }
+
+  .account-behavior .product-card {
+    grid-template-columns: 104px minmax(0, 1fr);
+  }
+
+  .account-behavior .product-visual {
+    min-height: 132px;
   }
 
   .footer {

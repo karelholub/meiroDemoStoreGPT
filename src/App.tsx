@@ -689,7 +689,7 @@ function AccountPage() {
   const state = useAppState();
   const { profile, consent, recentlyViewed } = state;
   return (
-    <main className="page two-col">
+    <main className="page two-col account-page">
       <section className="profile-card">
         <h1>{profile.firstName ? `${profile.firstName}'s profile` : "Anonymous profile"}</h1>
         <PersonalizationZone zoneId="account_lifecycle_banner" fallback="Local profile enrichment is ready for Meiro identity resolution." className="banner" />
@@ -701,7 +701,7 @@ function AccountPage() {
           <div><dt>Recommended tags</dt><dd>{profile.recommendedTags.join(", ") || "None yet"}</dd></div>
         </dl>
       </section>
-      <section>
+      <section className="account-behavior">
         <h2>Visible behavior Meiro could merge</h2>
         {recentlyViewed.length === 0 ? (
           <EmptyState
