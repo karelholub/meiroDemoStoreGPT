@@ -33,7 +33,9 @@ If analytics consent is disabled, behavioral events are suppressed by the Meiro 
 - `/cart`, `/checkout`, `/thank-you`
 - `/register`, `/login`, `/account`
 - `/search`
+- `/playbooks` mapping common ecommerce CDP journeys to demo surfaces
 - `/demo-control` for switching personas
+- `/review` for post-purchase review and referral surfaces
 
 ## Meiro Integration Layer
 
@@ -61,7 +63,7 @@ See `MEIRO_INTEGRATION.md` for the SDK wiring point, consent behavior, and perso
 
 ## Demo Personas
 
-The `/demo-control` page supports anonymous visitors, returning visitors, known customers, high-value customers, cart abandoners, discount-sensitive visitors, marketing burnout, parenting chaos, sleep recovery, newsletter subscribers, and post-purchase customers.
+The `/demo-control` page supports anonymous visitors, returning visitors, known customers, high-value customers, cart abandoners, discount-sensitive visitors, marketing burnout, parenting chaos, sleep recovery, newsletter subscribers, post-purchase customers, and lapsed customers.
 
 ## Netlify
 

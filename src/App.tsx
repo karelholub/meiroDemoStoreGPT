@@ -160,6 +160,7 @@ function Header() {
         <Link to="/products">Shop</Link>
         <Link to="/search">Search</Link>
         <Link to="/account">Account</Link>
+        <Link to="/playbooks">Playbooks</Link>
         <Link to="/demo-control">Demo</Link>
         <Link to="/cart" className="cart-link">Cart {count > 0 && <span>{count}</span>}</Link>
       </nav>
@@ -176,6 +177,7 @@ function Footer() {
       </div>
       <div className="footer-links">
         <Link to="/products">Catalog</Link>
+        <Link to="/playbooks">Playbooks</Link>
         <Link to="/register">Register</Link>
         <Link to="/login">Login</Link>
       </div>
@@ -245,6 +247,99 @@ function ProductGrid({ items }: { items: Product[] }) {
   return <div className="product-grid">{items.map((product) => <ProductCard key={product.id} product={product} />)}</div>;
 }
 
+const ecommercePlaybooks = [
+  {
+    id: "abandoned-cart",
+    title: "Abandoned cart recovery",
+    trigger: "cart_abandoned with cart value and item ids",
+    path: "/cart",
+    personaId: "cart_abandoner",
+    webSurface: "Cart banner, cart lines, checkout entry, live signal strip",
+    profileFields: ["has_active_cart", "last_abandoned_cart_value", "cart_item_ids"],
+  },
+  {
+    id: "welcome-first-purchase",
+    title: "Welcome and first-purchase nurture",
+    trigger: "customer_registered or email_subscribed",
+    path: "/register",
+    personaId: "newsletter",
+    webSurface: "Registration, newsletter signup, bestseller rail, first-purchase offer slot",
+    profileFields: ["total_orders", "signup_channel", "marketing_consent"],
+  },
+  {
+    id: "replenishment",
+    title: "Replenishment and reorder reminder",
+    trigger: "predicted_reorder_date from profile attributes",
+    path: "/account",
+    personaId: "post_purchase",
+    webSurface: "Account reorder slot, profile API field preview, one-click reorder CTA",
+    profileFields: ["predicted_reorder_date", "last_purchased_sku", "days_since_last_purchase"],
+  },
+  {
+    id: "post-purchase-cross-sell",
+    title: "Post-purchase upsell and cross-sell",
+    trigger: "order_confirmed with line items",
+    path: "/thank-you",
+    personaId: "post_purchase",
+    webSurface: "Thank-you next-best-action, complementary products, cart cross-sell rail",
+    profileFields: ["last_purchased_category", "last_purchased_sku", "second_purchase"],
+  },
+  {
+    id: "win-back",
+    title: "Win-back lapsed customer",
+    trigger: "lapsed_customers audience",
+    path: "/",
+    personaId: "lapsed_customer",
+    webSurface: "Homepage comeback banner, saved category picks, incentive slot",
+    profileFields: ["days_since_last_purchase", "last_purchased_category", "journey_membership"],
+  },
+  {
+    id: "vip",
+    title: "VIP and high-value customer program",
+    trigger: "vip_tier changes to gold",
+    path: "/account",
+    personaId: "high_value",
+    webSurface: "VIP profile panel, early-access banner, premium recommendation rail",
+    profileFields: ["vip_tier", "lifetime_value", "purchase_count"],
+  },
+  {
+    id: "browse-abandonment",
+    title: "Browse abandonment",
+    trigger: "product_view with no add_to_cart",
+    path: "/products",
+    personaId: "known_customer",
+    webSurface: "Recently viewed rail, same-category recommendations, identified profile state",
+    profileFields: ["last_viewed_product_id", "viewed_product_count", "push_opt_in"],
+  },
+  {
+    id: "review-referral",
+    title: "Post-purchase review and referral",
+    trigger: "order_delivered from OMS or shipping webhook",
+    path: "/review",
+    personaId: "post_purchase",
+    webSurface: "Review form, referral code panel, purchased-product context",
+    profileFields: ["delivery_status", "repeat_buyer", "has_left_review"],
+  },
+] as const;
+
+function PlaybookSummaryCard({ playbook }: { playbook: (typeof ecommercePlaybooks)[number] }) {
+  const state = useAppState();
+  return (
+    <article className="playbook-card">
+      <span className="eyebrow">{playbook.trigger}</span>
+      <h2>{playbook.title}</h2>
+      <p>{playbook.webSurface}</p>
+      <div className="playbook-fields" aria-label={`${playbook.title} profile fields`}>
+        {playbook.profileFields.map((field) => <code key={field}>{field}</code>)}
+      </div>
+      <div className="actions">
+        <button type="button" className="ghost" onClick={() => state.setPersona(playbook.personaId)}>Load scenario</button>
+        <Link to={playbook.path} className="primary-cta">Open surface</Link>
+      </div>
+    </article>
+  );
+}
+
 function RecommendationRail({
   title,
   strategy,
@@ -306,6 +401,48 @@ function SignalStrip() {
   );
 }
 
+function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
+  const state = useAppState();
+  const recentCategories = state.profile.recentlyViewedCategories;
+  const favoriteCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? recentCategories[recentCategories.length - 1] ?? "Sleep & Recovery";
+  const reorderProduct = products.find((product) => state.profile.purchases.includes(product.id)) ?? products.find((product) => product.category === favoriteCategory) ?? products[0];
+  const categoryPicks = products.filter((product) => product.category === favoriteCategory).slice(0, compact ? 2 : 3);
+  const lapsed = state.personaId === "lapsed_customer" || state.profile.lifecycleStage === "lapsed_customer";
+  const vip = state.personaId === "high_value" || state.profile.lifecycleStage === "high_value_customer";
+
+  return (
+    <section className={compact ? "journey-slots compact" : "journey-slots"} aria-label="Meiro ecommerce playbook surfaces">
+      <article className="journey-slot">
+        <span className="eyebrow">Replenishment</span>
+        <h2>Reorder timing slot</h2>
+        <p>Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.</p>
+        <div className="slot-product">
+          <ProductVisual product={reorderProduct} size="thumb" />
+          <div>
+            <strong>{reorderProduct.name}</strong>
+            <span>Suggested reorder in 3 days</span>
+          </div>
+        </div>
+        <Link to={`/product/${reorderProduct.slug}`} className="signal-link">Reorder product</Link>
+      </article>
+      <article className="journey-slot">
+        <span className="eyebrow">{vip ? "VIP active" : "VIP program"}</span>
+        <h2>{vip ? "Early access is unlocked" : "VIP treatment slot"}</h2>
+        <p>Use vip_tier, lifetime_value, and purchase_count to change offers without changing the page.</p>
+        <Link to="/account" className="signal-link">View profile tier</Link>
+      </article>
+      <article className="journey-slot">
+        <span className="eyebrow">{lapsed ? "Win-back active" : "Win-back"}</span>
+        <h2>{lapsed ? "We saved your last category" : "Lapsed customer offer slot"}</h2>
+        <p>{favoriteCategory} picks can be filled from a catalog feed scoped by last_purchased_category.</p>
+        <div className="mini-products">
+          {categoryPicks.map((product) => <ProductVisual key={product.id} product={product} size="thumb" />)}
+        </div>
+      </article>
+    </section>
+  );
+}
+
 function HomePage() {
   const heroText = (
     <>
@@ -346,6 +483,7 @@ function HomePage() {
       />
       <RecommendationRail title="Bestsellers with suspiciously high empathy" strategy="high_margin_bestsellers" />
       <RecommendationRail title="Recently viewed, because memory is a feature" strategy="recently_viewed" />
+      <LifecyclePlaybookSlots />
       <Newsletter />
       <section className="trust-band">
         <div><strong>0</strong><span>real payments</span></div>
@@ -601,6 +739,15 @@ function AccountPage() {
           <ProductGrid items={recentlyViewed.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[]} />
         )}
       </section>
+      <LifecyclePlaybookSlots compact />
+      <section className="profile-api-card">
+        <span className="eyebrow">Profile API ready</span>
+        <h2>Fields this page can consume</h2>
+        <p>Meiro CDP can populate these values at render time; the storefront only needs the slots and fallbacks.</p>
+        <div className="playbook-fields">
+          {["vip_tier", "predicted_reorder_date", "days_since_last_purchase", "last_purchased_category", "has_left_review"].map((field) => <code key={field}>{field}</code>)}
+        </div>
+      </section>
     </main>
   );
 }
@@ -716,6 +863,11 @@ function DemoControlPage() {
         <MeiroStatusCard />
         <PresenterChecklist />
         <section className="control-card">
+          <h2>Use case coverage</h2>
+          <p className="muted">Eight ecommerce playbooks have a visible web surface ready for Meiro journeys, catalog feeds, or Profile API attributes.</p>
+          <Link to="/playbooks" className="signal-link">Open playbooks</Link>
+        </section>
+        <section className="control-card">
           <h2>Consent state</h2>
           {(["analytics", "personalization", "marketing"] as const).map((key) => (
             <label key={key}>
@@ -740,7 +892,69 @@ function ThankYouPage() {
     <main className="page narrow">
       <h1>Thank you. The order is simulated, the signals are not.</h1>
       <PersonalizationZone zoneId="thank_you_next_best_action" fallback="Recommended next step: review account profile enrichment." className="banner" />
-      <Link to="/account" className="primary-cta">View profile</Link>
+      <div className="actions">
+        <Link to="/account" className="primary-cta">View profile</Link>
+        <Link to="/review" className="secondary-action">Review or refer</Link>
+      </div>
+      <LifecyclePlaybookSlots compact />
+    </main>
+  );
+}
+
+function PlaybooksPage() {
+  return (
+    <main className="page">
+      <div className="page-heading">
+        <span className="eyebrow">Meiro ecommerce use cases</span>
+        <h1>Eight playbooks, eight web surfaces.</h1>
+        <p>The CDP can handle audiences, catalog feeds, journey logic, and Profile API attributes. This storefront now provides the visible places where those decisions can appear.</p>
+      </div>
+      <section className="playbook-grid">
+        {ecommercePlaybooks.map((playbook) => <PlaybookSummaryCard key={playbook.id} playbook={playbook} />)}
+      </section>
+      <section className="profile-api-card">
+        <span className="eyebrow">Integration stance</span>
+        <h2>Profile API can hydrate the page without changing the demo flow.</h2>
+        <p>Use Profile API responses to fill tier, reorder timing, lapsed status, delivery state, and review/referral eligibility. The current local personas are only presenter shortcuts.</p>
+      </section>
+    </main>
+  );
+}
+
+function ReviewReferralPage() {
+  const state = useAppState();
+  const reviewedProduct = products.find((product) => state.profile.purchases.includes(product.id)) ?? products.find((product) => product.id === "monday-survival-kit") ?? products[0];
+  const [submitted, setSubmitted] = useState(false);
+
+  return (
+    <main className="page two-col">
+      <section>
+        <span className="eyebrow">Post-purchase review and referral</span>
+        <h1>How did the supplies land?</h1>
+        <p className="lead">A review/referral surface for order_delivered journeys, repeat-buyer splits, and referral-code personalization.</p>
+        <form className="form-card" onSubmit={(event) => { event.preventDefault(); setSubmitted(true); }}>
+          <label>
+            Product
+            <input aria-label="Reviewed product" value={reviewedProduct.name} readOnly />
+          </label>
+          <label>
+            Review
+            <input aria-label="Review text" placeholder="Surprisingly useful. Mildly concerning." required />
+          </label>
+          <button>{submitted ? "Review noted" : "Submit simulated review"}</button>
+        </form>
+      </section>
+      <aside className="summary">
+        <ProductVisual product={reviewedProduct} size="thumb" />
+        <h2>Referral slot</h2>
+        <p>Repeat buyers can receive a referral code from Meiro Asset Library or Profile API.</p>
+        <div className="referral-code">ESC-FINE-20</div>
+        <div className="playbook-fields">
+          <code>order_delivered</code>
+          <code>repeat_buyer</code>
+          <code>has_left_review</code>
+        </div>
+      </aside>
     </main>
   );
 }
@@ -877,7 +1091,9 @@ function Router() {
   if (pathname === "/login") return <RegisterPage mode="login" />;
   if (pathname === "/account") return <AccountPage />;
   if (pathname === "/search") return <SearchPage />;
+  if (pathname === "/playbooks") return <PlaybooksPage />;
   if (pathname === "/demo-control") return <DemoControlPage />;
+  if (pathname === "/review") return <ReviewReferralPage />;
   if (pathname === "/thank-you") return <ThankYouPage />;
   return <NotFound />;
 }

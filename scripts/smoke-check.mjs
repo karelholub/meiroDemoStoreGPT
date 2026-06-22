@@ -39,7 +39,9 @@ const routePaths = [
   "/login",
   "/account",
   "/search",
+  "/playbooks",
   "/demo-control",
+  "/review",
   "/thank-you",
 ];
 

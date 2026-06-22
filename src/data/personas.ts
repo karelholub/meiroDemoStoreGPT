@@ -122,4 +122,19 @@ export const personas: DemoPersona[] = [
       recommendedTags: ["cross-sell", "recovery", "gift"],
     },
   },
+  {
+    id: "lapsed_customer",
+    name: "Lapsed Customer",
+    description: "Previously purchased, now ready for a win-back journey.",
+    profilePatch: {
+      lifecycleStage: "lapsed_customer",
+      customerType: "registered",
+      firstName: "Rae",
+      categoryAffinity: "Existential Wellness",
+      purchases: ["premium-overthinking-blanket"],
+      recentlyViewedCategories: ["Existential Wellness"],
+      recommendedTags: ["overthinking", "comfort", "new arrivals"],
+    },
+    consentPatch: { marketing: true, personalization: true },
+  },
 ];

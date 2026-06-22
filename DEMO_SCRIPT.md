@@ -68,6 +68,16 @@ Show:
 - post-purchase lifecycle
 - thank-you next-best-action zone
 
+## 7. Ecommerce Playbook Coverage
+
+Open `/playbooks`.
+
+Show:
+- eight Meiro ecommerce use cases mapped to concrete web surfaces
+- scenario buttons that load matching demo personas
+- Profile API-ready fields such as `vip_tier`, `predicted_reorder_date`, `days_since_last_purchase`, and `has_left_review`
+- `/review` as the post-delivery review and referral surface
+
 ## Live Demo Notes
 
 - No real payments or backend calls are made.

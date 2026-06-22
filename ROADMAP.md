@@ -37,7 +37,7 @@ Status: implemented and enabled by default for browser MPT. The wrapper now conf
 - Add product recommendation payload adapters
 - Store personalization decisions in debug panel
 
-Status: started. Local personalization now emits structured decision metadata into the debug panel.
+Status: in progress. Local personalization now emits structured decision metadata into the debug panel. Ecommerce playbook surfaces are available for abandoned cart, welcome nurture, replenishment, post-purchase cross-sell, win-back, VIP, browse abandonment, and review/referral. These surfaces can be hydrated later from Meiro Profile API attributes or Engage decisions.
 
 ## Milestone 5: Deployment And GitHub
 
