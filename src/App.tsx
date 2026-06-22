@@ -658,22 +658,49 @@ function ConsentBanner() {
   const { consent, setConsent } = useAppState();
   const [open, setOpen] = useState(!localStorage.getItem("esc_consent_seen"));
   const [draft, setDraft] = useState<ConsentState>(consent);
+  const [customizing, setCustomizing] = useState(false);
+  useEffect(() => {
+    document.body.classList.toggle("consent-visible", open);
+    return () => document.body.classList.remove("consent-visible");
+  }, [open]);
+
+  const finish = (next: ConsentState) => {
+    localStorage.setItem("esc_consent_seen", "true");
+    setConsent(next);
+    setOpen(false);
+  };
+
   if (!open) return null;
   return (
-    <div className="consent">
+    <div className={customizing ? "consent expanded" : "consent"}>
       <div>
         <strong>Consent preferences</strong>
         <p>Necessary is always on. Other choices control analytics, personalization, and marketing simulation.</p>
       </div>
-      <div className="consent-options">
-        {(["analytics", "personalization", "marketing"] as const).map((key) => (
-          <label key={key}>
-            <input type="checkbox" checked={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.checked })} />
-            <span>{key}</span>
-          </label>
-        ))}
+      {customizing && (
+        <div className="consent-options">
+          {(["analytics", "personalization", "marketing"] as const).map((key) => (
+            <label key={key}>
+              <input type="checkbox" checked={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.checked })} />
+              <span>{key}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      <div className="consent-actions">
+        {customizing ? (
+          <>
+            <button className="ghost" onClick={() => setCustomizing(false)}>Back</button>
+            <button onClick={() => finish({ ...draft, necessary: true })}>Save choices</button>
+          </>
+        ) : (
+          <>
+            <button className="ghost" onClick={() => finish({ necessary: true, analytics: false, personalization: false, marketing: false })}>Essential only</button>
+            <button className="ghost" onClick={() => setCustomizing(true)}>Customize</button>
+            <button onClick={() => finish({ necessary: true, analytics: true, personalization: true, marketing: true })}>Accept all</button>
+          </>
+        )}
       </div>
-      <button onClick={() => { localStorage.setItem("esc_consent_seen", "true"); setConsent({ ...draft, necessary: true }); setOpen(false); }}>Save</button>
     </div>
   );
 }
@@ -768,9 +795,9 @@ export function App() {
   return (
     <AppStateProvider>
       <Header />
+      <ConsentBanner />
       <Router />
       <Footer />
-      <ConsentBanner />
       {(import.meta.env.DEV || import.meta.env.VITE_DEMO_DEBUG_ENABLED === "true") && <DebugPanel />}
     </AppStateProvider>
   );
