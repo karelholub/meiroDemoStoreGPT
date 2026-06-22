@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-22T00:00:00.000Z",
+  "title": "Design System: Existential Supplies Co.",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink Black",
+        "canonical": "#1e1b18",
+        "tonalRamp": ["#1e1b18", "#544e45", "#8d8578"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper Field",
+        "canonical": "#fbf8f2",
+        "tonalRamp": ["#fffdf8", "#fbf8f2", "#efe8dc"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Rust Signal",
+        "canonical": "#b64f38",
+        "tonalRamp": ["#ead1c7", "#c7979c", "#b64f38"]
+      },
+      "sage": {
+        "role": "secondary",
+        "displayName": "Sage Control",
+        "canonical": "#6f7565",
+        "tonalRamp": ["#d7e0d0", "#aabf99", "#6f7565"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Retail Display",
+        "purpose": "Hero and major brand/product storytelling only."
+      },
+      "body": {
+        "displayName": "Functional Body",
+        "purpose": "Forms, controls, product copy, event logs, and presenter UI."
+      },
+      "label": {
+        "displayName": "Compact Metadata",
+        "purpose": "Categories, statuses, chips, and small UI metadata."
+      }
+    },
+    "elevation": {
+      "surfaceRest": "0 20px 70px rgba(30, 27, 24, 0.06)",
+      "cardHover": "0 20px 55px rgba(30, 27, 24, 0.12)",
+      "overlay": "0 24px 80px rgba(30, 27, 24, 0.18)"
+    },
+    "motion": {
+      "durationFast": "160ms",
+      "durationImage": "240ms",
+      "easing": "ease"
+    },
+    "breakpoints": {
+      "tablet": "980px",
+      "mobile": "680px"
+    },
+    "rules": [
+      "Use rust as a signal, not decoration.",
+      "Use Georgia for brand and product storytelling, not dense UI.",
+      "Keep demo mechanics visible and presenter-friendly.",
+      "Use local product imagery instead of placeholders."
+    ]
+  }
+}
