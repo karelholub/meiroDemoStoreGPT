@@ -598,51 +598,88 @@ function CheckoutPage() {
   useEffect(() => trackEvent("checkout_started", cartPayload(state.cart, products)), []);
   if (state.cart.length === 0) {
     return (
-      <main className="page narrow">
+      <main className="page narrow checkout-empty">
         <EmptyState
           title="Checkout needs a cart first."
           body="This keeps the order-completed payload honest. Add a product, then return to the simulated checkout."
-          action={{ label: "Add demo products", to: "/products" }}
+          action={{ label: "Browse products", to: "/products" }}
         />
       </main>
     );
   }
 
   return (
-    <main className="page checkout">
-      <h1>Checkout</h1>
-      <PersonalizationZone zoneId="checkout_reassurance_banner" fallback="No real payment will be taken. Your demo budget is safe." className="banner" />
-      <div className="stepper">{steps.map((label, index) => <button type="button" className={index === step ? "active" : ""} onClick={() => setStep(index)} key={label}>{label}</button>)}</div>
-      <section className="checkout-panel">
-        <h2>{steps[step]}</h2>
-        {step === 0 && <><input aria-label="Email" defaultValue={profile.email ?? ""} placeholder="Email" /><input aria-label="First name" defaultValue={profile.firstName ?? ""} placeholder="First name" /></>}
-        {step === 1 && <><label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label><label><input type="radio" name="shipping-speed" /> Express emotional handling</label></>}
-        {step === 2 && <><label><input type="radio" name="payment-method" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></>}
-        {step === 3 && <OrderReview />}
-        <div className="actions">
-          {step > 0 && <button type="button" className="ghost" onClick={() => setStep(step - 1)}>Back</button>}
-          {step < steps.length - 1 ? (
-            <button type="button" onClick={() => { trackEvent("checkout_step_completed", { step: steps[step] }); setStep(step + 1); }}>Continue</button>
-          ) : (
-            <button type="button" onClick={() => {
-              const orderPayload = cartPayload(state.cart, products);
-              const orderId = completeOrder();
-              trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
-              navigate("/thank-you");
-            }}>Complete simulated order</button>
-          )}
-        </div>
-      </section>
+    <main className="page checkout-page">
+      <div className="checkout-heading">
+        <span className="eyebrow">Simulated checkout</span>
+        <h1>Checkout</h1>
+        <PersonalizationZone zoneId="checkout_reassurance_banner" fallback="No real payment will be taken. Your demo budget is safe." className="banner" />
+      </div>
+      <div className="checkout-layout">
+        <section className="checkout-panel">
+          <div className="stepper">{steps.map((label, index) => <button type="button" className={index === step ? "active" : ""} onClick={() => setStep(index)} key={label}><span>{index + 1}</span>{label}</button>)}</div>
+          <div className="checkout-step-card">
+            <h2>{steps[step]}</h2>
+            {step === 0 && <div className="checkout-fields"><input aria-label="Email" defaultValue={profile.email ?? ""} placeholder="Email" /><input aria-label="First name" defaultValue={profile.firstName ?? ""} placeholder="First name" /></div>}
+            {step === 1 && <div className="checkout-options"><label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label><label><input type="radio" name="shipping-speed" /> Express emotional handling</label></div>}
+            {step === 2 && <div className="checkout-options"><label><input type="radio" name="payment-method" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></div>}
+            {step === 3 && <OrderReview />}
+            <div className="actions">
+              {step > 0 && <button type="button" className="ghost" onClick={() => setStep(step - 1)}>Back</button>}
+              {step < steps.length - 1 ? (
+                <button type="button" onClick={() => { trackEvent("checkout_step_completed", { step: steps[step] }); setStep(step + 1); }}>Continue</button>
+              ) : (
+                <button type="button" onClick={() => {
+                  const orderPayload = cartPayload(state.cart, products);
+                  const orderId = completeOrder();
+                  trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
+                  navigate("/thank-you");
+                }}>Complete simulated order</button>
+              )}
+            </div>
+          </div>
+        </section>
+        <CheckoutSummary />
+      </div>
     </main>
   );
 }
 
 function OrderReview() {
   const { cart } = useAppState();
-  return <div>{cart.map((item) => {
+  return <div className="order-review">{cart.map((item) => {
     const product = products.find((p) => p.id === item.productId);
-    return product ? <p key={item.productId}>{item.quantity} x {product.name}</p> : null;
+    return product ? <p key={item.productId}><span>Qty {item.quantity}</span><strong>{product.name}</strong></p> : null;
   })}</div>;
+}
+
+function CheckoutSummary() {
+  const { cart } = useAppState();
+  const enriched = cart.map((item) => ({ item, product: products.find((product) => product.id === item.productId) })).filter((entry): entry is { item: typeof cart[number]; product: Product } => Boolean(entry.product));
+  const subtotal = enriched.reduce((sum, { item, product }) => sum + item.quantity * product.price, 0);
+
+  return (
+    <aside className="checkout-summary" aria-label="Order summary">
+      <h2>Order summary</h2>
+      <div className="checkout-summary-list">
+        {enriched.map(({ item, product }) => (
+          <div className="checkout-summary-item" key={product.id}>
+            <ProductVisual product={product} size="thumb" />
+            <div>
+              <strong>{product.name}</strong>
+              <span>{item.quantity} x <Money value={product.price} /></span>
+            </div>
+            <b><Money value={product.price * item.quantity} /></b>
+          </div>
+        ))}
+      </div>
+      <div className="checkout-total">
+        <span>Total</span>
+        <strong><Money value={subtotal} /></strong>
+      </div>
+      <p>Demo checkout sends order and cart payloads for Meiro event validation.</p>
+    </aside>
+  );
 }
 
 function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
