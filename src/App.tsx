@@ -66,19 +66,44 @@ const categoryTone: Record<string, string> = {
   "Gifts for People Who Say “I’m Fine”": "tone-gifts",
 };
 
+const visualCrops = ["50% 50%", "38% 45%", "62% 43%", "45% 62%", "68% 58%", "35% 38%", "54% 34%"];
+const visualVariants = ["variant-seal", "variant-label", "variant-band", "variant-corner", "variant-ticket", "variant-swatch"];
+
+function productVisualVariant(product: Product) {
+  const hash = [...product.id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const stockLabel = product.stockStatus === "low_stock" ? "Low stock" : product.stockStatus === "fake_sold_out" ? "Archived" : product.tags[0];
+
+  return {
+    badge: stockLabel,
+    className: visualVariants[hash % visualVariants.length],
+    crop: visualCrops[hash % visualCrops.length],
+    rotation: `${(hash % 7) - 3}deg`,
+    sku: product.id.split("-").slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
+  };
+}
+
 function ProductVisual({ product, size = "card" }: { product: Product; size?: "card" | "large" | "thumb" }) {
   const words = product.name.split(" ");
   const monogram = words.slice(0, 2).map((word) => word[0]).join("");
   const tagLine = product.tags.slice(0, 2).join(" / ");
+  const variant = productVisualVariant(product);
+  const visualStyle = {
+    "--product-crop": variant.crop,
+    "--label-tilt": variant.rotation,
+  } as React.CSSProperties;
+
   return (
-    <div className={`product-visual ${categoryTone[product.category] ?? "tone-work"} ${size}`} role="img" aria-label={`${product.name} product image`}>
+    <div className={`product-visual ${categoryTone[product.category] ?? "tone-work"} ${variant.className} ${size}`} style={visualStyle} role="img" aria-label={`${product.name} product image`}>
       <img src={product.image} alt="" loading={size === "large" ? "eager" : "lazy"} />
+      <div className="visual-package" />
       <div className="visual-finish" />
+      <span className="visual-badge">{variant.badge}</span>
       <div className="visual-overlay">
         <span className="visual-brand">ESC</span>
         <strong>{product.name}</strong>
         <small>{tagLine}</small>
       </div>
+      <span className="visual-sku">{variant.sku}</span>
       <em className="visual-monogram">{monogram}</em>
     </div>
   );
