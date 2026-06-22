@@ -7,6 +7,7 @@ The app is intentionally built around a stable local wrapper so the UI does not 
 - `src/integrations/meiro/meiroClient.ts`: public wrapper for `trackEvent`, `identifyUser`, `trackPageView`, and consent gating
 - `src/integrations/meiro/meiroEvents.ts`: ecommerce payload helpers
 - `src/integrations/meiro/meiroPersonalization.ts`: local decision rules and decision metadata
+- `src/integrations/meiro/meiroProfileApi.ts`: Profile API fetch and attribute normalization for realtime personalization
 - `src/integrations/meiro/meiroConfig.ts`: environment/configuration status for demo-control
 - `src/integrations/meiro/eventSchemas.ts`: canonical event names
 
@@ -17,6 +18,10 @@ VITE_MEIRO_SDK_ENABLED=true
 VITE_MEIRO_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk
 VITE_MEIRO_SCRIPT_URL=https://meiro-demo.eu.pipes.meiro.io/mpt.js
 VITE_MEIRO_DEBUG=true
+VITE_MEIRO_PROFILE_API_ENABLED=true
+VITE_MEIRO_PROFILE_API_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso
+VITE_MEIRO_PROFILE_API_TOKEN=your-profile-api-token
+VITE_MEIRO_PROFILE_API_IDENTIFIER_TYPE=user_id
 ```
 
 The demo endpoint and script URL default to the Meiro demo source:
@@ -25,6 +30,14 @@ The demo endpoint and script URL default to the Meiro demo source:
 - collection endpoint: `https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk`
 
 SDK tracking is enabled by default. Set `VITE_MEIRO_SDK_ENABLED=false` to disable SDK loading and run in local mock mode.
+
+Profile API hydration is enabled when `VITE_MEIRO_PROFILE_API_TOKEN` is set. By default the app queries:
+
+```txt
+https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso?identifier_type=user_id&identifier_value={profile.email}
+```
+
+using the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply email/user_id and phone identifiers.
 
 ## Implemented MPT Bootstrap
 
@@ -100,7 +113,9 @@ The app keeps descriptive internal event names for the local debug panel, but th
 - `product_added_to_cart` → `add_to_cart`
 - `product_removed_from_cart` → `remove_from_cart`
 - `cart_view` → `view_cart`
-- `checkout_started` / `checkout_step_completed` → `begin_checkout`
+- `checkout_started` / `checkout_contact_submitted` / `checkout_step_completed` → `begin_checkout`
+- `checkout_shipping_submitted` → `add_shipping_info`
+- `checkout_payment_submitted` → `add_payment_info`
 - `order_completed` → `purchase`
 - `search_submitted` → `search`
 - `search_result_clicked` / `recommendation_clicked` → `select_item`

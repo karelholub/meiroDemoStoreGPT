@@ -39,6 +39,8 @@ export type ConsentState = {
 
 export type CustomerProfile = {
   email?: string;
+  phone?: string;
+  surname?: string;
   firstName?: string;
   currentLifeSituation?: string;
   preferredCategory?: string;
@@ -49,6 +51,28 @@ export type CustomerProfile = {
   recentlyViewedCategories: string[];
   recommendedTags: string[];
   purchases: string[];
+  vipTier?: string;
+  lifetimeValue?: number;
+  purchaseCount?: number;
+  predictedReorderDate?: string;
+  daysSinceLastPurchase?: number;
+  lastPurchasedSku?: string;
+  lastPurchasedCategory?: string;
+  hasLeftReview?: boolean;
+  repeatBuyer?: boolean;
+  referralCode?: string;
+  nextBestProductIds?: string[];
+  nextBestAction?: string;
+  profileApiAttributes?: Record<string, unknown>;
+  profileApiUpdatedAt?: string;
+};
+
+export type ProfileApiStatus = {
+  state: "idle" | "disabled" | "missing_token" | "loading" | "loaded" | "empty" | "error";
+  identifierType?: string;
+  identifierValue?: string;
+  message?: string;
+  updatedAt?: string;
 };
 
 export type DemoPersona = {

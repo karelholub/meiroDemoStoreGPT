@@ -6,6 +6,7 @@ import { getMeiroConfigStatus } from "./integrations/meiro/meiroConfig";
 import { identifyUser, trackEvent, trackPageView } from "./integrations/meiro/meiroClient";
 import { cartPayload, productPayload } from "./integrations/meiro/meiroEvents";
 import { getPersonalizationDecision } from "./integrations/meiro/meiroPersonalization";
+import { getMeiroProfileApiStatus } from "./integrations/meiro/meiroProfileApi";
 import { AppStateProvider, useAppState } from "./store/appState";
 import type { ConsentState, PersonalizationZoneId, Product, RecommendationStrategy } from "./types";
 import { recommendProducts } from "./utils/recommendations";
@@ -382,20 +383,21 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
   const favoriteCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? recentCategories[recentCategories.length - 1] ?? "Sleep & Recovery";
   const reorderProduct = products.find((product) => state.profile.purchases.includes(product.id)) ?? products.find((product) => product.category === favoriteCategory) ?? products[0];
   const categoryPicks = products.filter((product) => product.category === favoriteCategory).slice(0, compact ? 2 : 3);
-  const lapsed = state.personaId === "lapsed_customer" || state.profile.lifecycleStage === "lapsed_customer";
-  const vip = state.personaId === "high_value" || state.profile.lifecycleStage === "high_value_customer";
+  const lapsed = state.personaId === "lapsed_customer" || state.profile.lifecycleStage === "lapsed_customer" || Boolean(state.profile.daysSinceLastPurchase && state.profile.daysSinceLastPurchase >= 60);
+  const vip = state.personaId === "high_value" || state.profile.lifecycleStage === "high_value_customer" || ["gold", "platinum"].includes(String(state.profile.vipTier ?? "").toLowerCase());
+  const reorderHint = state.profile.predictedReorderDate ? `Predicted reorder date: ${state.profile.predictedReorderDate}.` : "Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.";
 
   return (
     <section className={compact ? "journey-slots compact" : "journey-slots"} aria-label="Meiro ecommerce playbook surfaces">
       <article className="journey-slot">
         <span className="eyebrow">Replenishment</span>
         <h2>Reorder timing slot</h2>
-        <p>Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.</p>
+        <p>{reorderHint}</p>
         <div className="slot-product">
           <ProductVisual product={reorderProduct} size="thumb" />
           <div>
             <strong>{reorderProduct.name}</strong>
-            <span>Suggested reorder in 3 days</span>
+            <span>{state.profile.predictedReorderDate ? `Reorder on ${state.profile.predictedReorderDate}` : "Suggested reorder in 3 days"}</span>
           </div>
         </div>
         <Link to={`/product/${reorderProduct.slug}`} className="signal-link">Reorder product</Link>
@@ -784,6 +786,10 @@ function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
 function AccountPage() {
   const state = useAppState();
   const { profile, consent, recentlyViewed } = state;
+  const profileApiSummary =
+    state.profileApiStatus.state === "loaded"
+      ? `Loaded via ${state.profileApiStatus.identifierType}`
+      : state.profileApiStatus.message ?? state.profileApiStatus.state.replaceAll("_", " ");
   return (
     <main className="page two-col account-page">
       <section className="profile-card">
@@ -793,8 +799,11 @@ function AccountPage() {
           <div><dt>Email</dt><dd>{profile.email ?? "Unknown visitor"}</dd></div>
           <div><dt>Lifecycle</dt><dd>{profile.lifecycleStage}</dd></div>
           <div><dt>Affinity</dt><dd>{profile.categoryAffinity ?? profile.preferredCategory ?? "Still emerging"}</dd></div>
+          <div><dt>VIP tier</dt><dd>{profile.vipTier ?? "Not assigned"}</dd></div>
+          <div><dt>Reorder date</dt><dd>{profile.predictedReorderDate ?? "Not predicted yet"}</dd></div>
           <div><dt>Consents</dt><dd>{Object.entries(consent).filter(([, enabled]) => enabled).map(([key]) => key).join(", ")}</dd></div>
           <div><dt>Recommended tags</dt><dd>{profile.recommendedTags.join(", ") || "None yet"}</dd></div>
+          <div><dt>Profile API</dt><dd>{profileApiSummary}</dd></div>
         </dl>
       </section>
       <section className="account-behavior">
@@ -812,10 +821,16 @@ function AccountPage() {
       <LifecyclePlaybookSlots compact />
       <section className="profile-api-card">
         <span className="eyebrow">Profile API ready</span>
-        <h2>Fields this page can consume</h2>
-        <p>Meiro CDP can populate these values at render time; the storefront only needs the slots and fallbacks.</p>
+        <h2>{state.profileApiStatus.state === "loaded" ? "Profile API is hydrating this page." : "Fields this page can consume"}</h2>
+        <p>{state.profileApiStatus.state === "loaded" ? "Realtime Meiro attributes are merged into the local profile and reused by banners, slots, and recommendation rails." : "Meiro CDP can populate these values at render time; the storefront only needs the slots and fallbacks."}</p>
         <div className="playbook-fields">
-          {["vip_tier", "predicted_reorder_date", "days_since_last_purchase", "last_purchased_category", "has_left_review"].map((field) => <code key={field}>{field}</code>)}
+          {[
+            ["vip_tier", profile.vipTier],
+            ["predicted_reorder_date", profile.predictedReorderDate],
+            ["days_since_last_purchase", profile.daysSinceLastPurchase],
+            ["last_purchased_category", profile.lastPurchasedCategory],
+            ["has_left_review", profile.hasLeftReview],
+          ].map(([field, value]) => <code key={String(field)}>{String(field)}{value !== undefined ? `: ${String(value)}` : ""}</code>)}
         </div>
       </section>
     </main>
@@ -887,12 +902,14 @@ function PresenterChecklist() {
 
 function MeiroStatusCard() {
   const status = getMeiroConfigStatus();
+  const profileApiStatus = getMeiroProfileApiStatus();
   const rows = [
     ["Mode", status.mode],
     ["SDK enabled", status.sdkEnabled ? "yes" : "no"],
     ["Endpoint", status.hasEndpoint ? "ready" : "missing"],
     ["Script", status.hasScriptUrl ? "ready" : "missing"],
     ["Debug", status.debug ? "on" : "off"],
+    ["Profile API", profileApiStatus.enabled && profileApiStatus.hasToken ? "ready" : "missing token"],
   ];
 
   return (
@@ -908,6 +925,7 @@ function MeiroStatusCard() {
       </dl>
       <p className="muted"><strong>Endpoint:</strong> {status.endpoint}</p>
       <p className="muted"><strong>Script:</strong> {status.scriptUrl}</p>
+      <p className="muted"><strong>Profile API:</strong> {profileApiStatus.endpoint}</p>
       <p className="muted">Mock mode logs locally. Real SDK wiring should stay inside the Meiro integration layer.</p>
     </section>
   );

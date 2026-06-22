@@ -38,6 +38,14 @@ export function recommendProducts(
   }
 
   if (strategy === "next_best_product") {
+    if (state.profile.nextBestProductIds?.length) {
+      const nextBest = state.profile.nextBestProductIds
+        .map((id) => products.find((product) => product.id === id || product.slug === id))
+        .filter(Boolean)
+        .slice(0, limit) as Product[];
+      if (nextBest.length > 0) return nextBest;
+    }
+
     const tags = state.profile.recommendedTags;
     scored = scored.sort(
       (a, b) =>

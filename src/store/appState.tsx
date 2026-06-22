@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { products } from "../data/products";
 import { personas } from "../data/personas";
 import { setMeiroConsentState, setMeiroEventSink, setMeiroSdkCallSink, trackEvent } from "../integrations/meiro/meiroClient";
-import type { CartItem, ConsentState, CustomerProfile, MeiroSdkCall, PersonalizationDecision, TrackingEvent } from "../types";
+import { fetchMeiroProfile, getMeiroProfileApiStatus, getProfileApiIdentifier } from "../integrations/meiro/meiroProfileApi";
+import type { CartItem, ConsentState, CustomerProfile, MeiroSdkCall, PersonalizationDecision, ProfileApiStatus, TrackingEvent } from "../types";
 import { loadLocal, saveLocal } from "../utils/storage";
 
 const defaultConsent: ConsentState = {
@@ -28,6 +29,7 @@ export type AppState = {
   recentEvents: TrackingEvent[];
   meiroSdkCalls: MeiroSdkCall[];
   personalizationDecisions: PersonalizationDecision[];
+  profileApiStatus: ProfileApiStatus;
   recentlyViewed: string[];
   lastOrderId?: string;
 };
@@ -56,6 +58,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [recentEvents, setRecentEvents] = useState<TrackingEvent[]>(() => loadLocal("esc_events", []));
   const [meiroSdkCalls, setMeiroSdkCalls] = useState<MeiroSdkCall[]>(() => loadLocal("esc_meiro_sdk_calls", []));
   const [personalizationDecisions, setPersonalizationDecisions] = useState<PersonalizationDecision[]>(() => loadLocal("esc_personalization_decisions", []));
+  const [profileApiStatus, setProfileApiStatus] = useState<ProfileApiStatus>({ state: "idle" });
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => loadLocal("esc_recently_viewed", []));
   const [lastOrderId, setLastOrderId] = useState<string | undefined>(() => loadLocal("esc_last_order", undefined));
 
@@ -75,6 +78,70 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => setMeiroConsentState(consent), [consent]);
+
+  useEffect(() => {
+    const config = getMeiroProfileApiStatus();
+    const identifier = getProfileApiIdentifier(profile);
+    let cancelled = false;
+
+    if (!consent.personalization) {
+      setProfileApiStatus({ state: "disabled", message: "Personalization consent is off." });
+      return;
+    }
+
+    if (!config.enabled) {
+      setProfileApiStatus({ state: "disabled", message: "Profile API is disabled." });
+      return;
+    }
+
+    if (!config.hasToken) {
+      setProfileApiStatus({ state: "missing_token", message: "Set VITE_MEIRO_PROFILE_API_TOKEN to hydrate profile attributes." });
+      return;
+    }
+
+    if (!identifier) {
+      setProfileApiStatus({ state: "idle", message: "Waiting for an email, phone, or supported identifier." });
+      return;
+    }
+
+    setProfileApiStatus({ state: "loading", identifierType: identifier.identifierType, identifierValue: identifier.identifierValue });
+
+    fetchMeiroProfile(identifier.identifierType, identifier.identifierValue)
+      .then((result) => {
+        if (cancelled) return;
+        if (Object.keys(result.attributes).length === 0) {
+          setProfileApiStatus({
+            state: "empty",
+            identifierType: identifier.identifierType,
+            identifierValue: identifier.identifierValue,
+            updatedAt: new Date().toISOString(),
+          });
+          return;
+        }
+
+        setProfile((current) => ({ ...current, ...result.profilePatch }));
+        setProfileApiStatus({
+          state: "loaded",
+          identifierType: identifier.identifierType,
+          identifierValue: identifier.identifierValue,
+          updatedAt: new Date().toISOString(),
+        });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setProfileApiStatus({
+          state: "error",
+          identifierType: identifier.identifierType,
+          identifierValue: identifier.identifierValue,
+          message: error instanceof Error ? error.message : "Profile API request failed.",
+          updatedAt: new Date().toISOString(),
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [consent.personalization, profile.email, profile.phone]);
 
   const setConsent = (next: ConsentState) => {
     setConsentState(next);
@@ -170,6 +237,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       recentEvents,
       meiroSdkCalls,
       personalizationDecisions,
+      profileApiStatus,
       recentlyViewed,
       lastOrderId,
       setConsent,
@@ -184,7 +252,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       recordPersonalizationDecision,
       clearDebugHistory,
     }),
-    [cart, consent, profile, personaId, recentEvents, meiroSdkCalls, personalizationDecisions, recentlyViewed, lastOrderId],
+    [cart, consent, profile, personaId, recentEvents, meiroSdkCalls, personalizationDecisions, profileApiStatus, recentlyViewed, lastOrderId],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
