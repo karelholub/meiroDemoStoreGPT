@@ -945,6 +945,7 @@ function PresenterChecklist() {
     { label: "Anonymous browsing", done: state.recentlyViewed.length > 0 },
     { label: "Cart intent", done: state.cart.length > 0 },
     { label: "Identity resolution", done: state.profile.customerType === "registered" },
+    { label: "Profile API hydration", done: state.profileApiStatus.state === "loaded" },
     { label: "Consent controls", done: Boolean(state.recentEvents.find((event) => event.event_name === "consent_updated")) },
     { label: "Personalization variant", done: state.personaId !== "anonymous_new" },
     { label: "Post-purchase lifecycle", done: state.profile.lifecycleStage === "post_purchase" },
@@ -958,6 +959,64 @@ function PresenterChecklist() {
           <div className={check.done ? "done" : ""} key={check.label}>
             <span>{check.done ? "Done" : "Ready"}</span>
             <strong>{check.label}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function formatProfileValue(value: unknown) {
+  if (value === undefined || value === null || value === "") return "waiting";
+  if (Array.isArray(value)) return value.length ? value.join(", ") : "empty";
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  if (typeof value === "number") return String(value);
+  return String(value);
+}
+
+function profileAttributeRows(state: ReturnType<typeof useAppState>) {
+  const profile = state.profile;
+  return [
+    { label: "VIP", field: "vip_tier", value: profile.vipTier, surface: "top banner, account, lifecycle slot" },
+    { label: "Next products", field: "next_best_product_ids", value: profile.nextBestProductIds, surface: "homepage recommendation rail" },
+    { label: "Next action", field: "next_best_action", value: profile.nextBestAction, surface: "hero, thank-you banner" },
+    { label: "Reorder", field: "predicted_reorder_date", value: profile.predictedReorderDate, surface: "replenishment slot" },
+    { label: "Cart intent", field: "has_active_cart / cart_item_ids", value: profile.hasActiveCart || profile.cartItemIds?.length ? formatProfileValue(profile.cartItemIds ?? profile.hasActiveCart) : undefined, surface: "hero, cart recovery, cross-sell" },
+    { label: "Abandoned value", field: "last_abandoned_cart_value", value: profile.lastAbandonedCartValue, surface: "cart recovery message" },
+    { label: "Affinity", field: "category_affinity", value: profile.categoryAffinity ?? profile.preferredCategory, surface: "category intro, recommendations" },
+    { label: "Lapsed", field: "days_since_last_purchase", value: profile.daysSinceLastPurchase, surface: "win-back slot" },
+    { label: "Delivery", field: "delivery_status", value: profile.deliveryStatus, surface: "review/referral page" },
+    { label: "Referral", field: "referral_code", value: profile.referralCode, surface: "review/referral card" },
+  ];
+}
+
+function ProfileApiInspector() {
+  const state = useAppState();
+  const attributeCount = Object.keys(state.profile.profileApiAttributes ?? {}).length;
+  const loadedLabel =
+    state.profileApiStatus.state === "loaded"
+      ? `${attributeCount} attributes loaded`
+      : state.profileApiStatus.message ?? state.profileApiStatus.state.replaceAll("_", " ");
+  const identifier =
+    state.profileApiStatus.identifierType && state.profileApiStatus.identifierValue
+      ? `${state.profileApiStatus.identifierType}: ${state.profileApiStatus.identifierValue}`
+      : "waiting for identifier";
+
+  return (
+    <section className="control-card profile-inspector">
+      <h2>Profile API proof</h2>
+      <dl className="status-list compact">
+        <div><dt>Status</dt><dd>{loadedLabel}</dd></div>
+        <div><dt>Identifier</dt><dd>{identifier}</dd></div>
+        <div><dt>Updated</dt><dd>{state.profileApiStatus.updatedAt ? new Date(state.profileApiStatus.updatedAt).toLocaleTimeString() : "not yet"}</dd></div>
+      </dl>
+      <div className="attribute-grid">
+        {profileAttributeRows(state).map((row) => (
+          <div className={row.value === undefined || row.value === null || row.value === "" ? "attribute-row empty" : "attribute-row"} key={row.field}>
+            <span>{row.label}</span>
+            <strong>{formatProfileValue(row.value)}</strong>
+            <code>{row.field}</code>
+            <small>{row.surface}</small>
           </div>
         ))}
       </div>
@@ -1014,6 +1073,7 @@ function DemoControlPage() {
       </section>
       <aside className="demo-side">
         <MeiroStatusCard />
+        <ProfileApiInspector />
         <PresenterChecklist />
         <section className="control-card">
           <h2>Use case coverage</h2>

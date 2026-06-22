@@ -1510,6 +1510,58 @@ dd {
   width: auto;
 }
 
+.profile-inspector {
+  gap: var(--space-4);
+}
+
+.attribute-grid {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.attribute-row {
+  display: grid;
+  grid-template-columns: minmax(86px, 0.75fr) minmax(0, 1fr);
+  gap: 0.35rem var(--space-3);
+  padding: var(--space-3);
+  background: rgba(255, 253, 248, 0.78);
+  border: 1px solid rgba(30, 27, 24, 0.08);
+  border-radius: 6px;
+}
+
+.attribute-row.empty {
+  opacity: 0.66;
+}
+
+.attribute-row span,
+.attribute-row code,
+.attribute-row small {
+  min-width: 0;
+}
+
+.attribute-row span {
+  color: #756d62;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.attribute-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.attribute-row code {
+  color: #5f6557;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.attribute-row small {
+  color: #756d62;
+  overflow-wrap: anywhere;
+}
+
 .status-list {
   display: grid;
   gap: var(--space-2);
@@ -1522,6 +1574,10 @@ dd {
   gap: var(--space-3);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid rgba(30, 27, 24, 0.08);
+}
+
+.status-list.compact div {
+  grid-template-columns: 82px 1fr;
 }
 
 .status-list dt,

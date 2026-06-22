@@ -40,6 +40,25 @@ Profile API hydration is enabled through the server-side Netlify Function at `/a
 
 The function forwards to `MEIRO_PROFILE_API_ENDPOINT` using the server-only `MEIRO_PROFILE_API_TOKEN` as the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply email/user_id and phone identifiers.
 
+## Profile API Attribute Coverage
+
+The storefront consumes these Profile API attributes when present:
+
+| Attribute | Main surfaces |
+| --- | --- |
+| `email`, `first_name`, `surname`, `phone` | account identity, checkout contact prefill |
+| `street_address`, `apartment_or_company`, `city`, `postal_code`, `country` | checkout shipping prefill |
+| `vip_tier`, `lifetime_value`, `purchase_count` | homepage banner, account banner, VIP lifecycle slot |
+| `next_best_product_ids`, `recommended_tags`, `category_affinity` | homepage recommendations, category intro, recommendation ordering |
+| `next_best_action` | homepage hero, thank-you next action |
+| `predicted_reorder_date`, `last_purchased_sku`, `days_since_last_purchase` | replenishment and win-back slots |
+| `has_active_cart`, `cart_item_ids`, `last_abandoned_cart_value` | hero recovery, cart banner, cross-sell recommendations |
+| `last_viewed_product_id`, `viewed_product_count` | recently viewed rail and browse-abandonment proof |
+| `delivery_status`, `repeat_buyer`, `has_left_review`, `referral_code` | review/referral page |
+| `marketing_consent`, `push_opt_in`, `journey_membership`, `discount_affinity` | consent proof, journey labels, cart discount slot |
+
+Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` for `vip_tier`, `total_orders` for `purchase_count`, and `recommended_product_ids` for `next_best_product_ids`.
+
 ## Implemented MPT Bootstrap
 
 When enabled, `meiroClient.ts` creates the queue-compatible `window.mpt` function, calls:

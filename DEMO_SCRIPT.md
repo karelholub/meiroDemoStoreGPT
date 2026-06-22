@@ -78,6 +78,16 @@ Show:
 - Profile API-ready fields such as `vip_tier`, `predicted_reorder_date`, `days_since_last_purchase`, and `has_left_review`
 - `/review` as the post-delivery review and referral surface
 
+## 8. Profile API Personalization Proof
+
+Open `/demo-control` after logging in or registering with an email that exists in Meiro Profile API.
+
+Show:
+- Profile API proof card with status, identifier, update time, and loaded attribute count
+- mapped attributes such as `vip_tier`, `next_best_product_ids`, `has_active_cart`, `category_affinity`, and `referral_code`
+- the storefront surface each attribute powers
+- personalization decision reasons changing from persona/local rules to `profile_api.*` rules
+
 ## Live Demo Notes
 
 - No real payments or backend calls are made.
