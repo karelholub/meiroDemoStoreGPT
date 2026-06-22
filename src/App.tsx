@@ -620,8 +620,27 @@ function CheckoutPage() {
           <div className="stepper">{steps.map((label, index) => <button type="button" className={index === step ? "active" : ""} onClick={() => setStep(index)} key={label}><span>{index + 1}</span>{label}</button>)}</div>
           <div className="checkout-step-card">
             <h2>{steps[step]}</h2>
-            {step === 0 && <div className="checkout-fields"><input aria-label="Email" defaultValue={profile.email ?? ""} placeholder="Email" /><input aria-label="First name" defaultValue={profile.firstName ?? ""} placeholder="First name" /></div>}
-            {step === 1 && <div className="checkout-options"><label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label><label><input type="radio" name="shipping-speed" /> Express emotional handling</label></div>}
+            {step === 0 && (
+              <div className="checkout-fields">
+                <input aria-label="Email" autoComplete="email" defaultValue={profile.email ?? ""} placeholder="Email" type="email" />
+                <input aria-label="Phone" autoComplete="tel" placeholder="Phone" type="tel" />
+                <input aria-label="First name" autoComplete="given-name" defaultValue={profile.firstName ?? ""} placeholder="First name" />
+                <input aria-label="Surname" autoComplete="family-name" placeholder="Surname" />
+              </div>
+            )}
+            {step === 1 && (
+              <div className="checkout-fields">
+                <input aria-label="Street address" autoComplete="address-line1" className="span-2" placeholder="Street address" />
+                <input aria-label="Apartment or company" autoComplete="address-line2" className="span-2" placeholder="Apartment, company, or delivery note" />
+                <input aria-label="City" autoComplete="address-level2" placeholder="City" />
+                <input aria-label="Postal code" autoComplete="postal-code" placeholder="Postal code" />
+                <input aria-label="Country" autoComplete="country-name" className="span-2" placeholder="Country" />
+                <div className="checkout-options span-2">
+                  <label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label>
+                  <label><input type="radio" name="shipping-speed" /> Express emotional handling</label>
+                </div>
+              </div>
+            )}
             {step === 2 && <div className="checkout-options"><label><input type="radio" name="payment-method" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></div>}
             {step === 3 && <OrderReview />}
             <div className="actions">
