@@ -594,7 +594,47 @@ function CheckoutPage() {
   const state = useAppState();
   const { completeOrder, profile } = state;
   const [step, setStep] = useState(0);
+  const [checkoutDetails, setCheckoutDetails] = useState({
+    email: profile.email ?? "",
+    phone: "",
+    firstName: profile.firstName ?? "",
+    surname: "",
+    streetAddress: "",
+    apartmentOrCompany: "",
+    city: "",
+    postalCode: "",
+    country: "",
+    shippingSpeed: "standard_simulated_shipping",
+    paymentMethod: "demo_card_0000",
+  });
   const steps = ["Contact", "Shipping", "Fake payment", "Review"];
+  const checkoutPayload = () => ({
+    contact: {
+      email: checkoutDetails.email,
+      phone: checkoutDetails.phone,
+      first_name: checkoutDetails.firstName,
+      surname: checkoutDetails.surname,
+    },
+    shipping: {
+      street_address: checkoutDetails.streetAddress,
+      apartment_or_company: checkoutDetails.apartmentOrCompany,
+      city: checkoutDetails.city,
+      postal_code: checkoutDetails.postalCode,
+      country: checkoutDetails.country,
+      shipping_speed: checkoutDetails.shippingSpeed,
+    },
+    payment: {
+      payment_method: checkoutDetails.paymentMethod,
+    },
+  });
+  const completeStep = () => {
+    const payload = { step: steps[step], ...checkoutPayload(), ...cartPayload(state.cart, products) };
+    if (step === 0) trackEvent("checkout_contact_submitted", payload);
+    if (step === 1) trackEvent("checkout_shipping_submitted", payload);
+    if (step === 2) trackEvent("checkout_payment_submitted", payload);
+    trackEvent("checkout_step_completed", payload);
+    setStep(step + 1);
+  };
   useEffect(() => trackEvent("checkout_started", cartPayload(state.cart, products)), []);
   if (state.cart.length === 0) {
     return (
@@ -622,36 +662,36 @@ function CheckoutPage() {
             <h2>{steps[step]}</h2>
             {step === 0 && (
               <div className="checkout-fields">
-                <input aria-label="Email" autoComplete="email" defaultValue={profile.email ?? ""} placeholder="Email" type="email" />
-                <input aria-label="Phone" autoComplete="tel" placeholder="Phone" type="tel" />
-                <input aria-label="First name" autoComplete="given-name" defaultValue={profile.firstName ?? ""} placeholder="First name" />
-                <input aria-label="Surname" autoComplete="family-name" placeholder="Surname" />
+                <input aria-label="Email" autoComplete="email" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, email: event.target.value })} placeholder="Email" type="email" value={checkoutDetails.email} />
+                <input aria-label="Phone" autoComplete="tel" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, phone: event.target.value })} placeholder="Phone" type="tel" value={checkoutDetails.phone} />
+                <input aria-label="First name" autoComplete="given-name" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, firstName: event.target.value })} placeholder="First name" value={checkoutDetails.firstName} />
+                <input aria-label="Surname" autoComplete="family-name" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, surname: event.target.value })} placeholder="Surname" value={checkoutDetails.surname} />
               </div>
             )}
             {step === 1 && (
               <div className="checkout-fields">
-                <input aria-label="Street address" autoComplete="address-line1" className="span-2" placeholder="Street address" />
-                <input aria-label="Apartment or company" autoComplete="address-line2" className="span-2" placeholder="Apartment, company, or delivery note" />
-                <input aria-label="City" autoComplete="address-level2" placeholder="City" />
-                <input aria-label="Postal code" autoComplete="postal-code" placeholder="Postal code" />
-                <input aria-label="Country" autoComplete="country-name" className="span-2" placeholder="Country" />
+                <input aria-label="Street address" autoComplete="address-line1" className="span-2" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, streetAddress: event.target.value })} placeholder="Street address" value={checkoutDetails.streetAddress} />
+                <input aria-label="Apartment or company" autoComplete="address-line2" className="span-2" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, apartmentOrCompany: event.target.value })} placeholder="Apartment, company, or delivery note" value={checkoutDetails.apartmentOrCompany} />
+                <input aria-label="City" autoComplete="address-level2" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, city: event.target.value })} placeholder="City" value={checkoutDetails.city} />
+                <input aria-label="Postal code" autoComplete="postal-code" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, postalCode: event.target.value })} placeholder="Postal code" value={checkoutDetails.postalCode} />
+                <input aria-label="Country" autoComplete="country-name" className="span-2" onChange={(event) => setCheckoutDetails({ ...checkoutDetails, country: event.target.value })} placeholder="Country" value={checkoutDetails.country} />
                 <div className="checkout-options span-2">
-                  <label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label>
-                  <label><input type="radio" name="shipping-speed" /> Express emotional handling</label>
+                  <label><input checked={checkoutDetails.shippingSpeed === "standard_simulated_shipping"} onChange={() => setCheckoutDetails({ ...checkoutDetails, shippingSpeed: "standard_simulated_shipping" })} type="radio" name="shipping-speed" /> Standard simulated shipping</label>
+                  <label><input checked={checkoutDetails.shippingSpeed === "express_emotional_handling"} onChange={() => setCheckoutDetails({ ...checkoutDetails, shippingSpeed: "express_emotional_handling" })} type="radio" name="shipping-speed" /> Express emotional handling</label>
                 </div>
               </div>
             )}
-            {step === 2 && <div className="checkout-options"><label><input type="radio" name="payment-method" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></div>}
+            {step === 2 && <div className="checkout-options"><label><input checked={checkoutDetails.paymentMethod === "demo_card_0000"} onChange={() => setCheckoutDetails({ ...checkoutDetails, paymentMethod: "demo_card_0000" })} type="radio" name="payment-method" /> Demo card ending in 0000</label><p>No real payment system is connected.</p></div>}
             {step === 3 && <OrderReview />}
             <div className="actions">
               {step > 0 && <button type="button" className="ghost" onClick={() => setStep(step - 1)}>Back</button>}
               {step < steps.length - 1 ? (
-                <button type="button" onClick={() => { trackEvent("checkout_step_completed", { step: steps[step] }); setStep(step + 1); }}>Continue</button>
+                <button type="button" onClick={completeStep}>Continue</button>
               ) : (
                 <button type="button" onClick={() => {
                   const orderPayload = cartPayload(state.cart, products);
                   const orderId = completeOrder();
-                  trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
+                  trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...checkoutPayload(), ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
                   navigate("/thank-you");
                 }}>Complete simulated order</button>
               )}

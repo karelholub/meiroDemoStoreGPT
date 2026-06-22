@@ -52,6 +52,9 @@ const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
   product_removed_from_cart: "remove_from_cart",
   cart_view: "view_cart",
   checkout_started: "begin_checkout",
+  checkout_contact_submitted: "begin_checkout",
+  checkout_shipping_submitted: "add_shipping_info",
+  checkout_payment_submitted: "add_payment_info",
   checkout_step_completed: "begin_checkout",
   order_completed: "purchase",
   newsletter_signup: "sign_up",
@@ -136,6 +139,31 @@ function sdkContextPayload() {
   });
 }
 
+function nestedRecord(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function checkoutSharedPayload(payload: Record<string, unknown>) {
+  const contact = nestedRecord(payload, "contact");
+  const shipping = nestedRecord(payload, "shipping");
+  const payment = nestedRecord(payload, "payment");
+
+  return withoutEmptyValues({
+    checkout_contact_email: contact.email,
+    checkout_contact_phone: contact.phone,
+    checkout_contact_first_name: contact.first_name,
+    checkout_contact_surname: contact.surname,
+    shipping_street_address: shipping.street_address,
+    shipping_apartment_or_company: shipping.apartment_or_company,
+    shipping_city: shipping.city,
+    shipping_postal_code: shipping.postal_code,
+    shipping_country: shipping.country,
+    shipping_speed: shipping.shipping_speed,
+    payment_method: payment.payment_method,
+  });
+}
+
 function toSdkItem(payload: Record<string, unknown>) {
   return withoutEmptyValues({
     item_id: payload.product_id,
@@ -189,6 +217,28 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
       currency: payload.currency ?? "EUR",
       value,
       items,
+    });
+  }
+
+  if (mptEventName === "add_shipping_info") {
+    const shipping = nestedRecord(payload, "shipping");
+    return withoutEmptyValues({
+      ...base,
+      currency: payload.currency ?? "EUR",
+      value,
+      items,
+      shipping_tier: shipping.shipping_speed,
+    });
+  }
+
+  if (mptEventName === "add_payment_info") {
+    const payment = nestedRecord(payload, "payment");
+    return withoutEmptyValues({
+      ...base,
+      currency: payload.currency ?? "EUR",
+      value,
+      items,
+      payment_type: payment.payment_method,
     });
   }
 
@@ -330,7 +380,7 @@ export function trackEvent(eventName: TrackedEventName, payload: Record<string, 
       return;
     }
 
-    callMpt("set", sdkContextPayload());
+    callMpt("set", { ...sdkContextPayload(), ...checkoutSharedPayload(payload) });
     callMpt("event", mptEventName, buildMptEventPayload(mptEventName, payload));
   }
 }
