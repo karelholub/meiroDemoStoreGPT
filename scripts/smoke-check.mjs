@@ -116,6 +116,9 @@ assert(meiroClient.includes('callMpt("consent"'), "Meiro consent call is wired")
 assert(meiroClient.includes('callMpt("set"'), "Meiro shared field call is wired");
 assert(meiroClient.includes('callMpt("event"'), "Meiro event call is wired");
 assert(meiroClient.includes("eventNameMap"), "Meiro internal-to-canonical event name mapping exists");
+assert(meiroClient.includes("buildMptEventPayload"), "Meiro SDK event payload sanitizer exists");
+assert(meiroClient.includes("sdkContextPayload"), "Meiro SDK context payload uses SDK-safe field names");
+assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK events do not forward internal event names as payload fields");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",

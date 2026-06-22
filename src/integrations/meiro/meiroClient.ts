@@ -122,6 +122,104 @@ function getMptEventName(eventName: TrackedEventName) {
   return eventNameMap[eventName];
 }
 
+function withoutEmptyValues(payload: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined && value !== null && value !== ""),
+  );
+}
+
+function sdkContextPayload() {
+  return withoutEmptyValues({
+    page_title: document.title,
+    url: window.location.href,
+    referrer: document.referrer,
+  });
+}
+
+function toSdkItem(payload: Record<string, unknown>) {
+  return withoutEmptyValues({
+    item_id: payload.product_id,
+    item_name: payload.product_name,
+    item_category: payload.category,
+    price: payload.price,
+    quantity: payload.quantity,
+  });
+}
+
+function toSdkItems(payload: Record<string, unknown>) {
+  if (Array.isArray(payload.items)) {
+    return payload.items
+      .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item))
+      .map(toSdkItem);
+  }
+
+  if (payload.product_id || payload.product_name) {
+    return [toSdkItem(payload)];
+  }
+
+  return undefined;
+}
+
+function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string, unknown>) {
+  const items = toSdkItems(payload);
+  const value = payload.total_value ?? payload.cart_value ?? payload.value ?? payload.price;
+  const base = sdkContextPayload();
+
+  if (mptEventName === "page_view") return base;
+
+  if (mptEventName === "search") {
+    return withoutEmptyValues({
+      ...base,
+      search_term: payload.search_query,
+      result_count: payload.result_count,
+    });
+  }
+
+  if (mptEventName === "login" || mptEventName === "sign_up") {
+    return withoutEmptyValues({
+      ...base,
+      method: payload.method ?? "demo_store",
+    });
+  }
+
+  if (mptEventName === "purchase") {
+    return withoutEmptyValues({
+      ...base,
+      transaction_id: payload.order_id,
+      currency: payload.currency ?? "EUR",
+      value,
+      items,
+    });
+  }
+
+  if (mptEventName === "view_cart" || mptEventName === "begin_checkout" || mptEventName === "add_to_cart" || mptEventName === "remove_from_cart") {
+    return withoutEmptyValues({
+      ...base,
+      currency: payload.currency ?? "EUR",
+      value,
+      items,
+    });
+  }
+
+  if (mptEventName === "view_item" || mptEventName === "select_item" || mptEventName === "view_item_list") {
+    return withoutEmptyValues({
+      ...base,
+      item_list_name: payload.category ?? payload.source ?? payload.strategy,
+      items,
+    });
+  }
+
+  if (mptEventName === "view_promotion" || mptEventName === "select_promotion") {
+    return withoutEmptyValues({
+      ...base,
+      promotion_id: payload.zone_id ?? payload.rule_id,
+      promotion_name: payload.decision ?? payload.strategy,
+    });
+  }
+
+  return base;
+}
+
 function loadMptScript() {
   const scriptUrl = getMeiroScriptUrl();
   const existing = document.querySelector<HTMLScriptElement>(`script[data-meiro-mpt="true"]`);
@@ -232,15 +330,8 @@ export function trackEvent(eventName: TrackedEventName, payload: Record<string, 
       return;
     }
 
-    const { event_name: _eventName, ...mptPayload } = event;
-    callMpt("set", {
-      page_url: event.page_url,
-      referrer: event.referrer,
-    });
-    callMpt("event", mptEventName, {
-      ...mptPayload,
-      original_event_name: eventName,
-    });
+    callMpt("set", sdkContextPayload());
+    callMpt("event", mptEventName, buildMptEventPayload(mptEventName, payload));
   }
 }
 
