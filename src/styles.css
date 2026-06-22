@@ -101,10 +101,70 @@ select:focus-visible {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border-bottom: 0;
+}
+
+.brand:hover {
+  color: inherit;
+  border-color: transparent;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  color: #1e1b18;
+}
+
+.brand-mark {
+  flex: 0 0 auto;
+  width: clamp(2.75rem, 5vw, 3.55rem);
+  height: auto;
+  color: #8a6c42;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand-words {
+  display: grid;
+  gap: 0.02rem;
+  line-height: 1;
+}
+
+.brand-words strong {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.brand-words small {
+  color: #6a3527;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.brand-lockup.compact .brand-mark {
+  width: 2.75rem;
+}
+
+.brand-lockup.compact .brand-words strong {
+  font-size: 1.2rem;
+}
+
+.brand-lockup.compact .brand-words small {
+  font-size: 0.62rem;
 }
 
 nav {
@@ -1319,6 +1379,14 @@ body.consent-visible .debug-toggle {
   .persona-grid,
   .stepper {
     grid-template-columns: 1fr;
+  }
+
+  .footer {
+    flex-direction: column;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
   }
 
   .cart-row {

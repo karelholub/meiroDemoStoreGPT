@@ -103,12 +103,34 @@ function EmptyState({
   );
 }
 
+function BrandLogo({ compact = false }: { compact?: boolean }) {
+  return (
+    <span className={compact ? "brand-lockup compact" : "brand-lockup"} aria-label="Existential Supplies Co.">
+      <svg className="brand-mark" viewBox="0 0 96 72" aria-hidden="true">
+        <path d="M14 44a34 34 0 0 1 68 0" />
+        <path d="M36 44a18 18 0 0 1 36 0" />
+        <path d="M8 46h80" />
+        <path d="M12 54c16-2 28-2 44 0 13 2 22 1 34-1" />
+        <path d="M18 61c12-2 22-2 36 0 9 1 17 1 26-1" />
+        <path d="M25 44V24l-8 17h16l-8-17Z" />
+        <path d="M21 32h8" />
+        <path d="M48 15l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" />
+        <path d="M70 23c5-4 9-5 14-4-3 2-4 4-3 7-5 0-8-1-11-3Z" />
+      </svg>
+      <span className="brand-words">
+        <strong>Existential </strong>
+        <small>Supplies Co.</small>
+      </span>
+    </span>
+  );
+}
+
 function Header() {
   const { cart } = useAppState();
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   return (
     <header className="site-header">
-      <Link to="/" className="brand">Existential Supplies Co.</Link>
+      <Link to="/" className="brand"><BrandLogo /></Link>
       <nav>
         <Link to="/products">Shop</Link>
         <Link to="/search">Search</Link>
@@ -124,7 +146,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div>
-        <strong>Existential Supplies Co.</strong>
+        <BrandLogo compact />
         <p>Fake products. Real customer journeys. Built for Meiro CDP demos.</p>
       </div>
       <div className="footer-links">
