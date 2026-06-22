@@ -7,7 +7,7 @@ A polished fake ecommerce store for demonstrating Meiro CDP concepts: anonymous 
 ```bash
 npm install
 npm run dev
-npm run build
+npm run check
 ```
 
 ## Environment
@@ -76,7 +76,7 @@ See `ROADMAP.md` for the follow-up path. The first implementation intentionally 
 
 ## QA Notes
 
-- `npm run check` verifies TypeScript and production bundling.
+- `npm run check` verifies TypeScript, production bundling, catalog coverage, required routes, event schemas, MPT wiring, Netlify redirect, and project docs.
 - Current browser smoke checks cover home, products, product detail, cart, checkout, search, demo-control persona switching, and mobile product-grid overflow.
 
 ## Presenter Flow

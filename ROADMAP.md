@@ -46,4 +46,4 @@ Status: started. Local personalization now emits structured decision metadata in
 - Deploy preview to Netlify
 - Create GitHub PR template focused on demo behavior and tracking changes
 
-Status: started. GitHub Actions CI and PR template are in place.
+Status: in progress. GitHub Actions CI, PR template, and dependency-light smoke checks are in place. Netlify preview deployment remains. `npx netlify status` currently reports that the CLI is not logged in; deploy needs `npx netlify login` or `NETLIFY_AUTH_TOKEN`.

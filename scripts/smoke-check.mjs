@@ -1,0 +1,127 @@
+import fs from "node:fs";
+import path from "node:path";
+
+const root = process.cwd();
+const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+
+const failures = [];
+const pass = [];
+
+function assert(condition, message) {
+  if (condition) pass.push(message);
+  else failures.push(message);
+}
+
+function extractArrayBlock(source, exportName) {
+  const start = source.indexOf(`export const ${exportName}`);
+  if (start === -1) return "";
+  const arrayStart = source.indexOf("[", start);
+  const arrayEnd = source.indexOf("];", arrayStart);
+  return source.slice(arrayStart, arrayEnd + 1);
+}
+
+const app = read("src/App.tsx");
+const products = read("src/data/products.ts");
+const categories = read("src/data/categories.ts");
+const events = read("src/integrations/meiro/eventSchemas.ts");
+const meiroClient = read("src/integrations/meiro/meiroClient.ts");
+const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
+const netlify = read("netlify.toml");
+
+const routePaths = [
+  "/",
+  "/products",
+  "/category/",
+  "/product/",
+  "/cart",
+  "/checkout",
+  "/register",
+  "/login",
+  "/account",
+  "/search",
+  "/demo-control",
+  "/thank-you",
+];
+
+routePaths.forEach((route) => {
+  assert(app.includes(route), `route present: ${route}`);
+});
+
+const categoryNames = [...categories.matchAll(/name: "([^"]+)"/g)].map((match) => match[1]);
+assert(categoryNames.length === 7, "catalog has 7 categories");
+
+const productRows = [...products.matchAll(/make\("([^"]+)", "([^"]+)", "([^"]+)"/g)].map((match) => ({
+  id: match[1],
+  name: match[2],
+  category: match[3],
+}));
+assert(productRows.length >= 35, `catalog has at least 35 products (${productRows.length})`);
+
+const countsByCategory = productRows.reduce((counts, product) => {
+  counts[product.category] = (counts[product.category] ?? 0) + 1;
+  return counts;
+}, {});
+
+categoryNames.forEach((category) => {
+  assert((countsByCategory[category] ?? 0) >= 5, `category has at least 5 products: ${category}`);
+});
+
+const requiredEvents = [
+  "page_view",
+  "product_view",
+  "category_view",
+  "product_list_view",
+  "search_submitted",
+  "search_result_clicked",
+  "product_added_to_cart",
+  "product_removed_from_cart",
+  "cart_view",
+  "checkout_started",
+  "checkout_step_completed",
+  "order_completed",
+  "newsletter_signup",
+  "user_registered",
+  "user_logged_in",
+  "profile_updated",
+  "recommendation_viewed",
+  "recommendation_clicked",
+  "personalization_viewed",
+  "personalization_clicked",
+  "consent_updated",
+];
+
+requiredEvents.forEach((eventName) => {
+  assert(events.includes(`"${eventName}"`), `event schema includes: ${eventName}`);
+});
+
+assert(meiroConfig.includes("https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk"), "Meiro collection endpoint default is configured");
+assert(meiroConfig.includes("https://meiro-demo.eu.pipes.meiro.io/mpt.js"), "Meiro SDK script default is configured");
+assert(meiroClient.includes('import.meta.env.VITE_MEIRO_SDK_ENABLED !== "false"'), "Meiro SDK is enabled by default");
+assert(meiroClient.includes('callMpt("config"'), "Meiro SDK config call is wired");
+assert(meiroClient.includes('callMpt("consent"'), "Meiro consent call is wired");
+assert(meiroClient.includes('callMpt("set"'), "Meiro shared field call is wired");
+assert(meiroClient.includes('callMpt("event"'), "Meiro event call is wired");
+assert(meiroClient.includes("link_tracking: { enabled: true }"), "Meiro link tracking is enabled");
+assert(meiroClient.includes("tracking_rules:"), "Meiro tracking rules are configured");
+assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage allowlist is configured");
+
+assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
+
+[
+  "README.md",
+  "ROADMAP.md",
+  "DEMO_SCRIPT.md",
+  "MEIRO_INTEGRATION.md",
+  ".github/workflows/ci.yml",
+  ".github/pull_request_template.md",
+].forEach((file) => {
+  assert(fs.existsSync(path.join(root, file)), `required project document exists: ${file}`);
+});
+
+if (failures.length) {
+  console.error("Smoke check failed:");
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  process.exit(1);
+}
+
+console.log(`Smoke check passed (${pass.length} assertions).`);
