@@ -101,6 +101,19 @@ assert(meiroClient.includes('callMpt("config"'), "Meiro SDK config call is wired
 assert(meiroClient.includes('callMpt("consent"'), "Meiro consent call is wired");
 assert(meiroClient.includes('callMpt("set"'), "Meiro shared field call is wired");
 assert(meiroClient.includes('callMpt("event"'), "Meiro event call is wired");
+assert(meiroClient.includes("eventNameMap"), "Meiro internal-to-canonical event name mapping exists");
+[
+  "product_added_to_cart: \"add_to_cart\"",
+  "product_removed_from_cart: \"remove_from_cart\"",
+  "product_view: \"view_item\"",
+  "cart_view: \"view_cart\"",
+  "checkout_started: \"begin_checkout\"",
+  "order_completed: \"purchase\"",
+  "search_submitted: \"search\"",
+  "user_registered: \"sign_up\"",
+].forEach((mapping) => {
+  assert(meiroClient.includes(mapping), `Meiro event mapping exists: ${mapping}`);
+});
 assert(meiroClient.includes("link_tracking: { enabled: true }"), "Meiro link tracking is enabled");
 assert(meiroClient.includes("tracking_rules:"), "Meiro tracking rules are configured");
 assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage allowlist is configured");

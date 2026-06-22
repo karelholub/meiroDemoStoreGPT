@@ -28,7 +28,7 @@ Status: mostly complete. Product visuals, empty states, debug event inspection, 
 - Validate event schemas against Meiro destination expectations
 - Add QA checklist for live demo presenters
 
-Status: implemented and enabled by default for browser MPT. The wrapper now configures `window.mpt`, injects `mpt.js`, forwards consent, set, and event calls, and `DEMO_SCRIPT.md` documents the live walkthrough. Event schema validation against a live Meiro destination remains a deployment-time QA step.
+Status: implemented and enabled by default for browser MPT. The wrapper now configures `window.mpt`, injects `mpt.js`, maps internal demo events to canonical MPT event names, forwards consent, set, and event calls, and `DEMO_SCRIPT.md` documents the live walkthrough. Live destination receipt remains a deployment-time QA step.
 
 ## Milestone 4: Personalization Expansion
 

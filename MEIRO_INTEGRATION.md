@@ -81,12 +81,46 @@ window.mpt("set", {
   page_url: event.page_url,
   referrer: event.referrer,
 });
-window.mpt("event", eventName, payload);
+window.mpt("event", canonicalMptEventName, {
+  ...payload,
+  original_event_name: internalEventName,
+});
 ```
 
 Keep all UI code calling the wrapper methods, not the SDK directly.
 
 `identifyUser()` calls `window.mpt("set", userPayload)` so later events share the profile fields.
+
+## Event Name Mapping
+
+The app keeps descriptive internal event names for the local debug panel, but the browser SDK only accepts canonical MPT event names. `meiroClient.ts` maps internal names before forwarding:
+
+- `product_view` → `view_item`
+- `product_list_view` / `category_view` → `view_item_list`
+- `product_added_to_cart` → `add_to_cart`
+- `product_removed_from_cart` → `remove_from_cart`
+- `cart_view` → `view_cart`
+- `checkout_started` / `checkout_step_completed` → `begin_checkout`
+- `order_completed` → `purchase`
+- `search_submitted` → `search`
+- `search_result_clicked` / `recommendation_clicked` → `select_item`
+- `newsletter_signup` / `user_registered` → `sign_up`
+- `user_logged_in` → `login`
+- `personalization_viewed` → `view_promotion`
+- `personalization_clicked` → `select_promotion`
+- `profile_updated` → `working_lead`
+
+`consent_updated` is not forwarded as an event because consent is already sent through `mpt("consent", ...)`.
+
+If the browser console shows a validation error like:
+
+```txt
+Expected one of [...]. Received: product_added_to_cart
+```
+
+then an internal event name is being forwarded directly. Add or fix the mapping in `eventNameMap` inside `meiroClient.ts`.
+
+The wrapper also sends `mpt("consent", ...)` immediately after `mpt("config", ...)` during SDK initialization so first-page events are not queued before consent state is known.
 
 Use **Clear debug history** in `/demo-control` before a live run to reset local events, personalization decisions, and MPT command history.
 

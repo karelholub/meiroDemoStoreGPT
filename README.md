@@ -49,6 +49,10 @@ When `VITE_MEIRO_SDK_ENABLED=true`, the wrapper creates `window.mpt`, calls `mpt
 
 The debug panel records recent MPT commands so SDK-mode demos can show `config`, `consent`, `set`, and `event` calls without opening browser developer tools.
 
+Internal demo event names are mapped to canonical MPT event names before forwarding, for example `product_added_to_cart` becomes `add_to_cart` and `order_completed` becomes `purchase`.
+
+The local event log still shows internal names because they are more descriptive for the demo. The MPT SDK call log in `/demo-control` shows the canonical names actually sent to Meiro.
+
 See `MEIRO_INTEGRATION.md` for the SDK wiring point, consent behavior, and personalization decision shape.
 
 ## Tracked Events

@@ -6,9 +6,64 @@ const enabled = import.meta.env.VITE_MEIRO_SDK_ENABLED !== "false";
 const debug = import.meta.env.VITE_MEIRO_DEBUG !== "false";
 let analyticsConsent = true;
 let sdkInitialized = false;
+let currentConsent = {
+  analytics: true,
+  personalization: true,
+  marketing: false,
+};
 
 type MptConsentValue = "granted" | "denied";
 type MptCommand = "config" | "consent" | "event" | "set" | "get";
+type MptEventName =
+  | "add_payment_info"
+  | "add_shipping_info"
+  | "add_to_cart"
+  | "add_to_wishlist"
+  | "begin_checkout"
+  | "click"
+  | "file_download"
+  | "first_visit"
+  | "form_start"
+  | "form_submit"
+  | "generate_lead"
+  | "login"
+  | "page_view"
+  | "purchase"
+  | "remove_from_cart"
+  | "search"
+  | "select_item"
+  | "select_promotion"
+  | "sign_up"
+  | "view_cart"
+  | "view_item"
+  | "view_item_list"
+  | "view_promotion"
+  | "view_search_results"
+  | "working_lead";
+
+const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
+  page_view: "page_view",
+  product_view: "view_item",
+  category_view: "view_item_list",
+  product_list_view: "view_item_list",
+  search_submitted: "search",
+  search_result_clicked: "select_item",
+  product_added_to_cart: "add_to_cart",
+  product_removed_from_cart: "remove_from_cart",
+  cart_view: "view_cart",
+  checkout_started: "begin_checkout",
+  checkout_step_completed: "begin_checkout",
+  order_completed: "purchase",
+  newsletter_signup: "sign_up",
+  user_registered: "sign_up",
+  user_logged_in: "login",
+  profile_updated: "working_lead",
+  recommendation_viewed: "view_item_list",
+  recommendation_clicked: "select_item",
+  personalization_viewed: "view_promotion",
+  personalization_clicked: "select_promotion",
+  consent_updated: undefined,
+};
 
 declare global {
   interface Window {
@@ -63,6 +118,10 @@ function callMpt(command: MptCommand, ...args: unknown[]) {
   getMpt()(command, ...args);
 }
 
+function getMptEventName(eventName: TrackedEventName) {
+  return eventNameMap[eventName];
+}
+
 function loadMptScript() {
   const scriptUrl = getMeiroScriptUrl();
   const existing = document.querySelector<HTMLScriptElement>(`script[data-meiro-mpt="true"]`);
@@ -91,6 +150,7 @@ function initializeMeiroSdk() {
     },
   });
 
+  callMpt("consent", toMptConsent(currentConsent));
   loadMptScript();
 
   if (debug) {
@@ -122,10 +182,15 @@ export function setMeiroSdkCallSink(sink: SdkCallSink) {
 }
 
 export function setMeiroConsentState(consent: { analytics: boolean; marketing?: boolean; personalization?: boolean }) {
+  currentConsent = {
+    analytics: consent.analytics,
+    personalization: Boolean(consent.personalization),
+    marketing: Boolean(consent.marketing),
+  };
   analyticsConsent = consent.analytics;
   if (enabled) {
     initializeMeiroSdk();
-    callMpt("consent", toMptConsent(consent));
+    callMpt("consent", toMptConsent(currentConsent));
   }
 }
 
@@ -156,12 +221,26 @@ export function trackEvent(eventName: TrackedEventName, payload: Record<string, 
 
   if (enabled) {
     initializeMeiroSdk();
+    const mptEventName = getMptEventName(eventName);
+    if (!mptEventName) {
+      if (debug) {
+        console.info("[Meiro Demo Event Not Forwarded]", eventName, {
+          reason: "no_supported_mpt_event_name",
+          timestamp: event.timestamp,
+        });
+      }
+      return;
+    }
+
     const { event_name: _eventName, ...mptPayload } = event;
     callMpt("set", {
       page_url: event.page_url,
       referrer: event.referrer,
     });
-    callMpt("event", eventName, mptPayload);
+    callMpt("event", mptEventName, {
+      ...mptPayload,
+      original_event_name: eventName,
+    });
   }
 }
 
