@@ -1,7 +1,14 @@
 import type { Product } from "../types";
 
-const img = (seed: string) =>
-  `https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80&sat=-30&crop=entropy&ixid=${seed}`;
+const categoryImages: Record<string, string> = {
+  "Work & Meetings": "/assets/products/work-meetings.jpg",
+  "Parenting & Chaos": "/assets/products/parenting-chaos.jpg",
+  "Sleep & Recovery": "/assets/products/sleep-recovery.jpg",
+  "Existential Wellness": "/assets/products/existential-wellness.jpg",
+  "Marketing Therapy": "/assets/products/marketing-therapy.jpg",
+  "Tiny Dopamine": "/assets/products/tiny-dopamine.jpg",
+  "Gifts for People Who Say “I’m Fine”": "/assets/products/gifts-im-fine.jpg",
+};
 
 const baseDescriptions = {
   work: "A composed little object for surviving workplace rituals while appearing beautifully prepared.",
@@ -32,7 +39,7 @@ const make = (
     `${baseDescriptions[copyKey]} Finished in calm packaging, restrained copy, and enough plausible utility to anchor a very real customer journey.`,
   price,
   compareAtPrice: popularityScore > 86 ? price + 18 : undefined,
-  image: img(id),
+  image: categoryImages[category],
   tags,
   personalityTags: tags.slice(0, 3),
   recommendationTags: [...tags, category.toLowerCase()],

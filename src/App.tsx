@@ -58,16 +58,17 @@ const categoryTone: Record<string, string> = {
 function ProductVisual({ product, size = "card" }: { product: Product; size?: "card" | "large" | "thumb" }) {
   const words = product.name.split(" ");
   const monogram = words.slice(0, 2).map((word) => word[0]).join("");
+  const tagLine = product.tags.slice(0, 2).join(" / ");
   return (
-    <div className={`product-visual ${categoryTone[product.category] ?? "tone-work"} ${size}`} role="img" aria-label={product.name}>
-      <div className="visual-shelf" />
-      <div className="visual-object">
+    <div className={`product-visual ${categoryTone[product.category] ?? "tone-work"} ${size}`} role="img" aria-label={`${product.name} product image`}>
+      <img src={product.image} alt="" loading={size === "large" ? "eager" : "lazy"} />
+      <div className="visual-finish" />
+      <div className="visual-overlay">
         <span className="visual-brand">ESC</span>
         <strong>{product.name}</strong>
-        <small>{product.tags.slice(0, 2).join(" / ")}</small>
-        <em>{monogram}</em>
+        <small>{tagLine}</small>
       </div>
-      <div className="visual-side-object" />
+      <em className="visual-monogram">{monogram}</em>
     </div>
   );
 }

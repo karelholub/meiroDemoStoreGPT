@@ -56,6 +56,7 @@ const productRows = [...products.matchAll(/make\("([^"]+)", "([^"]+)", "([^"]+)"
   category: match[3],
 }));
 assert(productRows.length >= 35, `catalog has at least 35 products (${productRows.length})`);
+assert(!products.includes("images.unsplash.com"), "catalog uses local product imagery");
 
 const countsByCategory = productRows.reduce((counts, product) => {
   counts[product.category] = (counts[product.category] ?? 0) + 1;
@@ -64,6 +65,19 @@ const countsByCategory = productRows.reduce((counts, product) => {
 
 categoryNames.forEach((category) => {
   assert((countsByCategory[category] ?? 0) >= 5, `category has at least 5 products: ${category}`);
+});
+
+[
+  "work-meetings.jpg",
+  "parenting-chaos.jpg",
+  "sleep-recovery.jpg",
+  "existential-wellness.jpg",
+  "marketing-therapy.jpg",
+  "tiny-dopamine.jpg",
+  "gifts-im-fine.jpg",
+].forEach((file) => {
+  assert(products.includes(`/assets/products/${file}`), `catalog references product image: ${file}`);
+  assert(fs.existsSync(path.join(root, "public", "assets", "products", file)), `product image asset exists: ${file}`);
 });
 
 const requiredEvents = [
