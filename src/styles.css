@@ -1016,6 +1016,10 @@ dd {
   background: #6f7565;
 }
 
+.persona.active span {
+  color: rgba(255, 250, 241, 0.76);
+}
+
 .checkout-panel,
 .form-card,
 .profile-card,
@@ -1124,11 +1128,14 @@ dd {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
 .persona {
   color: #1e1b18;
   align-items: start;
+  min-height: 88px;
+  padding: var(--space-4);
   text-align: left;
   display: grid;
   gap: 0.4rem;
@@ -1176,6 +1183,34 @@ dd {
   display: grid;
   align-content: start;
   gap: var(--space-4);
+}
+
+.demo-control-page {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.48fr);
+  align-items: start;
+  gap: clamp(1.5rem, 3vw, 2.6rem);
+}
+
+.demo-control-page > section:first-child {
+  min-width: 0;
+}
+
+.demo-control-page .lead {
+  max-width: 760px;
+}
+
+.demo-control-page .demo-side {
+  align-self: start;
+}
+
+.demo-control-page .control-card,
+.demo-control-page .debug.inline {
+  box-shadow: 0 18px 55px rgba(30, 27, 24, 0.055);
+}
+
+.demo-control-page .debug.inline {
+  max-height: 720px;
+  overflow: auto;
 }
 
 .control-card {
@@ -1466,6 +1501,10 @@ body.consent-visible .debug-toggle {
     grid-template-columns: 1fr;
   }
 
+  .demo-control-page {
+    gap: var(--space-5);
+  }
+
   .summary {
     position: static;
   }
@@ -1568,6 +1607,15 @@ body.consent-visible .debug-toggle {
 
   .mini-products {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .persona-grid {
+    margin-top: var(--space-4);
+  }
+
+  .persona {
+    min-height: 0;
+    padding: 0.95rem;
   }
 
   .footer {

@@ -820,7 +820,7 @@ function MeiroStatusCard() {
 function DemoControlPage() {
   const state = useAppState();
   return (
-    <main className="page two-col">
+    <main className="page two-col demo-control-page">
       <section>
         <h1>Demo control</h1>
         <p className="lead">Switch personas, review consent, and inspect the event trail behind each storefront action.</p>
@@ -998,8 +998,8 @@ function DebugPanel({ inline = false }: { inline?: boolean }) {
         {state.meiroSdkCalls.length === 0 ? (
           <p className="muted">No SDK calls recorded yet. Browse, search, add to cart, or update consent to send the first signal.</p>
         ) : (
-          state.meiroSdkCalls.slice(0, 8).map((call) => (
-            <div className="sdk-call" key={`${call.timestamp}-${call.command}-${call.label}`}>
+          state.meiroSdkCalls.slice(0, 8).map((call, index) => (
+            <div className="sdk-call" key={`${call.timestamp}-${call.command}-${call.label}-${index}`}>
               <strong>{call.command}</strong>
               <span>{call.label}</span>
               <p>{new Date(call.timestamp).toLocaleTimeString()}</p>
