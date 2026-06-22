@@ -26,13 +26,24 @@ function usePath() {
   return path;
 }
 
-function Link({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) {
+function Link({
+  to,
+  children,
+  className,
+  onClick,
+}: {
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
     <a
       href={to}
       className={className}
       onClick={(event) => {
         event.preventDefault();
+        onClick?.();
         navigate(to);
       }}
     >
@@ -156,20 +167,26 @@ function PersonalizationZone({
 
 function ProductCard({ product, source = "grid" }: { product: Product; source?: string }) {
   const { addToCart } = useAppState();
+  const handleProductSelect = () => {
+    if (source !== "grid") {
+      trackEvent("recommendation_clicked", { strategy: source, product_id: product.id });
+    }
+  };
+
   return (
     <article className="product-card">
-      <Link to={`/product/${product.slug}`}>
+      <Link to={`/product/${product.slug}`} onClick={handleProductSelect}>
         <ProductVisual product={product} />
       </Link>
       <div className="card-copy">
         <span className="eyebrow">{product.category}</span>
-        <Link to={`/product/${product.slug}`} className="product-name">{product.name}</Link>
+        <Link to={`/product/${product.slug}`} className="product-name" onClick={handleProductSelect}>{product.name}</Link>
         <p>{product.shortDescription}</p>
         <div className="price-row">
           <strong><Money value={product.price} /></strong>
           {product.compareAtPrice && <s><Money value={product.compareAtPrice} /></s>}
         </div>
-        <button onClick={() => addToCart(product.id)} disabled={product.stockStatus === "fake_sold_out"}>
+        <button type="button" onClick={() => addToCart(product.id)} disabled={product.stockStatus === "fake_sold_out"}>
           {product.stockStatus === "fake_sold_out" ? "Temporarily mythical" : "Add to cart"}
         </button>
       </div>
@@ -210,9 +227,7 @@ function RecommendationRail({
       </div>
       <div className="rail-grid">
         {items.map((product) => (
-          <div key={product.id} onClick={() => trackEvent("recommendation_clicked", { strategy, product_id: product.id })}>
-            <ProductCard product={product} source="recommendation" />
-          </div>
+          <ProductCard key={product.id} product={product} source={strategy} />
         ))}
       </div>
     </section>
@@ -297,20 +312,22 @@ function HomePage() {
 function Newsletter() {
   const { consent } = useAppState();
   const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   return (
     <section className="newsletter">
       <div>
         <h2>{consent.marketing ? "Good news. You consented to being gently bothered." : "Subscribe to measured optimism."}</h2>
-        <p>Occasional fictional product launches, lifecycle nudges, and demo-friendly activation moments.</p>
+        <p>{submitted ? "Subscribed. A demo sign-up signal was recorded for the event trail." : "Occasional fictional product launches, lifecycle nudges, and demo-friendly activation moments."}</p>
       </div>
       <form
         onSubmit={(event) => {
           event.preventDefault();
           trackEvent("newsletter_signup", { email_domain: email.split("@")[1] ?? "unknown", marketing_consent: consent.marketing });
           setEmail("");
+          setSubmitted(true);
         }}
       >
-        <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="email@example.com" type="email" required />
+        <input aria-label="Email address" value={email} onChange={(event) => { setEmail(event.target.value); setSubmitted(false); }} placeholder="email@example.com" type="email" required />
         <button>Subscribe</button>
       </form>
     </section>
@@ -357,7 +374,7 @@ function ProductPage({ slug }: { slug: string }) {
         <h1>{product.name}</h1>
         <p className="lead">{product.longDescription}</p>
         <div className="price-row large"><strong><Money value={product.price} /></strong>{product.compareAtPrice && <s><Money value={product.compareAtPrice} /></s>}</div>
-        <button className="primary-cta" onClick={() => addToCart(product.id)}>Add to cart</button>
+        <button type="button" className="primary-cta" onClick={() => addToCart(product.id)}>Add to cart</button>
         <dl className="spec-list">
           <div><dt>Stock</dt><dd>{product.stockStatus.replaceAll("_", " ")}</dd></div>
           <div><dt>Tags</dt><dd>{product.tags.join(", ")}</dd></div>
@@ -399,8 +416,8 @@ function CartPage() {
               <strong>{product.name}</strong>
               <p><Money value={product.price} /></p>
             </div>
-            <input type="number" min="1" value={item.quantity} onChange={(event) => setQuantity(product.id, Number(event.target.value))} />
-            <button className="ghost" onClick={() => removeFromCart(product.id)}>Remove</button>
+            <input aria-label={`Quantity for ${product.name}`} type="number" min="1" value={item.quantity} onChange={(event) => setQuantity(product.id, Number(event.target.value))} />
+            <button type="button" className="ghost" onClick={() => removeFromCart(product.id)}>Remove</button>
           </div>
         ))}
       </section>
@@ -436,21 +453,22 @@ function CheckoutPage() {
     <main className="page checkout">
       <h1>Checkout</h1>
       <PersonalizationZone zoneId="checkout_reassurance_banner" fallback="No real payment will be taken. Your demo budget is safe." className="banner" />
-      <div className="stepper">{steps.map((label, index) => <button className={index === step ? "active" : ""} onClick={() => setStep(index)} key={label}>{label}</button>)}</div>
+      <div className="stepper">{steps.map((label, index) => <button type="button" className={index === step ? "active" : ""} onClick={() => setStep(index)} key={label}>{label}</button>)}</div>
       <section className="checkout-panel">
         <h2>{steps[step]}</h2>
-        {step === 0 && <><input defaultValue={profile.email ?? ""} placeholder="Email" /><input defaultValue={profile.firstName ?? ""} placeholder="First name" /></>}
-        {step === 1 && <><label><input type="radio" defaultChecked /> Standard simulated shipping</label><label><input type="radio" /> Express emotional handling</label></>}
-        {step === 2 && <><label><input type="radio" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></>}
+        {step === 0 && <><input aria-label="Email" defaultValue={profile.email ?? ""} placeholder="Email" /><input aria-label="First name" defaultValue={profile.firstName ?? ""} placeholder="First name" /></>}
+        {step === 1 && <><label><input type="radio" name="shipping-speed" defaultChecked /> Standard simulated shipping</label><label><input type="radio" name="shipping-speed" /> Express emotional handling</label></>}
+        {step === 2 && <><label><input type="radio" name="payment-method" defaultChecked /> Demo card ending in 0000</label><p>No real payment system is connected.</p></>}
         {step === 3 && <OrderReview />}
         <div className="actions">
-          {step > 0 && <button className="ghost" onClick={() => setStep(step - 1)}>Back</button>}
+          {step > 0 && <button type="button" className="ghost" onClick={() => setStep(step - 1)}>Back</button>}
           {step < steps.length - 1 ? (
-            <button onClick={() => { trackEvent("checkout_step_completed", { step: steps[step] }); setStep(step + 1); }}>Continue</button>
+            <button type="button" onClick={() => { trackEvent("checkout_step_completed", { step: steps[step] }); setStep(step + 1); }}>Continue</button>
           ) : (
-            <button onClick={() => {
+            <button type="button" onClick={() => {
+              const orderPayload = cartPayload(state.cart, products);
               const orderId = completeOrder();
-              trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...cartPayload(state.cart, products), total_value: cartPayload(state.cart, products).cart_value, currency: "EUR" });
+              trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
               navigate("/thank-you");
             }}>Complete simulated order</button>
           )}
@@ -492,12 +510,12 @@ function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
         trackEvent(mode === "login" ? "user_logged_in" : "user_registered", { email_domain: form.email.split("@")[1], preferred_category: form.preferredCategory });
         navigate("/account");
       }}>
-        <input required type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
-        <input required placeholder="First name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
-        <select value={form.currentLifeSituation} onChange={(event) => setForm({ ...form, currentLifeSituation: event.target.value })}>
+        <input aria-label="Email" required type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
+        <input aria-label="First name" required placeholder="First name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
+        <select aria-label="Current life situation" value={form.currentLifeSituation} onChange={(event) => setForm({ ...form, currentLifeSituation: event.target.value })}>
           {["Too many meetings", "Parenting chaos", "Trying to sleep", "Marketing burnout", "Generally fine, suspiciously"].map((item) => <option key={item}>{item}</option>)}
         </select>
-        <select value={form.preferredCategory} onChange={(event) => setForm({ ...form, preferredCategory: event.target.value })}>
+        <select aria-label="Preferred category" value={form.preferredCategory} onChange={(event) => setForm({ ...form, preferredCategory: event.target.value })}>
           {categories.map((category) => <option key={category.slug}>{category.name}</option>)}
         </select>
         <label><input type="checkbox" checked={form.marketing} onChange={(event) => setForm({ ...form, marketing: event.target.checked })} /> Marketing consent</label>
@@ -555,10 +573,10 @@ function SearchPage() {
     <main className="page">
       <h1>Search</h1>
       <form className="search" onSubmit={submit}>
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="meeting, sleep, please help" />
+        <input aria-label="Search products" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="meeting, sleep, please help" />
         <button>Search</button>
       </form>
-      <div className="chips">{["meeting", "sleep", "parenting", "marketing", "Monday", "overthinking", "please help"].map((term) => <button onClick={() => setQuery(term)} key={term}>{term}</button>)}</div>
+      <div className="chips">{["meeting", "sleep", "parenting", "marketing", "Monday", "overthinking", "please help"].map((term) => <button type="button" onClick={() => setQuery(term)} key={term}>{term}</button>)}</div>
       <p>{query ? `${results.length} results` : "Try a popular fake search."}</p>
       <div onClickCapture={(event) => {
         const id = (event.target as HTMLElement).closest("[data-product-id]")?.getAttribute("data-product-id");
@@ -640,7 +658,7 @@ function DemoControlPage() {
         <p className="lead">Switch personas, review consent, and inspect the event trail behind each storefront action.</p>
         <div className="persona-grid">
           {personas.map((persona) => (
-            <button className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
+            <button type="button" className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
               <strong>{persona.name}</strong>
               <span>{persona.description}</span>
             </button>
@@ -662,7 +680,7 @@ function DemoControlPage() {
               {key}
             </label>
           ))}
-          <button className="ghost" onClick={state.clearDebugHistory}>Clear event history</button>
+          <button type="button" className="ghost" onClick={state.clearDebugHistory}>Clear event history</button>
         </section>
         <DebugPanel inline />
       </aside>
@@ -716,14 +734,14 @@ function ConsentBanner() {
       <div className="consent-actions">
         {customizing ? (
           <>
-            <button className="ghost" onClick={() => setCustomizing(false)}>Back</button>
-            <button onClick={() => finish({ ...draft, necessary: true })}>Save choices</button>
+            <button type="button" className="ghost" onClick={() => setCustomizing(false)}>Back</button>
+            <button type="button" onClick={() => finish({ ...draft, necessary: true })}>Save choices</button>
           </>
         ) : (
           <>
-            <button className="ghost" onClick={() => finish({ necessary: true, analytics: false, personalization: false, marketing: false })}>Essential only</button>
-            <button className="ghost" onClick={() => setCustomizing(true)}>Customize</button>
-            <button onClick={() => finish({ necessary: true, analytics: true, personalization: true, marketing: true })}>Accept all</button>
+            <button type="button" className="ghost" onClick={() => finish({ necessary: true, analytics: false, personalization: false, marketing: false })}>Essential only</button>
+            <button type="button" className="ghost" onClick={() => setCustomizing(true)}>Customize</button>
+            <button type="button" onClick={() => finish({ necessary: true, analytics: true, personalization: true, marketing: true })}>Accept all</button>
           </>
         )}
       </div>
@@ -787,7 +805,7 @@ function DebugPanel({ inline = false }: { inline?: boolean }) {
   if (inline) return panel;
   return (
     <>
-      <button className="debug-toggle" onClick={() => setOpen(!open)}>{open ? "Close log" : "Event log"}</button>
+      <button type="button" className="debug-toggle" onClick={() => setOpen(!open)}>{open ? "Close log" : "Event log"}</button>
       {open && panel}
     </>
   );
