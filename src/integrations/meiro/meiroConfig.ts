@@ -20,7 +20,7 @@ export function getMeiroScriptUrl() {
 }
 
 export function getMeiroConfigStatus(): MeiroConfigStatus {
-  const sdkEnabled = import.meta.env.VITE_MEIRO_SDK_ENABLED === "true";
+  const sdkEnabled = import.meta.env.VITE_MEIRO_SDK_ENABLED !== "false";
   const endpoint = getMeiroEndpoint();
   const scriptUrl = getMeiroScriptUrl();
   const hasEndpoint = Boolean(endpoint);

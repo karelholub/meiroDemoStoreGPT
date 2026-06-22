@@ -71,5 +71,5 @@ Show:
 ## Live Demo Notes
 
 - No real payments or backend calls are made.
-- In mock mode, Meiro events log locally. In SDK mode, `src/integrations/meiro/meiroClient.ts` loads `mpt.js` and forwards events.
+- SDK tracking is enabled by default and `src/integrations/meiro/meiroClient.ts` loads `mpt.js` and forwards events. Set `VITE_MEIRO_SDK_ENABLED=false` for mock-only local demos.
 - Keep `/demo-control` open in another tab when presenting; it is the command center for personas, consent, checklist progress, and event inspection.

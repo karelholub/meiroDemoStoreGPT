@@ -2,7 +2,7 @@ import type { MeiroSdkCall, TrackingEvent } from "../../types";
 import type { TrackedEventName } from "./eventSchemas";
 import { getMeiroConfigStatus, getMeiroEndpoint, getMeiroScriptUrl } from "./meiroConfig";
 
-const enabled = import.meta.env.VITE_MEIRO_SDK_ENABLED === "true";
+const enabled = import.meta.env.VITE_MEIRO_SDK_ENABLED !== "false";
 const debug = import.meta.env.VITE_MEIRO_DEBUG !== "false";
 let analyticsConsent = true;
 let sdkInitialized = false;

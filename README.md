@@ -15,14 +15,14 @@ npm run build
 Copy `.env.example` to `.env` when connecting real services.
 
 ```env
-VITE_MEIRO_SDK_ENABLED=false
+VITE_MEIRO_SDK_ENABLED=true
 VITE_MEIRO_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk
 VITE_MEIRO_SCRIPT_URL=https://meiro-demo.eu.pipes.meiro.io/mpt.js
 VITE_MEIRO_DEBUG=true
 VITE_DEMO_DEBUG_ENABLED=true
 ```
 
-When `VITE_MEIRO_SDK_ENABLED` is false, events are logged as `[Meiro Demo Event]` and stored in the local debug panel.
+SDK tracking is enabled by default. Set `VITE_MEIRO_SDK_ENABLED=false` to run in local mock mode only.
 
 If analytics consent is disabled, behavioral events are suppressed by the Meiro wrapper and logged as `[Meiro Demo Event Suppressed]` in debug mode. `consent_updated` still fires so consent changes remain auditable.
 

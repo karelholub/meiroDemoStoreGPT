@@ -13,7 +13,7 @@ The app is intentionally built around a stable local wrapper so the UI does not 
 ## Environment Variables
 
 ```env
-VITE_MEIRO_SDK_ENABLED=false
+VITE_MEIRO_SDK_ENABLED=true
 VITE_MEIRO_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk
 VITE_MEIRO_SCRIPT_URL=https://meiro-demo.eu.pipes.meiro.io/mpt.js
 VITE_MEIRO_DEBUG=true
@@ -24,7 +24,7 @@ The demo endpoint and script URL default to the Meiro demo source:
 - script: `https://meiro-demo.eu.pipes.meiro.io/mpt.js`
 - collection endpoint: `https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk`
 
-Set `VITE_MEIRO_SDK_ENABLED=true` to load the SDK and forward events.
+SDK tracking is enabled by default. Set `VITE_MEIRO_SDK_ENABLED=false` to disable SDK loading and run in local mock mode.
 
 ## Implemented MPT Bootstrap
 
