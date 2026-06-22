@@ -1,0 +1,125 @@
+import type { DemoPersona } from "../types";
+
+export const personas: DemoPersona[] = [
+  {
+    id: "anonymous_new",
+    name: "Anonymous New Visitor",
+    description: "Fresh visitor with generic content and no history.",
+    profilePatch: { lifecycleStage: "new_visitor", recentlyViewedCategories: [], recommendedTags: [] },
+  },
+  {
+    id: "returning_anonymous",
+    name: "Returning Anonymous Visitor",
+    description: "Known browser, unknown identity, light product history.",
+    profilePatch: {
+      lifecycleStage: "returning_visitor",
+      recentlyViewedCategories: ["Existential Wellness"],
+      recommendedTags: ["overthinking", "comfort"],
+    },
+  },
+  {
+    id: "known_customer",
+    name: "Known Customer",
+    description: "Registered customer with consented personalization.",
+    profilePatch: {
+      firstName: "Mira",
+      email: "mira@example.com",
+      lifecycleStage: "known_customer",
+      customerType: "registered",
+      categoryAffinity: "Tiny Dopamine",
+      recommendedTags: ["dopamine", "gift", "reward"],
+    },
+    consentPatch: { analytics: true, personalization: true, marketing: true },
+  },
+  {
+    id: "high_value",
+    name: "High-Value Customer",
+    description: "Premium buyer ready for bundles and next-best offers.",
+    profilePatch: {
+      firstName: "Alex",
+      lifecycleStage: "high_value_customer",
+      customerType: "registered",
+      highIntent: true,
+      categoryAffinity: "Sleep & Recovery",
+      recommendedTags: ["recovery", "comfort", "premium"],
+      purchases: ["premium-overthinking-blanket"],
+    },
+  },
+  {
+    id: "cart_abandoner",
+    name: "Cart Abandoner",
+    description: "Visitor with unresolved cart intent.",
+    profilePatch: {
+      lifecycleStage: "cart_abandoner",
+      highIntent: true,
+      recentlyViewedCategories: ["Work & Meetings"],
+      recommendedTags: ["monday", "meeting", "work"],
+    },
+  },
+  {
+    id: "discount_sensitive",
+    name: "Discount-Sensitive Visitor",
+    description: "Responds to reassurance and savings cues.",
+    profilePatch: {
+      lifecycleStage: "discount_sensitive",
+      recommendedTags: ["sale", "bundle", "value"],
+    },
+  },
+  {
+    id: "marketing_burnout",
+    name: "Marketing Burnout Visitor",
+    description: "Dashboard-fatigued visitor with marketing affinity.",
+    profilePatch: {
+      lifecycleStage: "returning_visitor",
+      categoryAffinity: "Marketing Therapy",
+      highIntent: true,
+      recentlyViewedCategories: ["Marketing Therapy", "Work & Meetings"],
+      recommendedTags: ["marketing", "meetings", "analytics", "burnout"],
+    },
+  },
+  {
+    id: "parenting_chaos",
+    name: "Parenting Chaos Visitor",
+    description: "Early-morning negotiation survivor.",
+    profilePatch: {
+      lifecycleStage: "returning_visitor",
+      categoryAffinity: "Parenting & Chaos",
+      recommendedTags: ["parenting", "morning", "chaos"],
+    },
+  },
+  {
+    id: "sleep_recovery",
+    name: "Sleep Recovery Visitor",
+    description: "Browsing soft recovery products with clear signals.",
+    profilePatch: {
+      lifecycleStage: "returning_visitor",
+      categoryAffinity: "Sleep & Recovery",
+      recentlyViewedCategories: ["Sleep & Recovery", "Sleep & Recovery", "Sleep & Recovery"],
+      recommendedTags: ["sleep", "recovery", "comfort"],
+    },
+  },
+  {
+    id: "newsletter",
+    name: "Newsletter Subscriber",
+    description: "Marketing-consented profile ready for lifecycle messaging.",
+    profilePatch: {
+      lifecycleStage: "newsletter_subscriber",
+      customerType: "registered",
+      firstName: "Sam",
+      recommendedTags: ["new", "gift", "dopamine"],
+    },
+    consentPatch: { marketing: true, personalization: true },
+  },
+  {
+    id: "post_purchase",
+    name: "Post-Purchase Customer",
+    description: "Recent buyer ready for next-best-action messaging.",
+    profilePatch: {
+      lifecycleStage: "post_purchase",
+      customerType: "registered",
+      firstName: "Nora",
+      purchases: ["monday-survival-kit"],
+      recommendedTags: ["cross-sell", "recovery", "gift"],
+    },
+  },
+];
