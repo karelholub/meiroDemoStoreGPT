@@ -219,6 +219,31 @@ function RecommendationRail({
   );
 }
 
+function formatSignalName(name: string) {
+  return name.replaceAll("_", " ");
+}
+
+function SignalStrip() {
+  const state = useAppState();
+  const lastEvent = state.recentEvents[0];
+  const lastSdkCall = state.meiroSdkCalls[0];
+  const consentSummary = `Analytics ${state.consent.analytics ? "on" : "off"} / Personalization ${state.consent.personalization ? "on" : "off"}`;
+
+  return (
+    <section className="signal-strip" aria-label="Live tracking summary">
+      <div className="signal-primary">
+        <span className="eyebrow">Live demo signal</span>
+        <strong>{lastEvent ? `Last event: ${formatSignalName(lastEvent.event_name)}` : "Browse to generate the first event"}</strong>
+      </div>
+      <div className="signal-meta">
+        <span>{consentSummary}</span>
+        <span>{lastSdkCall ? `MPT ${lastSdkCall.command}: ${lastSdkCall.label}` : "MPT SDK waiting"}</span>
+      </div>
+      <Link to="/demo-control" className="signal-link">Inspect signals</Link>
+    </section>
+  );
+}
+
 function HomePage() {
   const heroText = (
     <>
@@ -235,7 +260,7 @@ function HomePage() {
           <p>Elegant demo commerce for identity resolution, product affinity, cart intent, and consent-aware personalization.</p>
           <div className="hero-actions">
             <Link to="/products" className="primary-cta">Shop survival essentials</Link>
-            <Link to="/demo-control" className="secondary-cta">Tune the demo</Link>
+            <Link to="/demo-control" className="secondary-cta">Open demo control</Link>
           </div>
           <div className="hero-proof" aria-label="Store highlights">
             <span><strong>42</strong> absurdly useful products</span>
@@ -244,6 +269,7 @@ function HomePage() {
           </div>
         </div>
       </section>
+      <SignalStrip />
       <section className="category-strip">
         {categories.map((category) => (
           <Link key={category.slug} to={`/category/${category.slug}`} className="category-card">
@@ -611,7 +637,7 @@ function DemoControlPage() {
     <main className="page two-col">
       <section>
         <h1>Demo control</h1>
-        <p className="lead">Switch personas to test lifecycle, affinity, consent, and personalization states.</p>
+        <p className="lead">Switch personas, review consent, and inspect the event trail behind each storefront action.</p>
         <div className="persona-grid">
           {personas.map((persona) => (
             <button className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
@@ -636,7 +662,7 @@ function DemoControlPage() {
               {key}
             </label>
           ))}
-          <button className="ghost" onClick={state.clearDebugHistory}>Clear debug history</button>
+          <button className="ghost" onClick={state.clearDebugHistory}>Clear event history</button>
         </section>
         <DebugPanel inline />
       </aside>
@@ -710,14 +736,14 @@ function DebugPanel({ inline = false }: { inline?: boolean }) {
   const [open, setOpen] = useState(false);
   const panel = (
     <aside className={inline ? "debug inline" : "debug"}>
-      <h2>Debug event log</h2>
+      <h2>Demo event log</h2>
       <p><strong>Persona:</strong> {personas.find((persona) => persona.id === state.personaId)?.name}</p>
       <p><strong>Cart:</strong> {state.cart.length} lines</p>
       <p><strong>Viewed:</strong> {state.recentlyViewed.join(", ") || "none"}</p>
       <section className="decision-log">
-        <h3>MPT SDK calls</h3>
+        <h3>MPT SDK calls sent</h3>
         {state.meiroSdkCalls.length === 0 ? (
-          <p className="muted">No SDK calls recorded. Enable `VITE_MEIRO_SDK_ENABLED=true` to forward through MPT.</p>
+          <p className="muted">No SDK calls recorded yet. Browse, search, add to cart, or update consent to send the first signal.</p>
         ) : (
           state.meiroSdkCalls.slice(0, 8).map((call) => (
             <div className="sdk-call" key={`${call.timestamp}-${call.command}-${call.label}`}>
@@ -745,7 +771,7 @@ function DebugPanel({ inline = false }: { inline?: boolean }) {
       </section>
       <pre>{JSON.stringify({ consent: state.consent, profile: state.profile }, null, 2)}</pre>
       {state.recentEvents.length === 0 ? (
-        <p className="muted">No tracked events in the local buffer yet. Start browsing, searching, or changing consent.</p>
+        <p className="muted">No tracked events in the local buffer yet. Browse, search, add to cart, or update consent to generate one.</p>
       ) : (
         <div className="event-list">
           {state.recentEvents.map((event, index) => (
@@ -761,7 +787,7 @@ function DebugPanel({ inline = false }: { inline?: boolean }) {
   if (inline) return panel;
   return (
     <>
-      <button className="debug-toggle" onClick={() => setOpen(!open)}>Debug</button>
+      <button className="debug-toggle" onClick={() => setOpen(!open)}>{open ? "Close log" : "Event log"}</button>
       {open && panel}
     </>
   );
