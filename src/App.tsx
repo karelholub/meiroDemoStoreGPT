@@ -381,11 +381,23 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
   const state = useAppState();
   const recentCategories = state.profile.recentlyViewedCategories;
   const favoriteCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? recentCategories[recentCategories.length - 1] ?? "Sleep & Recovery";
-  const reorderProduct = products.find((product) => state.profile.purchases.includes(product.id)) ?? products.find((product) => product.category === favoriteCategory) ?? products[0];
+  const reorderProduct =
+    products.find((product) => product.id === state.profile.lastPurchasedSku || product.slug === state.profile.lastPurchasedSku) ??
+    products.find((product) => state.profile.purchases.includes(product.id)) ??
+    products.find((product) => product.category === favoriteCategory) ??
+    products[0];
   const categoryPicks = products.filter((product) => product.category === favoriteCategory).slice(0, compact ? 2 : 3);
-  const lapsed = state.personaId === "lapsed_customer" || state.profile.lifecycleStage === "lapsed_customer" || Boolean(state.profile.daysSinceLastPurchase && state.profile.daysSinceLastPurchase >= 60);
+  const lapsed =
+    state.personaId === "lapsed_customer" ||
+    state.profile.lifecycleStage === "lapsed_customer" ||
+    state.profile.journeyMembership?.some((item) => item.toLowerCase().includes("win-back")) ||
+    Boolean(state.profile.daysSinceLastPurchase && state.profile.daysSinceLastPurchase >= 60);
   const vip = state.personaId === "high_value" || state.profile.lifecycleStage === "high_value_customer" || ["gold", "platinum"].includes(String(state.profile.vipTier ?? "").toLowerCase());
-  const reorderHint = state.profile.predictedReorderDate ? `Predicted reorder date: ${state.profile.predictedReorderDate}.` : "Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.";
+  const reorderHint = state.profile.predictedReorderDate
+    ? `Predicted reorder date: ${state.profile.predictedReorderDate}.`
+    : state.profile.daysSinceLastPurchase
+      ? `${state.profile.daysSinceLastPurchase} days since last purchase.`
+      : "Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.";
 
   return (
     <section className={compact ? "journey-slots compact" : "journey-slots"} aria-label="Meiro ecommerce playbook surfaces">
@@ -405,13 +417,13 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
       <article className="journey-slot">
         <span className="eyebrow">{vip ? "VIP active" : "VIP program"}</span>
         <h2>{vip ? "Early access is unlocked" : "VIP treatment slot"}</h2>
-        <p>Use vip_tier, lifetime_value, and purchase_count to change offers without changing the page.</p>
+        <p>{state.profile.vipTier ? `${state.profile.vipTier} tier, ${state.profile.purchaseCount ?? 0} orders, EUR ${state.profile.lifetimeValue ?? 0} lifetime value.` : "Use vip_tier, lifetime_value, and purchase_count to change offers without changing the page."}</p>
         <Link to="/account" className="signal-link">View profile tier</Link>
       </article>
       <article className="journey-slot">
         <span className="eyebrow">{lapsed ? "Win-back active" : "Win-back"}</span>
         <h2>{lapsed ? "We saved your last category" : "Lapsed customer offer slot"}</h2>
-        <p>{favoriteCategory} picks can be filled from a catalog feed scoped by last_purchased_category.</p>
+        <p>{lapsed && state.profile.daysSinceLastPurchase ? `${state.profile.daysSinceLastPurchase} days since last purchase. ` : ""}{favoriteCategory} picks can be filled from a catalog feed scoped by last_purchased_category.</p>
         <div className="mini-products">
           {categoryPicks.map((product) => <ProductVisual key={product.id} product={product} size="thumb" />)}
         </div>
@@ -555,6 +567,9 @@ function CartPage() {
   const state = useAppState();
   const { cart, removeFromCart, setQuantity } = state;
   const enriched = cart.map((item) => ({ item, product: products.find((product) => product.id === item.productId)! })).filter((row) => row.product);
+  const profileCartProducts = (state.profile.cartItemIds ?? [])
+    .map((id) => products.find((product) => product.id === id || product.slug === id))
+    .filter(Boolean) as Product[];
   const total = enriched.reduce((sum, row) => sum + row.product.price * row.item.quantity, 0);
 
   useEffect(() => trackEvent("cart_view", cartPayload(cart, products)), [cart.map((item) => `${item.productId}:${item.quantity}`).join(",")]);
@@ -565,11 +580,18 @@ function CartPage() {
         <h1>Cart</h1>
         <PersonalizationZone zoneId="cart_abandonment_banner" fallback="Your cart has focus. A rare and beautiful thing." className="banner" />
         {enriched.length === 0 ? (
-          <EmptyState
-            title="Your cart is peacefully empty."
-            body="A rare state. Add something mildly useful to demonstrate cart intent, cart opener logic, and abandonment messaging."
-            action={{ label: "Browse survival essentials", to: "/products" }}
-          />
+          <>
+            <EmptyState
+              title={state.profile.hasActiveCart || profileCartProducts.length > 0 ? "Meiro sees cart intent for this profile." : "Your cart is peacefully empty."}
+              body={state.profile.lastAbandonedCartValue ? `Profile API reports an abandoned cart worth EUR ${state.profile.lastAbandonedCartValue}. Add a product locally to run the checkout demo.` : "A rare state. Add something mildly useful to demonstrate cart intent, cart opener logic, and abandonment messaging."}
+              action={{ label: "Browse survival essentials", to: "/products" }}
+            />
+            {profileCartProducts.length > 0 && (
+              <div className="mini-products">
+                {profileCartProducts.map((product) => <ProductVisual key={product.id} product={product} size="thumb" />)}
+              </div>
+            )}
+          </>
         ) : enriched.map(({ item, product }) => (
           <div className="cart-row" key={product.id}>
             <ProductVisual product={product} size="thumb" />
@@ -598,14 +620,14 @@ function CheckoutPage() {
   const [step, setStep] = useState(0);
   const [checkoutDetails, setCheckoutDetails] = useState({
     email: profile.email ?? "",
-    phone: "",
+    phone: profile.phone ?? "",
     firstName: profile.firstName ?? "",
-    surname: "",
-    streetAddress: "",
-    apartmentOrCompany: "",
-    city: "",
-    postalCode: "",
-    country: "",
+    surname: profile.surname ?? "",
+    streetAddress: profile.streetAddress ?? "",
+    apartmentOrCompany: profile.apartmentOrCompany ?? "",
+    city: profile.city ?? "",
+    postalCode: profile.postalCode ?? "",
+    country: profile.country ?? "",
     shippingSpeed: "standard_simulated_shipping",
     paymentMethod: "demo_card_0000",
   });
@@ -629,6 +651,20 @@ function CheckoutPage() {
       payment_method: checkoutDetails.paymentMethod,
     },
   });
+  useEffect(() => {
+    setCheckoutDetails((current) => ({
+      ...current,
+      email: current.email || profile.email || "",
+      phone: current.phone || profile.phone || "",
+      firstName: current.firstName || profile.firstName || "",
+      surname: current.surname || profile.surname || "",
+      streetAddress: current.streetAddress || profile.streetAddress || "",
+      apartmentOrCompany: current.apartmentOrCompany || profile.apartmentOrCompany || "",
+      city: current.city || profile.city || "",
+      postalCode: current.postalCode || profile.postalCode || "",
+      country: current.country || profile.country || "",
+    }));
+  }, [profile.email, profile.phone, profile.firstName, profile.surname, profile.streetAddress, profile.apartmentOrCompany, profile.city, profile.postalCode, profile.country]);
   const completeStep = () => {
     const payload = { step: steps[step], ...checkoutPayload(), ...cartPayload(state.cart, products) };
     if (step === 0) trackEvent("checkout_contact_submitted", payload);
@@ -692,6 +728,17 @@ function CheckoutPage() {
               ) : (
                 <button type="button" onClick={() => {
                   const orderPayload = cartPayload(state.cart, products);
+                  state.updateProfile({
+                    email: checkoutDetails.email,
+                    phone: checkoutDetails.phone,
+                    firstName: checkoutDetails.firstName,
+                    surname: checkoutDetails.surname,
+                    streetAddress: checkoutDetails.streetAddress,
+                    apartmentOrCompany: checkoutDetails.apartmentOrCompany,
+                    city: checkoutDetails.city,
+                    postalCode: checkoutDetails.postalCode,
+                    country: checkoutDetails.country,
+                  });
                   const orderId = completeOrder();
                   trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...checkoutPayload(), ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
                   navigate("/thank-you");
@@ -797,12 +844,21 @@ function AccountPage() {
         <PersonalizationZone zoneId="account_lifecycle_banner" fallback="Local profile enrichment is ready for Meiro identity resolution." className="banner" />
         <dl className="spec-list">
           <div><dt>Email</dt><dd>{profile.email ?? "Unknown visitor"}</dd></div>
+          <div><dt>Phone</dt><dd>{profile.phone ?? "Not known"}</dd></div>
           <div><dt>Lifecycle</dt><dd>{profile.lifecycleStage}</dd></div>
           <div><dt>Affinity</dt><dd>{profile.categoryAffinity ?? profile.preferredCategory ?? "Still emerging"}</dd></div>
           <div><dt>VIP tier</dt><dd>{profile.vipTier ?? "Not assigned"}</dd></div>
+          <div><dt>Lifetime value</dt><dd>{profile.lifetimeValue !== undefined ? <Money value={profile.lifetimeValue} /> : "Not calculated"}</dd></div>
+          <div><dt>Purchase count</dt><dd>{profile.purchaseCount ?? "Not counted"}</dd></div>
           <div><dt>Reorder date</dt><dd>{profile.predictedReorderDate ?? "Not predicted yet"}</dd></div>
+          <div><dt>Last purchase</dt><dd>{profile.lastPurchasedSku ?? profile.lastPurchasedCategory ?? "Not known"}</dd></div>
+          <div><dt>Active cart</dt><dd>{profile.hasActiveCart ? "Yes" : profile.lastAbandonedCartValue ? `Abandoned value ${profile.lastAbandonedCartValue}` : "No profile signal"}</dd></div>
+          <div><dt>Last viewed</dt><dd>{profile.lastViewedProductId ?? "No product attribute"}</dd></div>
+          <div><dt>Delivery</dt><dd>{profile.deliveryStatus ?? "No delivery status"}</dd></div>
           <div><dt>Consents</dt><dd>{Object.entries(consent).filter(([, enabled]) => enabled).map(([key]) => key).join(", ")}</dd></div>
+          <div><dt>Marketing consent</dt><dd>{profile.marketingConsent === undefined ? "Not in profile" : profile.marketingConsent ? "Granted" : "Denied"}</dd></div>
           <div><dt>Recommended tags</dt><dd>{profile.recommendedTags.join(", ") || "None yet"}</dd></div>
+          <div><dt>Journeys</dt><dd>{profile.journeyMembership?.join(", ") || "No journey membership"}</dd></div>
           <div><dt>Profile API</dt><dd>{profileApiSummary}</dd></div>
         </dl>
       </section>
@@ -826,9 +882,18 @@ function AccountPage() {
         <div className="playbook-fields">
           {[
             ["vip_tier", profile.vipTier],
+            ["lifetime_value", profile.lifetimeValue],
+            ["purchase_count", profile.purchaseCount],
             ["predicted_reorder_date", profile.predictedReorderDate],
             ["days_since_last_purchase", profile.daysSinceLastPurchase],
             ["last_purchased_category", profile.lastPurchasedCategory],
+            ["last_viewed_product_id", profile.lastViewedProductId],
+            ["has_active_cart", profile.hasActiveCart],
+            ["last_abandoned_cart_value", profile.lastAbandonedCartValue],
+            ["cart_item_ids", profile.cartItemIds?.join(", ")],
+            ["journey_membership", profile.journeyMembership?.join(", ")],
+            ["delivery_status", profile.deliveryStatus],
+            ["referral_code", profile.referralCode],
             ["has_left_review", profile.hasLeftReview],
           ].map(([field, value]) => <code key={String(field)}>{String(field)}{value !== undefined ? `: ${String(value)}` : ""}</code>)}
         </div>
@@ -1011,15 +1076,21 @@ function PlaybooksPage() {
 
 function ReviewReferralPage() {
   const state = useAppState();
-  const reviewedProduct = products.find((product) => state.profile.purchases.includes(product.id)) ?? products.find((product) => product.id === "monday-survival-kit") ?? products[0];
+  const reviewedProduct =
+    products.find((product) => product.id === state.profile.lastPurchasedSku || product.slug === state.profile.lastPurchasedSku) ??
+    products.find((product) => state.profile.purchases.includes(product.id)) ??
+    products.find((product) => product.id === "monday-survival-kit") ??
+    products[0];
   const [submitted, setSubmitted] = useState(false);
+  const reviewLocked = Boolean(state.profile.hasLeftReview);
+  const referralCode = state.profile.referralCode ?? "ESC-FINE-20";
 
   return (
     <main className="page two-col">
       <section>
         <span className="eyebrow">Post-purchase review and referral</span>
         <h1>How did the supplies land?</h1>
-        <p className="lead">A review/referral surface for order_delivered journeys, repeat-buyer splits, and referral-code personalization.</p>
+        <p className="lead">{state.profile.deliveryStatus ? `Delivery status: ${state.profile.deliveryStatus}. ` : ""}A review/referral surface for order_delivered journeys, repeat-buyer splits, and referral-code personalization.</p>
         <form className="form-card" onSubmit={(event) => { event.preventDefault(); setSubmitted(true); }}>
           <label>
             Product
@@ -1029,18 +1100,18 @@ function ReviewReferralPage() {
             Review
             <input aria-label="Review text" placeholder="Surprisingly useful. Mildly concerning." required />
           </label>
-          <button>{submitted ? "Review noted" : "Submit simulated review"}</button>
+          <button disabled={reviewLocked}>{reviewLocked ? "Review already received" : submitted ? "Review noted" : "Submit simulated review"}</button>
         </form>
       </section>
       <aside className="summary">
         <ProductVisual product={reviewedProduct} size="thumb" />
         <h2>Referral slot</h2>
-        <p>Repeat buyers can receive a referral code from Meiro Asset Library or Profile API.</p>
-        <div className="referral-code">ESC-FINE-20</div>
+        <p>{state.profile.repeatBuyer ? "Repeat buyer profile detected. " : ""}Repeat buyers can receive a referral code from Meiro Asset Library or Profile API.</p>
+        <div className="referral-code">{referralCode}</div>
         <div className="playbook-fields">
-          <code>order_delivered</code>
-          <code>repeat_buyer</code>
-          <code>has_left_review</code>
+          <code>delivery_status{state.profile.deliveryStatus ? `: ${state.profile.deliveryStatus}` : ""}</code>
+          <code>repeat_buyer{state.profile.repeatBuyer !== undefined ? `: ${String(state.profile.repeatBuyer)}` : ""}</code>
+          <code>has_left_review{state.profile.hasLeftReview !== undefined ? `: ${String(state.profile.hasLeftReview)}` : ""}</code>
         </div>
       </aside>
     </main>

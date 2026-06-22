@@ -47,7 +47,7 @@ export function getProfileApiIdentifier(profile: CustomerProfile): { identifierT
 }
 
 export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, identifierValue: string): Promise<ProfileApiResult> {
-  const url = new URL(getMeiroProfileApiEndpoint());
+  const url = new URL(getMeiroProfileApiEndpoint(), window.location.origin);
   url.searchParams.set("identifier_type", identifierType);
   url.searchParams.set("identifier_value", identifierValue);
 
@@ -87,32 +87,48 @@ function mapAttributesToCustomerProfile(attributes: Record<string, unknown>): Pa
   };
 
   assignString(patch, "email", read(attributes, ["email", "user_email"]));
-  assignString(patch, "phone", read(attributes, ["phone", "phone_number"]));
+  assignString(patch, "phone", read(attributes, ["phone", "phone_number", "mobile_phone"]));
   assignString(patch, "firstName", read(attributes, ["first_name", "firstName", "given_name"]));
   assignString(patch, "surname", read(attributes, ["surname", "last_name", "family_name"]));
+  assignString(patch, "streetAddress", read(attributes, ["street_address", "address_line_1", "shipping_address", "shipping_street_address"]));
+  assignString(patch, "apartmentOrCompany", read(attributes, ["apartment_or_company", "address_line_2", "shipping_address_line_2"]));
+  assignString(patch, "city", read(attributes, ["city", "shipping_city"]));
+  assignString(patch, "postalCode", read(attributes, ["postal_code", "zip", "shipping_postal_code"]));
+  assignString(patch, "country", read(attributes, ["country", "shipping_country"]));
   assignString(patch, "currentLifeSituation", read(attributes, ["current_life_situation", "life_situation"]));
   assignString(patch, "preferredCategory", read(attributes, ["preferred_category"]));
   assignString(patch, "lifecycleStage", read(attributes, ["lifecycle_stage", "lifecycleStage"]));
   assignString(patch, "categoryAffinity", read(attributes, ["category_affinity", "last_purchased_category", "favorite_category"]));
-  assignString(patch, "vipTier", read(attributes, ["vip_tier"]));
+  assignString(patch, "vipTier", read(attributes, ["vip_tier", "loyalty_tier"]));
   assignString(patch, "predictedReorderDate", read(attributes, ["predicted_reorder_date"]));
   assignString(patch, "lastPurchasedSku", read(attributes, ["last_purchased_sku"]));
   assignString(patch, "lastPurchasedCategory", read(attributes, ["last_purchased_category"]));
   assignString(patch, "referralCode", read(attributes, ["referral_code"]));
   assignString(patch, "nextBestAction", read(attributes, ["next_best_action"]));
+  assignString(patch, "lastViewedProductId", read(attributes, ["last_viewed_product_id", "last_viewed_product", "last_browsed_product_id"]));
+  assignString(patch, "signupChannel", read(attributes, ["signup_channel", "acquisition_channel"]));
+  assignString(patch, "deliveryStatus", read(attributes, ["delivery_status", "last_delivery_status"]));
 
   assignNumber(patch, "lifetimeValue", read(attributes, ["lifetime_value", "ltv"]));
   assignNumber(patch, "purchaseCount", read(attributes, ["purchase_count", "total_orders"]));
   assignNumber(patch, "daysSinceLastPurchase", read(attributes, ["days_since_last_purchase"]));
+  assignNumber(patch, "lastAbandonedCartValue", read(attributes, ["last_abandoned_cart_value", "abandoned_cart_value"]));
+  assignNumber(patch, "viewedProductCount", read(attributes, ["viewed_product_count", "product_view_count"]));
 
   assignBoolean(patch, "highIntent", read(attributes, ["high_intent", "has_active_cart"]));
+  assignBoolean(patch, "hasActiveCart", read(attributes, ["has_active_cart", "active_cart"]));
   assignBoolean(patch, "hasLeftReview", read(attributes, ["has_left_review"]));
   assignBoolean(patch, "repeatBuyer", read(attributes, ["repeat_buyer", "second_purchase"]));
+  assignBoolean(patch, "pushOptIn", read(attributes, ["push_opt_in", "push_consent"]));
+  assignBoolean(patch, "marketingConsent", read(attributes, ["marketing_consent", "email_marketing_consent"]));
+  assignBoolean(patch, "discountAffinity", read(attributes, ["discount_affinity", "discount_sensitive", "coupon_user"]));
 
   assignStringArray(patch, "recentlyViewedCategories", read(attributes, ["recently_viewed_categories", "viewed_categories"]));
   assignStringArray(patch, "recommendedTags", read(attributes, ["recommended_tags", "recommendation_tags"]));
   assignStringArray(patch, "purchases", read(attributes, ["purchased_product_ids", "purchases"]));
   assignStringArray(patch, "nextBestProductIds", read(attributes, ["next_best_product_ids", "recommended_product_ids"]));
+  assignStringArray(patch, "cartItemIds", read(attributes, ["cart_item_ids", "active_cart_item_ids", "abandoned_cart_item_ids"]));
+  assignStringArray(patch, "journeyMembership", read(attributes, ["journey_membership", "journeys", "audiences"]));
 
   const customerType = asString(read(attributes, ["customer_type"]));
   if (customerType === "anonymous" || customerType === "registered") patch.customerType = customerType;

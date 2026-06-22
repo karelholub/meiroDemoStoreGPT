@@ -10,9 +10,13 @@ export function recommendProducts(
   const limit = options.limit ?? 4;
   const current = products.find((product) => product.id === options.currentProductId);
   let scored = products.filter((product) => product.id !== options.currentProductId);
+  const profileCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? state.profile.lastPurchasedCategory;
+  const purchasedIds = new Set([...(state.profile.purchases ?? []), state.profile.lastPurchasedSku].filter(Boolean));
 
   if (strategy === "recently_viewed") {
-    return state.recentlyViewed
+    return [state.profile.lastViewedProductId, ...state.recentlyViewed]
+      .filter((id): id is string => Boolean(id))
+      .filter((id, index, ids) => ids.indexOf(id) === index)
       .map((id) => products.find((product) => product.id === id))
       .filter(Boolean)
       .slice(0, limit) as Product[];
@@ -31,10 +35,12 @@ export function recommendProducts(
   }
 
   if (strategy === "cart_cross_sell") {
-    const cartTags = state.cart.flatMap((item) => products.find((product) => product.id === item.productId)?.recommendationTags ?? []);
+    const profileCartItems = state.profile.cartItemIds ?? [];
+    const activeCartIds = [...state.cart.map((item) => item.productId), ...profileCartItems];
+    const cartTags = activeCartIds.flatMap((productId) => products.find((product) => product.id === productId)?.recommendationTags ?? []);
     scored = scored
-      .filter((product) => !state.cart.some((item) => item.productId === product.id))
-      .sort((a, b) => b.recommendationTags.filter((tag) => cartTags.includes(tag)).length - a.recommendationTags.filter((tag) => cartTags.includes(tag)).length);
+      .filter((product) => !activeCartIds.includes(product.id))
+      .sort((a, b) => scoreTagOverlap(b, cartTags) - scoreTagOverlap(a, cartTags));
   }
 
   if (strategy === "next_best_product") {
@@ -46,11 +52,11 @@ export function recommendProducts(
       if (nextBest.length > 0) return nextBest;
     }
 
-    const tags = state.profile.recommendedTags;
+    const tags = [...state.profile.recommendedTags, ...(profileCategory ? [profileCategory] : [])];
     scored = scored.sort(
       (a, b) =>
-        b.recommendationTags.filter((tag) => tags.includes(tag)).length + b.popularityScore / 100 -
-        (a.recommendationTags.filter((tag) => tags.includes(tag)).length + a.popularityScore / 100),
+        scoreTagOverlap(b, tags) + categoryBoost(b, profileCategory) + b.popularityScore / 100 -
+        (scoreTagOverlap(a, tags) + categoryBoost(a, profileCategory) + a.popularityScore / 100),
     );
   }
 
@@ -63,8 +69,17 @@ export function recommendProducts(
   }
 
   if (strategy === "post_purchase") {
-    scored = scored.filter((product) => !state.profile.purchases.includes(product.id)).sort((a, b) => b.popularityScore - a.popularityScore);
+    scored = scored.filter((product) => !purchasedIds.has(product.id)).sort((a, b) => categoryBoost(b, profileCategory) + b.popularityScore / 100 - (categoryBoost(a, profileCategory) + a.popularityScore / 100));
   }
 
   return scored.slice(0, limit);
+}
+
+function scoreTagOverlap(product: Product, tags: string[]) {
+  const normalizedTags = tags.map((tag) => tag.toLowerCase());
+  return product.recommendationTags.filter((tag) => normalizedTags.includes(tag.toLowerCase())).length;
+}
+
+function categoryBoost(product: Product, category?: string) {
+  return category && product.category.toLowerCase() === category.toLowerCase() ? 2 : 0;
 }

@@ -41,6 +41,11 @@ export type CustomerProfile = {
   email?: string;
   phone?: string;
   surname?: string;
+  streetAddress?: string;
+  apartmentOrCompany?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
   firstName?: string;
   currentLifeSituation?: string;
   preferredCategory?: string;
@@ -48,6 +53,9 @@ export type CustomerProfile = {
   customerType: "anonymous" | "registered";
   categoryAffinity?: string;
   highIntent?: boolean;
+  hasActiveCart?: boolean;
+  lastAbandonedCartValue?: number;
+  cartItemIds?: string[];
   recentlyViewedCategories: string[];
   recommendedTags: string[];
   purchases: string[];
@@ -63,6 +71,14 @@ export type CustomerProfile = {
   referralCode?: string;
   nextBestProductIds?: string[];
   nextBestAction?: string;
+  lastViewedProductId?: string;
+  viewedProductCount?: number;
+  pushOptIn?: boolean;
+  marketingConsent?: boolean;
+  signupChannel?: string;
+  deliveryStatus?: string;
+  journeyMembership?: string[];
+  discountAffinity?: boolean;
   profileApiAttributes?: Record<string, unknown>;
   profileApiUpdatedAt?: string;
 };
