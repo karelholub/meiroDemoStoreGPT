@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Existential Supplies Co.</title>
+    <style>
+      @media only screen and (max-width: 620px) {
+        .container { width: 100% !important; }
+        .px { padding-left: 20px !important; padding-right: 20px !important; }
+        .hero-title { font-size: 42px !important; line-height: 42px !important; }
+        .stack { display: block !important; width: 100% !important; }
+        .product-card { padding-bottom: 18px !important; }
+        .button { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+        .hide-mobile { display: none !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#fbf8f2; color:#1e1b18;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+      {{ preheader | default: "Fake products. Real customer journeys. Your personalized supplies are ready." }}
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fbf8f2;">
+      <tr>
+        <td align="center" style="padding:0;">
+          <table role="presentation" class="container" width="640" cellspacing="0" cellpadding="0" border="0" style="width:640px; max-width:640px;">
+            <tr>
+              <td class="px" style="padding:26px 32px 18px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="left" style="vertical-align:middle;">
+                      <div style="font-family:Georgia, 'Times New Roman', serif; font-size:26px; line-height:26px; font-weight:800; letter-spacing:0.01em; text-transform:uppercase; color:#1e1b18;">
+                        Existential
+                      </div>
+                      <div style="font-family:Arial, sans-serif; font-size:11px; line-height:13px; font-weight:800; letter-spacing:0.2em; text-transform:uppercase; color:#6a3527;">
+                        Supplies Co.
+                      </div>
+                    </td>
+                    <td align="right" class="hide-mobile" style="font-family:Arial, sans-serif; font-size:13px; color:#686259;">
+                      Personalized by Meiro CDP
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:0 32px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-radius:8px; overflow:hidden; background:#1e1b18;">
+                  <tr>
+                    <td background="{{ hero_image_url | default: 'https://dmostoregpt.netlify.app/assets/products/marketing-therapy.jpg' }}" style="background-image:linear-gradient(90deg, rgba(30,27,24,0.88), rgba(30,27,24,0.48)), url('{{ hero_image_url | default: 'https://dmostoregpt.netlify.app/assets/products/marketing-therapy.jpg' }}'); background-size:cover; background-position:center right;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td style="padding:46px 34px 48px;">
+                            <div style="font-family:Arial, sans-serif; font-size:12px; line-height:16px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#d9b25f;">
+                              {{ campaign_label | default: "Recommended supplies" }}
+                            </div>
+                            <h1 class="hero-title" style="margin:10px 0 14px; font-family:Georgia, 'Times New Roman', serif; font-size:56px; line-height:54px; font-weight:800; letter-spacing:0; color:#fffaf1;">
+                              {{ headline | default: "We kept the supplies discreetly ready." }}
+                            </h1>
+                            <p style="margin:0 0 24px; max-width:460px; font-family:Arial, sans-serif; font-size:17px; line-height:25px; color:#f1eadf;">
+                              {{ intro_copy | default: "A calm, consent-aware selection based on your recent browsing, lifecycle stage, and the gentle chaos implied by your cart." }}
+                            </p>
+                            <a href="{{ primary_cta_url | default: 'https://dmostoregpt.netlify.app/products' }}" class="button" style="display:inline-block; padding:14px 20px; border-radius:6px; background:#fffaf1; color:#1e1b18; font-family:Arial, sans-serif; font-size:15px; line-height:18px; font-weight:800; text-decoration:none;">
+                              {{ primary_cta_label | default: "Shop personalized picks" }}
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:0 32px 22px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fffdf8; border:1px solid #e5dccd; border-radius:8px;">
+                  <tr>
+                    <td style="padding:22px 24px;">
+                      <div style="font-family:Arial, sans-serif; font-size:12px; line-height:16px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#6f7565;">
+                        Why this message
+                      </div>
+                      <p style="margin:8px 0 0; font-family:Arial, sans-serif; font-size:15px; line-height:23px; color:#544e45;">
+                        {{ reason_copy | default: "You are receiving this because this profile is eligible for a personalized lifecycle journey and marketing consent is active." }}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:0 32px 10px;">
+                <h2 style="margin:0 0 14px; font-family:Georgia, 'Times New Roman', serif; font-size:30px; line-height:33px; color:#1e1b18;">
+                  {{ section_title | default: "Recommended for your current reality" }}
+                </h2>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:0 32px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td class="stack product-card" width="50%" style="width:50%; padding:0 8px 0 0; vertical-align:top;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fffdf8; border:1px solid #e5dccd; border-radius:8px; overflow:hidden;">
+                        <tr>
+                          <td>
+                            <img src="{{ product_1_image_url | default: 'https://dmostoregpt.netlify.app/assets/products/work-meetings.jpg' }}" width="280" alt="{{ product_1_name | default: 'Monday Survival Kit' }}" style="display:block; width:100%; max-width:100%; height:auto; border:0;">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:18px;">
+                            <div style="font-family:Arial, sans-serif; font-size:11px; line-height:14px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#6f7565;">
+                              {{ product_1_category | default: "Work & Meetings" }}
+                            </div>
+                            <h3 style="margin:7px 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:26px; color:#1e1b18;">
+                              {{ product_1_name | default: "Monday Survival Kit" }}
+                            </h3>
+                            <p style="margin:0 0 14px; font-family:Arial, sans-serif; font-size:14px; line-height:21px; color:#686259;">
+                              {{ product_1_copy | default: "A composed little object for surviving workplace rituals while appearing beautifully prepared." }}
+                            </p>
+                            <a href="{{ product_1_url | default: 'https://dmostoregpt.netlify.app/product/monday-survival-kit' }}" style="font-family:Arial, sans-serif; font-size:14px; font-weight:800; color:#6a3527; text-decoration:none;">
+                              View product
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="stack product-card" width="50%" style="width:50%; padding:0 0 0 8px; vertical-align:top;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fffdf8; border:1px solid #e5dccd; border-radius:8px; overflow:hidden;">
+                        <tr>
+                          <td>
+                            <img src="{{ product_2_image_url | default: 'https://dmostoregpt.netlify.app/assets/products/existential-wellness.jpg' }}" width="280" alt="{{ product_2_name | default: 'Premium Overthinking Blanket' }}" style="display:block; width:100%; max-width:100%; height:auto; border:0;">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:18px;">
+                            <div style="font-family:Arial, sans-serif; font-size:11px; line-height:14px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:#6f7565;">
+                              {{ product_2_category | default: "Existential Wellness" }}
+                            </div>
+                            <h3 style="margin:7px 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:26px; color:#1e1b18;">
+                              {{ product_2_name | default: "Premium Overthinking Blanket" }}
+                            </h3>
+                            <p style="margin:0 0 14px; font-family:Arial, sans-serif; font-size:14px; line-height:21px; color:#686259;">
+                              {{ product_2_copy | default: "For people who say they are fine with the confidence of a collapsing spreadsheet." }}
+                            </p>
+                            <a href="{{ product_2_url | default: 'https://dmostoregpt.netlify.app/product/premium-overthinking-blanket' }}" style="font-family:Arial, sans-serif; font-size:14px; font-weight:800; color:#6a3527; text-decoration:none;">
+                              View product
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:0 32px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#6f7565; border-radius:8px;">
+                  <tr>
+                    <td style="padding:24px;">
+                      <h2 style="margin:0 0 8px; font-family:Georgia, 'Times New Roman', serif; font-size:30px; line-height:33px; color:#fffaf1;">
+                        {{ offer_title | default: "A small nudge, not a lifestyle overhaul." }}
+                      </h2>
+                      <p style="margin:0 0 18px; font-family:Arial, sans-serif; font-size:15px; line-height:23px; color:#f4eee4;">
+                        {{ offer_copy | default: "Use this slot for win-back offers, replenishment reminders, VIP early access, or cart recovery messages generated by Meiro Engage." }}
+                      </p>
+                      <a href="{{ secondary_cta_url | default: 'https://dmostoregpt.netlify.app/cart' }}" class="button" style="display:inline-block; padding:13px 18px; border-radius:6px; background:#1e1b18; color:#fffaf1; font-family:Arial, sans-serif; font-size:15px; line-height:18px; font-weight:800; text-decoration:none;">
+                        {{ secondary_cta_label | default: "Return to your supplies" }}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="px" style="padding:4px 32px 34px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="border-top:1px solid #e5dccd; padding-top:20px;">
+                      <p style="margin:0 0 10px; font-family:Arial, sans-serif; font-size:13px; line-height:20px; color:#686259;">
+                        Fake products. Real customer journeys. Built for Meiro CDP demos.
+                      </p>
+                      <p style="margin:0; font-family:Arial, sans-serif; font-size:12px; line-height:19px; color:#8b8377;">
+                        You received this email because {{ email | default: "your email address" }} is subscribed to Existential Supplies Co. messages.
+                        <a href="{{ unsubscribe_url | default: '#' }}" style="color:#6a3527; text-decoration:underline;">Unsubscribe</a>
+                        · <a href="{{ preferences_url | default: '#' }}" style="color:#6a3527; text-decoration:underline;">Manage preferences</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
