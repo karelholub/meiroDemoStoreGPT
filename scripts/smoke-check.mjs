@@ -26,6 +26,7 @@ const categories = read("src/data/categories.ts");
 const events = read("src/integrations/meiro/eventSchemas.ts");
 const meiroClient = read("src/integrations/meiro/meiroClient.ts");
 const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
+const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const netlify = read("netlify.toml");
 
 const routePaths = [
@@ -136,6 +137,25 @@ assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK event
 assert(meiroClient.includes("link_tracking: { enabled: true }"), "Meiro link tracking is enabled");
 assert(meiroClient.includes("tracking_rules:"), "Meiro tracking rules are configured");
 assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage allowlist is configured");
+
+[
+  "vip_replenishment",
+  "cart_recovery",
+  "review_referral",
+].forEach((scenarioId) => {
+  assert(profileApiScenarios.includes(`id: "${scenarioId}"`), `seeded Profile API scenario exists: ${scenarioId}`);
+});
+[
+  "next_best_product_ids",
+  "has_active_cart",
+  "last_abandoned_cart_value",
+  "delivery_status",
+  "referral_code",
+].forEach((attributeName) => {
+  assert(profileApiScenarios.includes(attributeName), `seeded Profile API attribute exists: ${attributeName}`);
+});
+assert(app.includes("ProfileApiScenarioControls"), "demo-control exposes seeded Profile API controls");
+assert(app.includes("applyProfileApiScenario"), "app state can apply seeded Profile API scenarios");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
 

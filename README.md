@@ -71,6 +71,8 @@ See `MEIRO_INTEGRATION.md` for the SDK wiring point, consent behavior, and perso
 
 The `/demo-control` page supports anonymous visitors, returning visitors, known customers, high-value customers, cart abandoners, discount-sensitive visitors, marketing burnout, parenting chaos, sleep recovery, newsletter subscribers, post-purchase customers, and lapsed customers.
 
+It also includes seeded Profile API scenarios for deterministic QA of VIP replenishment, cart recovery, and review/referral personalization without depending on a live profile response.
+
 ## Netlify
 
 `netlify.toml` includes the build command and SPA redirect:

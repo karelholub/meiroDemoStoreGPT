@@ -37,12 +37,12 @@ Status: implemented and enabled by default for browser MPT. The wrapper now conf
 - Add product recommendation payload adapters
 - Store personalization decisions in debug panel
 
-Status: in progress. Local personalization now emits structured decision metadata into the debug panel. Ecommerce playbook surfaces are available for abandoned cart, welcome nurture, replenishment, post-purchase cross-sell, win-back, VIP, browse abandonment, and review/referral. Profile API attributes now hydrate visible storefront behavior across hero copy, banners, recommendation rails, checkout prefill, account fields, cart recovery, lifecycle slots, and review/referral. `/demo-control` includes a Profile API proof panel showing which returned attributes are powering which surfaces.
+Status: in progress. Local personalization now emits structured decision metadata into the debug panel. Ecommerce playbook surfaces are available for abandoned cart, welcome nurture, replenishment, post-purchase cross-sell, win-back, VIP, browse abandonment, and review/referral. Profile API attributes now hydrate visible storefront behavior across hero copy, banners, recommendation rails, checkout prefill, account fields, cart recovery, lifecycle slots, and review/referral. `/demo-control` includes a Profile API proof panel showing which returned attributes are powering which surfaces, plus seeded Profile API scenarios for deterministic QA.
 
 Next:
 - Add optional Meiro Engage decision adapter when decision payloads are available
 - Add a product recommendation response adapter for externally ranked product IDs and fallbacks
-- Add browser QA scenarios with seeded profile attributes
+- Add browser QA automation that clicks through each seeded profile scenario
 
 ## Milestone 5: Deployment And GitHub
 

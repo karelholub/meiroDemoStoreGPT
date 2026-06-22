@@ -1562,6 +1562,33 @@ dd {
   overflow-wrap: anywhere;
 }
 
+.scenario-buttons {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.scenario-buttons button {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--space-3);
+  text-align: left;
+}
+
+.scenario-buttons button.active {
+  color: #fffaf1;
+  background: #6f7565;
+}
+
+.scenario-buttons button span {
+  color: #756d62;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.scenario-buttons button.active span {
+  color: rgba(255, 250, 241, 0.78);
+}
+
 .status-list {
   display: grid;
   gap: var(--space-2);

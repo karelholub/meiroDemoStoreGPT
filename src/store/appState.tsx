@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { products } from "../data/products";
 import { personas } from "../data/personas";
+import type { ProfileApiScenario } from "../data/profileApiScenarios";
 import { setMeiroConsentState, setMeiroEventSink, setMeiroSdkCallSink, trackEvent } from "../integrations/meiro/meiroClient";
 import { fetchMeiroProfile, getMeiroProfileApiStatus, getProfileApiIdentifier } from "../integrations/meiro/meiroProfileApi";
 import type { CartItem, ConsentState, CustomerProfile, MeiroSdkCall, PersonalizationDecision, ProfileApiStatus, TrackingEvent } from "../types";
@@ -42,6 +43,7 @@ type AppContextValue = AppState & {
   clearCart: () => void;
   viewProduct: (productId: string) => void;
   setPersona: (personaId: string) => void;
+  applyProfileApiScenario: (scenario: ProfileApiScenario) => void;
   updateProfile: (profile: Partial<CustomerProfile>) => void;
   completeOrder: () => string;
   recordPersonalizationDecision: (decision: PersonalizationDecision) => void;
@@ -94,6 +96,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (personaId.startsWith("profile_api:")) {
+      setProfileApiStatus({
+        state: "loaded",
+        identifierType: "scenario",
+        identifierValue: personaId.replace("profile_api:", ""),
+        updatedAt: profile.profileApiUpdatedAt ?? new Date().toISOString(),
+      });
+      return;
+    }
+
     if (!identifier) {
       setProfileApiStatus({ state: "idle", message: "Waiting for an email, phone, or supported identifier." });
       return;
@@ -136,7 +148,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [consent.personalization, profile.email, profile.phone]);
+  }, [consent.personalization, personaId, profile.email, profile.phone, profile.profileApiUpdatedAt]);
 
   const setConsent = (next: ConsentState) => {
     setConsentState(next);
@@ -197,6 +209,28 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (persona.consentPatch) setConsentState((current) => ({ ...current, ...persona.consentPatch, necessary: true }));
   };
 
+  const applyProfileApiScenario = (scenario: ProfileApiScenario) => {
+    setPersonaId(`profile_api:${scenario.id}`);
+    setConsentState((current) => ({ ...current, necessary: true, analytics: true, personalization: true }));
+    setProfile({
+      ...defaultProfile,
+      ...scenario.profilePatch,
+      profileApiUpdatedAt: new Date().toISOString(),
+      profileApiAttributes: scenario.profilePatch.profileApiAttributes ?? {},
+    });
+    setProfileApiStatus({
+      state: "loaded",
+      identifierType: "scenario",
+      identifierValue: scenario.id,
+      updatedAt: new Date().toISOString(),
+    });
+    trackEvent("profile_updated", {
+      source: "profile_api_scenario",
+      scenario_id: scenario.id,
+      profile_patch: scenario.profilePatch,
+    });
+  };
+
   const updateProfile = (patch: Partial<CustomerProfile>) => {
     setProfile((current) => ({ ...current, ...patch }));
     trackEvent("profile_updated", { profile_patch: patch });
@@ -242,6 +276,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       viewProduct,
       setPersona,
+      applyProfileApiScenario,
       updateProfile,
       completeOrder,
       recordPersonalizationDecision,

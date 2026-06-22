@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { categories } from "./data/categories";
 import { personas } from "./data/personas";
+import { profileApiScenarios } from "./data/profileApiScenarios";
 import { products } from "./data/products";
 import { getMeiroConfigStatus } from "./integrations/meiro/meiroConfig";
 import { identifyUser, trackEvent, trackPageView } from "./integrations/meiro/meiroClient";
@@ -1024,6 +1025,24 @@ function ProfileApiInspector() {
   );
 }
 
+function ProfileApiScenarioControls() {
+  const state = useAppState();
+  return (
+    <section className="control-card profile-scenarios">
+      <h2>Seed Profile API scenario</h2>
+      <p className="muted">Load deterministic attributes to QA profile-powered surfaces without waiting for live CDP data.</p>
+      <div className="scenario-buttons">
+        {profileApiScenarios.map((scenario) => (
+          <button type="button" className={state.personaId === `profile_api:${scenario.id}` ? "active" : ""} key={scenario.id} onClick={() => state.applyProfileApiScenario(scenario)}>
+            <strong>{scenario.name}</strong>
+            <span>{scenario.description}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function MeiroStatusCard() {
   const status = getMeiroConfigStatus();
   const profileApiStatus = getMeiroProfileApiStatus();
@@ -1074,6 +1093,7 @@ function DemoControlPage() {
       <aside className="demo-side">
         <MeiroStatusCard />
         <ProfileApiInspector />
+        <ProfileApiScenarioControls />
         <PresenterChecklist />
         <section className="control-card">
           <h2>Use case coverage</h2>
@@ -1232,10 +1252,13 @@ function ConsentBanner() {
 function DebugPanel({ inline = false }: { inline?: boolean }) {
   const state = useAppState();
   const [open, setOpen] = useState(false);
+  const personaLabel = state.personaId.startsWith("profile_api:")
+    ? `Profile API scenario: ${profileApiScenarios.find((scenario) => `profile_api:${scenario.id}` === state.personaId)?.name ?? state.personaId.replace("profile_api:", "")}`
+    : personas.find((persona) => persona.id === state.personaId)?.name;
   const panel = (
     <aside className={inline ? "debug inline" : "debug"}>
       <h2>Demo event log</h2>
-      <p><strong>Persona:</strong> {personas.find((persona) => persona.id === state.personaId)?.name}</p>
+      <p><strong>Persona:</strong> {personaLabel}</p>
       <p><strong>Cart:</strong> {state.cart.length} lines</p>
       <p><strong>Viewed:</strong> {state.recentlyViewed.join(", ") || "none"}</p>
       <section className="decision-log">

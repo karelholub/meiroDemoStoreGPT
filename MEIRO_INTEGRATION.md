@@ -59,6 +59,8 @@ The storefront consumes these Profile API attributes when present:
 
 Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` for `vip_tier`, `total_orders` for `purchase_count`, and `recommended_product_ids` for `next_best_product_ids`.
 
+`src/data/profileApiScenarios.ts` contains deterministic seeded profiles for presenter QA. Loading one from `/demo-control` marks Profile API status as loaded with `identifier_type=scenario` and populates the same normalized profile fields that the live API would populate. This does not call the live Profile API and is meant only to validate UI surfaces and demo flow.
+
 ## Implemented MPT Bootstrap
 
 When enabled, `meiroClient.ts` creates the queue-compatible `window.mpt` function, calls:

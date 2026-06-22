@@ -88,6 +88,11 @@ Show:
 - the storefront surface each attribute powers
 - personalization decision reasons changing from persona/local rules to `profile_api.*` rules
 
+For deterministic QA, use **Seed Profile API scenario** in `/demo-control`:
+- VIP replenishment validates VIP, reorder, LTV, and next-best-product surfaces
+- Cart recovery validates active cart, abandoned value, discount affinity, and cross-sell surfaces
+- Review and referral validates delivered order, repeat buyer, review, and referral-code surfaces
+
 ## Live Demo Notes
 
 - No real payments or backend calls are made.
