@@ -44,11 +44,13 @@ button,
   justify-content: center;
   gap: 0.4rem;
   min-height: 44px;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
 button:hover,
 .primary-cta:hover {
   background: #b64f38;
+  transform: translateY(-1px);
 }
 
 button:disabled {
@@ -64,6 +66,14 @@ select {
   color: #1e1b18;
   padding: 0.85rem 0.9rem;
   border-radius: 6px;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(182, 79, 56, 0.28);
+  outline-offset: 3px;
 }
 
 .site-header {
@@ -94,6 +104,17 @@ nav {
   font-size: 0.95rem;
 }
 
+nav a {
+  padding: 0.35rem 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+nav a:hover {
+  color: #b64f38;
+  border-color: rgba(182, 79, 56, 0.45);
+}
+
 .cart-link span {
   display: inline-grid;
   place-items: center;
@@ -107,32 +128,33 @@ nav {
 }
 
 .hero {
-  min-height: 76vh;
+  min-height: clamp(500px, calc(100svh - 138px), 600px);
   display: grid;
-  align-items: end;
-  padding: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(2rem, 6vw, 5rem);
   background:
-    linear-gradient(90deg, rgba(30, 27, 24, 0.72), rgba(30, 27, 24, 0.18)),
-    url("https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1800&q=80") center/cover;
+    linear-gradient(90deg, rgba(30, 27, 24, 0.84), rgba(30, 27, 24, 0.38) 45%, rgba(30, 27, 24, 0.1)),
+    url("/assets/products/marketing-therapy.jpg") center right/cover;
   color: #fffaf1;
 }
 
 .hero-copy {
-  max-width: 760px;
+  max-width: 860px;
 }
 
 .hero h1 {
-  margin: 1rem 0;
+  margin: 0.85rem 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(3rem, 9vw, 7.3rem);
-  line-height: 0.94;
+  font-size: clamp(2.8rem, 6.4vw, 4.85rem);
+  line-height: 0.98;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 .hero h1 span {
   display: block;
   max-width: 680px;
-  margin-top: 1rem;
+  margin-top: 0.9rem;
   font-family: Inter, sans-serif;
   font-size: clamp(1.1rem, 2vw, 1.4rem);
   font-weight: 400;
@@ -143,6 +165,64 @@ nav {
 .lead {
   font-size: clamp(1.05rem, 2vw, 1.25rem);
   line-height: 1.6;
+}
+
+.hero p {
+  max-width: 680px;
+  margin: 0 0 1.2rem;
+  color: rgba(255, 250, 241, 0.88);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.82rem 1rem;
+  color: #fffaf1;
+  background: rgba(255, 250, 241, 0.12);
+  border: 1px solid rgba(255, 250, 241, 0.32);
+  border-radius: 6px;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.secondary-cta:hover {
+  background: rgba(255, 250, 241, 0.2);
+  border-color: rgba(255, 250, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+.hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  max-width: 760px;
+  margin-top: 1.4rem;
+}
+
+.hero-proof span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.42rem;
+  padding: 0.55rem 0.7rem;
+  color: rgba(255, 250, 241, 0.9);
+  background: rgba(255, 250, 241, 0.12);
+  border: 1px solid rgba(255, 250, 241, 0.2);
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.hero-proof strong {
+  color: #fffaf1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
 }
 
 .banner {
@@ -201,6 +281,11 @@ h3 {
   margin: 0.3rem 0 1rem;
 }
 
+.product-detail h1 {
+  font-size: clamp(2.2rem, 5vw, 3.9rem);
+  line-height: 1.02;
+}
+
 .eyebrow {
   color: #6f7565;
   display: block;
@@ -214,7 +299,7 @@ h3 {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.7rem;
-  padding: 1rem 0 3rem;
+  padding: 0 0 3rem;
   transform: translateY(-1.2rem);
 }
 
@@ -235,8 +320,28 @@ h3 {
 }
 
 .category-card {
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  gap: 0.75rem;
   min-height: 165px;
   padding: 1rem;
+  overflow: hidden;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.category-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: #b64f38;
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(182, 79, 56, 0.22);
+  box-shadow: 0 24px 70px rgba(30, 27, 24, 0.1);
 }
 
 .category-card span,
@@ -460,6 +565,7 @@ h3 {
 .card-copy {
   display: grid;
   align-content: start;
+  grid-template-rows: auto auto 1fr auto auto;
   padding: 1rem;
 }
 
@@ -475,6 +581,10 @@ h3 {
 .page-heading p {
   color: #686259;
   line-height: 1.5;
+}
+
+.product-card button {
+  width: 100%;
 }
 
 .price-row {
@@ -507,6 +617,9 @@ s {
   padding: clamp(1.4rem, 4vw, 2.5rem);
   border-top: 1px solid rgba(30, 27, 24, 0.1);
   border-bottom: 1px solid rgba(30, 27, 24, 0.1);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.82), rgba(239, 232, 220, 0.58));
+  border-radius: 8px;
 }
 
 .newsletter form,
@@ -805,7 +918,7 @@ dd {
   bottom: 1rem;
   z-index: 50;
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
   align-items: center;
   gap: 1rem;
   padding: 1rem;
@@ -820,8 +933,29 @@ dd {
   color: #686259;
 }
 
-.consent label {
+.consent-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.consent-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  padding: 0.4rem 0.65rem;
   white-space: nowrap;
+  background: #f4eee4;
+  border: 1px solid rgba(30, 27, 24, 0.1);
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.consent-options input {
+  width: 1rem;
+  height: 1rem;
 }
 
 .debug-toggle {
@@ -972,6 +1106,10 @@ dd {
     grid-template-columns: 1fr;
   }
 
+  .consent-options {
+    justify-content: flex-start;
+  }
+
   .summary {
     position: static;
   }
@@ -990,7 +1128,29 @@ dd {
   }
 
   .hero {
-    min-height: 70vh;
+    min-height: auto;
+    padding-block: 4rem 4.5rem;
+    background-position: center;
+  }
+
+  .hero h1 {
+    max-width: calc(100vw - 4rem);
+    font-size: clamp(2.35rem, 13vw, 3.55rem);
+    line-height: 1;
+  }
+
+  .hero-actions,
+  .hero-actions .primary-cta,
+  .hero-actions .secondary-cta {
+    width: 100%;
+  }
+
+  .hero-proof {
+    gap: 0.45rem;
+  }
+
+  .hero-proof span {
+    font-size: 0.82rem;
   }
 
   .category-strip,

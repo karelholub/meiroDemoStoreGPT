@@ -233,7 +233,15 @@ function HomePage() {
           <PersonalizationZone zoneId="homepage_top_banner" fallback="Free simulated shipping over EUR 120. Emotional shipping remains variable." className="banner" />
           <h1><PersonalizationZone zoneId="homepage_hero" fallback={heroText} /></h1>
           <p>Elegant demo commerce for identity resolution, product affinity, cart intent, and consent-aware personalization.</p>
-          <Link to="/products" className="primary-cta">Shop survival essentials</Link>
+          <div className="hero-actions">
+            <Link to="/products" className="primary-cta">Shop survival essentials</Link>
+            <Link to="/demo-control" className="secondary-cta">Tune the demo</Link>
+          </div>
+          <div className="hero-proof" aria-label="Store highlights">
+            <span><strong>42</strong> absurdly useful products</span>
+            <span><strong>21</strong> intent signals</span>
+            <span><strong>0</strong> real payments</span>
+          </div>
         </div>
       </section>
       <section className="category-strip">
@@ -657,9 +665,14 @@ function ConsentBanner() {
         <strong>Consent preferences</strong>
         <p>Necessary is always on. Other choices control analytics, personalization, and marketing simulation.</p>
       </div>
-      {(["analytics", "personalization", "marketing"] as const).map((key) => (
-        <label key={key}><input type="checkbox" checked={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.checked })} /> {key}</label>
-      ))}
+      <div className="consent-options">
+        {(["analytics", "personalization", "marketing"] as const).map((key) => (
+          <label key={key}>
+            <input type="checkbox" checked={draft[key]} onChange={(event) => setDraft({ ...draft, [key]: event.target.checked })} />
+            <span>{key}</span>
+          </label>
+        ))}
+      </div>
       <button onClick={() => { localStorage.setItem("esc_consent_seen", "true"); setConsent({ ...draft, necessary: true }); setOpen(false); }}>Save</button>
     </div>
   );
