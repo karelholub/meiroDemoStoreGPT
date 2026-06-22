@@ -19,9 +19,10 @@ VITE_MEIRO_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/collect/web-sdk
 VITE_MEIRO_SCRIPT_URL=https://meiro-demo.eu.pipes.meiro.io/mpt.js
 VITE_MEIRO_DEBUG=true
 VITE_MEIRO_PROFILE_API_ENABLED=true
-VITE_MEIRO_PROFILE_API_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso
-VITE_MEIRO_PROFILE_API_TOKEN=your-profile-api-token
+VITE_MEIRO_PROFILE_API_PROXY_URL=/api/meiro-profile
 VITE_MEIRO_PROFILE_API_IDENTIFIER_TYPE=user_id
+MEIRO_PROFILE_API_ENDPOINT=https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso
+MEIRO_PROFILE_API_TOKEN=your-profile-api-token
 ```
 
 The demo endpoint and script URL default to the Meiro demo source:
@@ -31,13 +32,13 @@ The demo endpoint and script URL default to the Meiro demo source:
 
 SDK tracking is enabled by default. Set `VITE_MEIRO_SDK_ENABLED=false` to disable SDK loading and run in local mock mode.
 
-Profile API hydration is enabled when `VITE_MEIRO_PROFILE_API_TOKEN` is set. By default the app queries:
+Profile API hydration is enabled through the server-side Netlify Function at `/api/meiro-profile`. By default the browser queries:
 
 ```txt
-https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso?identifier_type=user_id&identifier_value={profile.email}
+/api/meiro-profile?identifier_type=user_id&identifier_value={profile.email}
 ```
 
-using the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply email/user_id and phone identifiers.
+The function forwards to `MEIRO_PROFILE_API_ENDPOINT` using the server-only `MEIRO_PROFILE_API_TOKEN` as the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply email/user_id and phone identifiers.
 
 ## Implemented MPT Bootstrap
 

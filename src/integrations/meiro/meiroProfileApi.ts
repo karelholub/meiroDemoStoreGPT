@@ -5,7 +5,6 @@ export type ProfileIdentifierType = "user_id" | "email" | "phone" | "device_id" 
 export type ProfileApiConfigStatus = {
   enabled: boolean;
   hasEndpoint: boolean;
-  hasToken: boolean;
   endpoint: string;
   preferredIdentifierType: ProfileIdentifierType;
 };
@@ -16,24 +15,19 @@ export type ProfileApiResult = {
   profilePatch: Partial<CustomerProfile>;
 };
 
-export const DEFAULT_MEIRO_PROFILE_API_ENDPOINT = "https://meiro-demo.eu.pipes.meiro.io/profile-api/web-perso";
+export const DEFAULT_MEIRO_PROFILE_API_PROXY_URL = "/api/meiro-profile";
 
 export function getMeiroProfileApiStatus(): ProfileApiConfigStatus {
   return {
     enabled: import.meta.env.VITE_MEIRO_PROFILE_API_ENABLED !== "false",
     hasEndpoint: Boolean(getMeiroProfileApiEndpoint()),
-    hasToken: Boolean(getMeiroProfileApiToken()),
     endpoint: getMeiroProfileApiEndpoint(),
     preferredIdentifierType: getPreferredIdentifierType(),
   };
 }
 
 export function getMeiroProfileApiEndpoint() {
-  return import.meta.env.VITE_MEIRO_PROFILE_API_ENDPOINT || DEFAULT_MEIRO_PROFILE_API_ENDPOINT;
-}
-
-function getMeiroProfileApiToken() {
-  return import.meta.env.VITE_MEIRO_PROFILE_API_TOKEN || "";
+  return import.meta.env.VITE_MEIRO_PROFILE_API_PROXY_URL || DEFAULT_MEIRO_PROFILE_API_PROXY_URL;
 }
 
 function getPreferredIdentifierType(): ProfileIdentifierType {
@@ -57,11 +51,7 @@ export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, i
   url.searchParams.set("identifier_type", identifierType);
   url.searchParams.set("identifier_value", identifierValue);
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      "X-API-Token": getMeiroProfileApiToken(),
-    },
-  });
+  const response = await fetch(url.toString());
 
   if (!response.ok) throw new Error(`Profile API returned ${response.status}`);
 

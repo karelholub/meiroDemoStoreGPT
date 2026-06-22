@@ -94,11 +94,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!config.hasToken) {
-      setProfileApiStatus({ state: "missing_token", message: "Set VITE_MEIRO_PROFILE_API_TOKEN to hydrate profile attributes." });
-      return;
-    }
-
     if (!identifier) {
       setProfileApiStatus({ state: "idle", message: "Waiting for an email, phone, or supported identifier." });
       return;

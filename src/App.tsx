@@ -909,7 +909,7 @@ function MeiroStatusCard() {
     ["Endpoint", status.hasEndpoint ? "ready" : "missing"],
     ["Script", status.hasScriptUrl ? "ready" : "missing"],
     ["Debug", status.debug ? "on" : "off"],
-    ["Profile API", profileApiStatus.enabled && profileApiStatus.hasToken ? "ready" : "missing token"],
+    ["Profile API", profileApiStatus.enabled ? "proxy ready" : "disabled"],
   ];
 
   return (
