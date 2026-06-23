@@ -1290,10 +1290,12 @@ function ReviewReferralPage() {
     products.find((product) => product.id === "monday-survival-kit") ??
     products[0];
   const [submitted, setSubmitted] = useState(false);
+  const [reviewText, setReviewText] = useState("");
   const reviewLocked = Boolean(state.profile.hasLeftReview);
   const referralCode = state.profile.referralCode ?? "ESC-FINE-20";
   const deliveryStatus = state.profile.deliveryStatus ?? "awaiting delivery signal";
   const reviewStatus = reviewLocked ? "review received" : submitted ? "review captured" : "ready";
+  const reviewTextLength = reviewText.trim().length;
 
   return (
     <main className="page two-col review-page">
@@ -1317,8 +1319,6 @@ function ReviewReferralPage() {
         </div>
         <form className={submitted ? "form-card review-form submitted" : "form-card review-form"} onSubmit={(event) => {
           event.preventDefault();
-          const formData = new FormData(event.currentTarget);
-          const reviewText = String(formData.get("review_text") ?? "");
           trackEvent("review_submitted", {
             form_id: "post_purchase_review",
             product_id: reviewedProduct.id,
@@ -1329,7 +1329,7 @@ function ReviewReferralPage() {
             delivery_status: state.profile.deliveryStatus,
             repeat_buyer: state.profile.repeatBuyer,
             referral_code: referralCode,
-            review_text_length: reviewText.trim().length,
+            review_text_length: reviewTextLength,
           });
           setSubmitted(true);
         }}>
@@ -1337,11 +1337,24 @@ function ReviewReferralPage() {
             Product
             <input aria-label="Reviewed product" value={reviewedProduct.name} readOnly />
           </label>
-          <label>
-            Review
-            <textarea aria-label="Review text" name="review_text" placeholder="Surprisingly useful. Mildly concerning." required rows={5} />
+          <label className="review-text-field">
+            <span>Review</span>
+            <textarea
+              aria-label="Review text"
+              disabled={reviewLocked || submitted}
+              maxLength={420}
+              name="review_text"
+              onChange={(event) => setReviewText(event.target.value)}
+              placeholder="Surprisingly useful. Mildly concerning."
+              required
+              rows={5}
+              value={reviewText}
+            />
+            <span className="review-field-meta">
+              <small>The event sends product context and text length, not the review body.</small>
+              <b>{reviewTextLength}/420</b>
+            </span>
           </label>
-          <p className="muted">The demo event sends product and profile context plus review text length, not the review body.</p>
           <button disabled={reviewLocked}>{reviewLocked ? "Review already received" : submitted ? "Review noted" : "Submit simulated review"}</button>
         </form>
       </section>

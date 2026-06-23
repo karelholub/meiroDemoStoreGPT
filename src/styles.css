@@ -37,7 +37,8 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -69,7 +70,8 @@ button:disabled {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid #ded5c4;
   background: #fffdf8;
@@ -81,7 +83,8 @@ select {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid rgba(182, 79, 56, 0.28);
   outline-offset: 3px;
 }
@@ -1017,13 +1020,74 @@ dd {
   gap: var(--space-4);
 }
 
-.review-form textarea {
-  min-height: 136px;
+.review-text-field {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: rgba(255, 253, 248, 0.82);
+  border: 1px solid rgba(30, 27, 24, 0.08);
+  border-radius: 8px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.review-text-field:focus-within {
+  background: #fffdf8;
+  border-color: rgba(182, 79, 56, 0.36);
+  box-shadow: 0 0 0 4px rgba(182, 79, 56, 0.1);
+}
+
+.review-text-field > span:first-child {
+  color: #5f6557;
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.review-text-field textarea {
+  min-height: 160px;
+  padding: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(251, 248, 242, 0.98));
+  border-color: rgba(30, 27, 24, 0.12);
+  line-height: 1.55;
   resize: vertical;
+}
+
+.review-text-field textarea::placeholder {
+  color: #8d8276;
+}
+
+.review-text-field textarea:disabled {
+  color: #686259;
+  background: #f1eadf;
+  cursor: not-allowed;
+}
+
+.review-field-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: #756d62;
+}
+
+.review-field-meta small {
+  line-height: 1.35;
+}
+
+.review-field-meta b {
+  flex: 0 0 auto;
+  color: #5f6557;
+  font-size: 0.78rem;
+  font-weight: 850;
 }
 
 .review-form.submitted {
   border-color: rgba(111, 117, 101, 0.34);
+}
+
+.review-form.submitted .review-text-field {
+  border-color: rgba(111, 117, 101, 0.28);
 }
 
 .review-summary {
@@ -2083,6 +2147,12 @@ body.consent-visible .debug-toggle {
   .review-product-strip strong,
   .review-summary h2 {
     font-size: 1.08rem;
+  }
+
+  .review-field-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   .consent,
