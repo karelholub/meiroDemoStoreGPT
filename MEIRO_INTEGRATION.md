@@ -147,6 +147,7 @@ The app keeps descriptive internal event names for the local debug panel, but th
 - `user_logged_in` → `login`
 - `personalization_viewed` → `view_promotion`
 - `personalization_clicked` → `select_promotion`
+- `review_submitted` → `form_submit`
 - `profile_updated` → `working_lead`
 
 `consent_updated` is not forwarded as an event because consent is already sent through `mpt("consent", ...)`.

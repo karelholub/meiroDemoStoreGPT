@@ -65,7 +65,7 @@ See `MEIRO_INTEGRATION.md` for the SDK wiring point, consent behavior, and perso
 
 ## Tracked Events
 
-`page_view`, `product_view`, `category_view`, `product_list_view`, `search_submitted`, `search_result_clicked`, `product_added_to_cart`, `product_removed_from_cart`, `cart_view`, `checkout_started`, `checkout_step_completed`, `order_completed`, `newsletter_signup`, `user_registered`, `user_logged_in`, `profile_updated`, `recommendation_viewed`, `recommendation_clicked`, `personalization_viewed`, `personalization_clicked`, `consent_updated`.
+`page_view`, `product_view`, `category_view`, `product_list_view`, `search_submitted`, `search_result_clicked`, `product_added_to_cart`, `product_removed_from_cart`, `cart_view`, `checkout_started`, `checkout_step_completed`, `order_completed`, `newsletter_signup`, `user_registered`, `user_logged_in`, `profile_updated`, `recommendation_viewed`, `recommendation_clicked`, `personalization_viewed`, `personalization_clicked`, `review_submitted`, `consent_updated`.
 
 ## Demo Personas
 

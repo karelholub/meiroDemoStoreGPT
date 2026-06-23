@@ -104,6 +104,7 @@ const requiredEvents = [
   "recommendation_clicked",
   "personalization_viewed",
   "personalization_clicked",
+  "review_submitted",
   "consent_updated",
 ];
 
@@ -131,6 +132,7 @@ assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK event
   "order_completed: \"purchase\"",
   "search_submitted: \"search\"",
   "user_registered: \"sign_up\"",
+  "review_submitted: \"form_submit\"",
 ].forEach((mapping) => {
   assert(meiroClient.includes(mapping), `Meiro event mapping exists: ${mapping}`);
 });
@@ -161,6 +163,8 @@ assert(app.includes("last_purchased_sku"), "Profile API proof includes last purc
 assert(app.includes("profileFieldValue"), "playbooks can show populated Profile API field values");
 assert(app.includes("configuredProfileApiFields"), "configured Profile API fields are grouped separately");
 assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
+assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
+assert(app.includes("review_text_length"), "review event sends review text length only");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
 

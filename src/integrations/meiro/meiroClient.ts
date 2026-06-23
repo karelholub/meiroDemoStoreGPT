@@ -65,6 +65,7 @@ const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
   recommendation_clicked: "select_item",
   personalization_viewed: "view_promotion",
   personalization_clicked: "select_promotion",
+  review_submitted: "form_submit",
   consent_updated: undefined,
 };
 

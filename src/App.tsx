@@ -1290,14 +1290,31 @@ function ReviewReferralPage() {
         <span className="eyebrow">Post-purchase review and referral</span>
         <h1>How did the supplies land?</h1>
         <p className="lead">{state.profile.deliveryStatus ? `Delivery status: ${state.profile.deliveryStatus}. ` : ""}A review/referral surface for order_delivered journeys, repeat-buyer splits, and referral-code personalization.</p>
-        <form className="form-card" onSubmit={(event) => { event.preventDefault(); setSubmitted(true); }}>
+        <form className="form-card" onSubmit={(event) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const reviewText = String(formData.get("review_text") ?? "");
+          trackEvent("review_submitted", {
+            form_id: "post_purchase_review",
+            product_id: reviewedProduct.id,
+            product_name: reviewedProduct.name,
+            product_category: reviewedProduct.category,
+            last_purchased_sku: state.profile.lastPurchasedSku,
+            last_purchased_category: state.profile.lastPurchasedCategory,
+            delivery_status: state.profile.deliveryStatus,
+            repeat_buyer: state.profile.repeatBuyer,
+            referral_code: referralCode,
+            review_text_length: reviewText.trim().length,
+          });
+          setSubmitted(true);
+        }}>
           <label>
             Product
             <input aria-label="Reviewed product" value={reviewedProduct.name} readOnly />
           </label>
           <label>
             Review
-            <input aria-label="Review text" placeholder="Surprisingly useful. Mildly concerning." required />
+            <input aria-label="Review text" name="review_text" placeholder="Surprisingly useful. Mildly concerning." required />
           </label>
           <button disabled={reviewLocked}>{reviewLocked ? "Review already received" : submitted ? "Review noted" : "Submit simulated review"}</button>
         </form>
