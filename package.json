@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "feed": "node scripts/generate-product-feed.mjs",
     "build": "tsc && vite build",
     "smoke": "node scripts/smoke-check.mjs",
     "check": "npm run build && npm run smoke",

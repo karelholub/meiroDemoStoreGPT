@@ -31,6 +31,7 @@ const meiroProfileApi = read("src/integrations/meiro/meiroProfileApi.ts");
 const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const profileApiFunction = read("netlify/functions/meiro-profile.ts");
 const netlify = read("netlify.toml");
+const productFeed = read("public/product-feed.xml");
 
 const routePaths = [
   "/",
@@ -183,6 +184,10 @@ assert(profileApiFunction.includes("profile_not_found"), "Profile API proxy trea
 assert(meiroProfileApi.includes("profileApiErrorMessage"), "Profile API client renders proxy error messages");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
+assert(productFeed.includes('xmlns:g="http://base.google.com/ns/1.0"'), "XML product feed uses Google Merchant-style namespace");
+assert((productFeed.match(/<item>/g) || []).length === productRows.length, "XML product feed includes every product");
+assert(productFeed.includes("<g:id>monday-survival-kit</g:id>"), "XML product feed includes stable product ids");
+assert(productFeed.includes("<g:custom_label_0>"), "XML product feed includes recommendation labels");
 
 [
   "README.md",

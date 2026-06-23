@@ -65,6 +65,28 @@ Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` 
 
 `src/data/profileApiScenarios.ts` contains deterministic seeded profiles for presenter QA. Loading one from `/demo-control` marks Profile API status as loaded with `identifier_type=scenario` and populates the same normalized profile fields that the live API would populate. This does not call the live Profile API and is meant only to validate UI surfaces and demo flow.
 
+## Product Feed
+
+The shop exposes a Google Merchant-style XML product feed for Meiro CDP catalog/data-source ingestion:
+
+```txt
+https://dmostoregpt.netlify.app/product-feed.xml
+```
+
+The checked-in feed is generated from `src/data/products.ts` and includes 42 products with stable `g:id` values, product URLs, image URLs, prices, availability, product type/category, brand, and custom labels for tags, stock state, margin score, and popularity score.
+
+Regenerate the feed after catalog changes:
+
+```bash
+npm run feed
+```
+
+For a different deployed hostname:
+
+```bash
+SITE_URL=https://example.com npm run feed
+```
+
 ## Implemented MPT Bootstrap
 
 When enabled, `meiroClient.ts` creates the queue-compatible `window.mpt` function, calls:
