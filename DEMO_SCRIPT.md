@@ -85,6 +85,8 @@ Open `/demo-control` after logging in or registering with an email that exists i
 Show:
 - Profile API proof card with status, identifier, update time, and loaded attribute count
 - mapped attributes such as `vip_tier`, `next_best_product_ids`, `has_active_cart`, `category_affinity`, and `referral_code`
+- `predicted_reorder_date` and `last_purchased_sku` filling the reorder and review/referral surfaces
+- Missing Profile API values list showing remaining placeholders to populate in Meiro CDP
 - the storefront surface each attribute powers
 - personalization decision reasons changing from persona/local rules to `profile_api.*` rules
 

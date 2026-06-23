@@ -100,8 +100,8 @@ function mapAttributesToCustomerProfile(attributes: Record<string, unknown>): Pa
   assignString(patch, "lifecycleStage", read(attributes, ["lifecycle_stage", "lifecycleStage"]));
   assignString(patch, "categoryAffinity", read(attributes, ["category_affinity", "last_purchased_category", "favorite_category"]));
   assignString(patch, "vipTier", read(attributes, ["vip_tier", "loyalty_tier"]));
-  assignString(patch, "predictedReorderDate", read(attributes, ["predicted_reorder_date"]));
-  assignString(patch, "lastPurchasedSku", read(attributes, ["last_purchased_sku"]));
+  assignString(patch, "predictedReorderDate", read(attributes, ["predicted_reorder_date", "next_reorder_date", "reorder_date"]));
+  assignString(patch, "lastPurchasedSku", read(attributes, ["last_purchased_sku", "last_purchased_product_id", "last_purchased_product_sku", "last_purchased_item_id"]));
   assignString(patch, "lastPurchasedCategory", read(attributes, ["last_purchased_category"]));
   assignString(patch, "referralCode", read(attributes, ["referral_code"]));
   assignString(patch, "nextBestAction", read(attributes, ["next_best_action"]));

@@ -9,7 +9,7 @@ import { cartPayload, productPayload } from "./integrations/meiro/meiroEvents";
 import { getPersonalizationDecision } from "./integrations/meiro/meiroPersonalization";
 import { getMeiroProfileApiStatus } from "./integrations/meiro/meiroProfileApi";
 import { AppStateProvider, useAppState } from "./store/appState";
-import type { ConsentState, PersonalizationZoneId, Product, RecommendationStrategy } from "./types";
+import type { ConsentState, CustomerProfile, PersonalizationZoneId, Product, RecommendationStrategy } from "./types";
 import { recommendProducts } from "./utils/recommendations";
 
 function navigate(path: string) {
@@ -324,6 +324,52 @@ const ecommercePlaybooks = [
   },
 ] as const;
 
+type ProfileAttributeRow = {
+  label: string;
+  field: string;
+  value: unknown;
+  surface: string;
+};
+
+function profileFieldValue(field: string, profile: CustomerProfile): unknown {
+  const values: Record<string, unknown> = {
+    cart_item_ids: profile.cartItemIds,
+    category_affinity: profile.categoryAffinity ?? profile.preferredCategory,
+    days_since_last_purchase: profile.daysSinceLastPurchase,
+    delivery_status: profile.deliveryStatus,
+    discount_affinity: profile.discountAffinity,
+    has_active_cart: profile.hasActiveCart,
+    has_left_review: profile.hasLeftReview,
+    journey_membership: profile.journeyMembership,
+    last_abandoned_cart_value: profile.lastAbandonedCartValue,
+    last_purchased_category: profile.lastPurchasedCategory,
+    last_purchased_sku: profile.lastPurchasedSku,
+    last_viewed_product_id: profile.lastViewedProductId,
+    lifetime_value: profile.lifetimeValue,
+    marketing_consent: profile.marketingConsent,
+    next_best_action: profile.nextBestAction,
+    next_best_product_ids: profile.nextBestProductIds,
+    predicted_reorder_date: profile.predictedReorderDate,
+    purchase_count: profile.purchaseCount,
+    push_opt_in: profile.pushOptIn,
+    referral_code: profile.referralCode,
+    repeat_buyer: profile.repeatBuyer,
+    second_purchase: profile.repeatBuyer,
+    signup_channel: profile.signupChannel,
+    total_orders: profile.purchaseCount,
+    vip_tier: profile.vipTier,
+    viewed_product_count: profile.viewedProductCount,
+  };
+
+  return values[field];
+}
+
+function hasProfileValue(value: unknown) {
+  if (value === undefined || value === null || value === "") return false;
+  if (Array.isArray(value)) return value.length > 0;
+  return true;
+}
+
 function PlaybookSummaryCard({ playbook }: { playbook: (typeof ecommercePlaybooks)[number] }) {
   const state = useAppState();
   return (
@@ -332,7 +378,11 @@ function PlaybookSummaryCard({ playbook }: { playbook: (typeof ecommercePlaybook
       <h2>{playbook.title}</h2>
       <p>{playbook.webSurface}</p>
       <div className="playbook-fields" aria-label={`${playbook.title} profile fields`}>
-        {playbook.profileFields.map((field) => <code key={field}>{field}</code>)}
+        {playbook.profileFields.map((field) => {
+          const value = profileFieldValue(field, state.profile);
+          const populated = hasProfileValue(value);
+          return <code className={populated ? "filled" : "missing"} key={field}>{field}{populated ? `: ${formatProfileValue(value)}` : ""}</code>;
+        })}
       </div>
       <div className="actions">
         <button type="button" className="ghost" onClick={() => state.setPersona(playbook.personaId)}>Load scenario</button>
@@ -886,6 +936,7 @@ function AccountPage() {
             ["lifetime_value", profile.lifetimeValue],
             ["purchase_count", profile.purchaseCount],
             ["predicted_reorder_date", profile.predictedReorderDate],
+            ["last_purchased_sku", profile.lastPurchasedSku],
             ["days_since_last_purchase", profile.daysSinceLastPurchase],
             ["last_purchased_category", profile.lastPurchasedCategory],
             ["last_viewed_product_id", profile.lastViewedProductId],
@@ -975,13 +1026,14 @@ function formatProfileValue(value: unknown) {
   return String(value);
 }
 
-function profileAttributeRows(state: ReturnType<typeof useAppState>) {
+function profileAttributeRows(state: ReturnType<typeof useAppState>): ProfileAttributeRow[] {
   const profile = state.profile;
   return [
     { label: "VIP", field: "vip_tier", value: profile.vipTier, surface: "top banner, account, lifecycle slot" },
     { label: "Next products", field: "next_best_product_ids", value: profile.nextBestProductIds, surface: "homepage recommendation rail" },
     { label: "Next action", field: "next_best_action", value: profile.nextBestAction, surface: "hero, thank-you banner" },
     { label: "Reorder", field: "predicted_reorder_date", value: profile.predictedReorderDate, surface: "replenishment slot" },
+    { label: "Last SKU", field: "last_purchased_sku", value: profile.lastPurchasedSku, surface: "reorder product, review/referral product" },
     { label: "Cart intent", field: "has_active_cart / cart_item_ids", value: profile.hasActiveCart || profile.cartItemIds?.length ? formatProfileValue(profile.cartItemIds ?? profile.hasActiveCart) : undefined, surface: "hero, cart recovery, cross-sell" },
     { label: "Abandoned value", field: "last_abandoned_cart_value", value: profile.lastAbandonedCartValue, surface: "cart recovery message" },
     { label: "Affinity", field: "category_affinity", value: profile.categoryAffinity ?? profile.preferredCategory, surface: "category intro, recommendations" },
@@ -994,6 +1046,8 @@ function profileAttributeRows(state: ReturnType<typeof useAppState>) {
 function ProfileApiInspector() {
   const state = useAppState();
   const attributeCount = Object.keys(state.profile.profileApiAttributes ?? {}).length;
+  const rows = profileAttributeRows(state);
+  const missingRows = rows.filter((row) => !hasProfileValue(row.value));
   const loadedLabel =
     state.profileApiStatus.state === "loaded"
       ? `${attributeCount} attributes loaded`
@@ -1012,14 +1066,23 @@ function ProfileApiInspector() {
         <div><dt>Updated</dt><dd>{state.profileApiStatus.updatedAt ? new Date(state.profileApiStatus.updatedAt).toLocaleTimeString() : "not yet"}</dd></div>
       </dl>
       <div className="attribute-grid">
-        {profileAttributeRows(state).map((row) => (
-          <div className={row.value === undefined || row.value === null || row.value === "" ? "attribute-row empty" : "attribute-row"} key={row.field}>
+        {rows.map((row) => (
+          <div className={hasProfileValue(row.value) ? "attribute-row" : "attribute-row empty"} key={row.field}>
             <span>{row.label}</span>
             <strong>{formatProfileValue(row.value)}</strong>
             <code>{row.field}</code>
             <small>{row.surface}</small>
           </div>
         ))}
+      </div>
+      <div className="missing-attributes">
+        <strong>{state.profileApiStatus.state === "loaded" ? "Missing Profile API values" : "Profile API values to check"}</strong>
+        <p className="muted">{missingRows.length === 0 ? "All visible personalization placeholders have values." : "Add these attributes to Meiro CDP/Profile API to fill the remaining visible placeholders."}</p>
+        {missingRows.length > 0 && (
+          <div className="playbook-fields">
+            {missingRows.map((row) => <code className="missing" key={row.field}>{row.field}</code>)}
+          </div>
+        )}
       </div>
     </section>
   );
