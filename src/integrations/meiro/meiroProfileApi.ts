@@ -199,6 +199,10 @@ function unwrapAttributeValue(value: unknown, attributeName?: string): unknown {
   if ("value" in value) return unwrapAttributeValue(value.value, attributeName);
   if (Array.isArray(value.values)) return unwrapAttributeValue(value.values, attributeName);
   if (attributeName && attributeName in value) return unwrapAttributeValue(value[attributeName], attributeName);
+  if (Object.keys(value).length === 1) {
+    const [[nestedKey, nestedValue]] = Object.entries(value);
+    return unwrapAttributeValue(nestedValue, nestedKey);
+  }
 
   return Object.fromEntries(Object.entries(value).map(([key, nestedValue]) => [key, unwrapAttributeValue(nestedValue, key)]));
 }
