@@ -26,7 +26,9 @@ const categories = read("src/data/categories.ts");
 const events = read("src/integrations/meiro/eventSchemas.ts");
 const meiroClient = read("src/integrations/meiro/meiroClient.ts");
 const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
+const meiroProfileApi = read("src/integrations/meiro/meiroProfileApi.ts");
 const profileApiScenarios = read("src/data/profileApiScenarios.ts");
+const profileApiFunction = read("netlify/functions/meiro-profile.ts");
 const netlify = read("netlify.toml");
 
 const routePaths = [
@@ -165,6 +167,10 @@ assert(app.includes("configuredProfileApiFields"), "configured Profile API field
 assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
 assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
 assert(app.includes("review_text_length"), "review event sends review text length only");
+assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");
+assert(profileApiFunction.includes('getEnv("VITE_MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy tolerates legacy token env");
+assert(profileApiFunction.includes("upstream_profile_api_error"), "Profile API proxy reports upstream errors");
+assert(meiroProfileApi.includes("profileApiErrorMessage"), "Profile API client renders proxy error messages");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
 

@@ -52,10 +52,12 @@ export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, i
   url.searchParams.set("identifier_value", identifierValue);
 
   const response = await fetch(url.toString());
+  const raw = await parseProfileApiResponse(response);
 
-  if (!response.ok) throw new Error(`Profile API returned ${response.status}`);
+  if (!response.ok) {
+    throw new Error(profileApiErrorMessage(response.status, raw));
+  }
 
-  const raw = await response.json();
   const attributes = extractProfileAttributes(raw);
 
   return {
@@ -63,6 +65,23 @@ export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, i
     attributes,
     profilePatch: mapAttributesToCustomerProfile(attributes),
   };
+}
+
+async function parseProfileApiResponse(response: Response): Promise<unknown> {
+  const body = await response.text();
+  if (!body) return {};
+  try {
+    return JSON.parse(body);
+  } catch {
+    return { error: body.slice(0, 500) };
+  }
+}
+
+function profileApiErrorMessage(status: number, raw: unknown) {
+  if (!isRecord(raw)) return `Profile API returned ${status}`;
+  const message = asString(raw.error) || asString(raw.message) || `Profile API returned ${status}`;
+  const code = asString(raw.code);
+  return code ? `${message} (${code})` : message;
 }
 
 function extractProfileAttributes(raw: unknown): Record<string, unknown> {
