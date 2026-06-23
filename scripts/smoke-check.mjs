@@ -134,10 +134,12 @@ assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK event
   "order_completed: \"purchase\"",
   "search_submitted: \"search\"",
   "user_registered: \"sign_up\"",
+  "profile_updated: \"generate_lead\"",
   "review_submitted: \"form_submit\"",
 ].forEach((mapping) => {
   assert(meiroClient.includes(mapping), `Meiro event mapping exists: ${mapping}`);
 });
+assert(!meiroClient.includes('profile_updated: "working_lead"'), "profile updates do not use unsupported working_lead event");
 assert(meiroClient.includes("link_tracking: { enabled: true }"), "Meiro link tracking is enabled");
 assert(meiroClient.includes("tracking_rules:"), "Meiro tracking rules are configured");
 assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage allowlist is configured");

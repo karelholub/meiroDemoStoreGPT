@@ -38,8 +38,7 @@ type MptEventName =
   | "view_item"
   | "view_item_list"
   | "view_promotion"
-  | "view_search_results"
-  | "working_lead";
+  | "view_search_results";
 
 const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
   page_view: "page_view",
@@ -60,7 +59,7 @@ const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
   newsletter_signup: "sign_up",
   user_registered: "sign_up",
   user_logged_in: "login",
-  profile_updated: "working_lead",
+  profile_updated: "generate_lead",
   recommendation_viewed: "view_item_list",
   recommendation_clicked: "select_item",
   personalization_viewed: "view_promotion",
