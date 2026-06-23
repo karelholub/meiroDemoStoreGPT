@@ -1283,14 +1283,30 @@ function ReviewReferralPage() {
   const [submitted, setSubmitted] = useState(false);
   const reviewLocked = Boolean(state.profile.hasLeftReview);
   const referralCode = state.profile.referralCode ?? "ESC-FINE-20";
+  const deliveryStatus = state.profile.deliveryStatus ?? "awaiting delivery signal";
+  const reviewStatus = reviewLocked ? "review received" : submitted ? "review captured" : "ready";
 
   return (
-    <main className="page two-col">
-      <section>
-        <span className="eyebrow">Post-purchase review and referral</span>
-        <h1>How did the supplies land?</h1>
-        <p className="lead">{state.profile.deliveryStatus ? `Delivery status: ${state.profile.deliveryStatus}. ` : ""}A review/referral surface for order_delivered journeys, repeat-buyer splits, and referral-code personalization.</p>
-        <form className="form-card" onSubmit={(event) => {
+    <main className="page two-col review-page">
+      <section className="review-main">
+        <div className="page-heading compact">
+          <span className="eyebrow">Post-purchase review and referral</span>
+          <h1>How did the supplies land?</h1>
+          <p>A focused surface for delivered-order journeys, repeat-buyer splits, and referral-code personalization.</p>
+        </div>
+        <div className="review-product-strip">
+          <ProductVisual product={reviewedProduct} size="thumb" />
+          <div>
+            <span className="eyebrow">Product context</span>
+            <strong>{reviewedProduct.name}</strong>
+            <p>{reviewedProduct.category}</p>
+          </div>
+          <div className="review-status">
+            <span>{deliveryStatus}</span>
+            <strong>{reviewStatus}</strong>
+          </div>
+        </div>
+        <form className={submitted ? "form-card review-form submitted" : "form-card review-form"} onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
           const reviewText = String(formData.get("review_text") ?? "");
@@ -1314,20 +1330,25 @@ function ReviewReferralPage() {
           </label>
           <label>
             Review
-            <input aria-label="Review text" name="review_text" placeholder="Surprisingly useful. Mildly concerning." required />
+            <textarea aria-label="Review text" name="review_text" placeholder="Surprisingly useful. Mildly concerning." required rows={5} />
           </label>
+          <p className="muted">The demo event sends product and profile context plus review text length, not the review body.</p>
           <button disabled={reviewLocked}>{reviewLocked ? "Review already received" : submitted ? "Review noted" : "Submit simulated review"}</button>
         </form>
       </section>
-      <aside className="summary">
-        <ProductVisual product={reviewedProduct} size="thumb" />
-        <h2>Referral slot</h2>
-        <p>{state.profile.repeatBuyer ? "Repeat buyer profile detected. " : ""}Repeat buyers can receive a referral code from Meiro Asset Library or Profile API.</p>
-        <div className="referral-code">{referralCode}</div>
+      <aside className="summary review-summary">
+        <span className="eyebrow">Referral slot</span>
+        <h2>{state.profile.repeatBuyer ? "Repeat buyer perk" : "Referral ready"}</h2>
+        <p>{state.profile.repeatBuyer ? "Repeat buyer profile detected. " : ""}Referral copy and code can come from Meiro once the post-delivery signal is available.</p>
+        <div className="referral-card">
+          <span>Referral code</span>
+          <div className="referral-code">{referralCode}</div>
+        </div>
         <div className="playbook-fields">
           <code>delivery_status{state.profile.deliveryStatus ? `: ${state.profile.deliveryStatus}` : ""}</code>
           <code>repeat_buyer{state.profile.repeatBuyer !== undefined ? `: ${String(state.profile.repeatBuyer)}` : ""}</code>
           <code>has_left_review{state.profile.hasLeftReview !== undefined ? `: ${String(state.profile.hasLeftReview)}` : ""}</code>
+          <code>review_submitted</code>
         </div>
       </aside>
     </main>
