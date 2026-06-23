@@ -160,7 +160,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [consent.personalization, personaId, profile.email, profile.phone, profile.profileApiUpdatedAt, mptUserId]);
+  }, [consent.personalization, personaId, profile.email, profile.phone, mptUserId]);
 
   const setConsent = (next: ConsentState) => {
     setConsentState(next);

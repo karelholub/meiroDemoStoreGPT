@@ -174,6 +174,7 @@ assert(app.includes("email: checkoutDetails.email") && app.includes("phone: chec
 assert(meiroProfileApi.includes("mpt_user_id_js"), "Profile API identifier reads Meiro SDK user id cookie");
 assert(meiroProfileApi.includes('preferred === "user_id" && mptUserId'), "Profile API user_id prefers Meiro SDK cookie");
 assert(appState.includes("setMptUserId") && appState.includes("window.setInterval(refreshMptUserId"), "app watches Meiro SDK user id cookie");
+assert(!appState.includes("profile.phone, profile.profileApiUpdatedAt, mptUserId"), "Profile API hydration does not loop on updated timestamp");
 assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");
 assert(profileApiFunction.includes('getEnv("VITE_MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy tolerates legacy token env");
 assert(profileApiFunction.includes("upstream_profile_api_error"), "Profile API proxy reports upstream errors");
