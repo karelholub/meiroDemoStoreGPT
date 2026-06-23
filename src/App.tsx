@@ -1202,13 +1202,57 @@ function MeiroStatusCard() {
   );
 }
 
+function DemoSignalStrip() {
+  const state = useAppState();
+  const sdkCall = state.meiroSdkCalls[0];
+  const event = state.recentEvents[0];
+  const profileStatus = state.profileApiStatus.state === "loaded" ? "Profile loaded" : state.profileApiStatus.state.replaceAll("_", " ");
+  const consentCount = (["analytics", "personalization", "marketing"] as const).filter((key) => state.consent[key]).length;
+
+  return (
+    <div className="demo-signal-strip" aria-label="Demo status">
+      <div>
+        <span>Profile API</span>
+        <strong>{profileStatus}</strong>
+      </div>
+      <div>
+        <span>Consent</span>
+        <strong>{consentCount}/3 active</strong>
+      </div>
+      <div>
+        <span>Latest SDK call</span>
+        <strong>{sdkCall ? `${sdkCall.command}: ${sdkCall.label}` : "waiting"}</strong>
+      </div>
+      <div>
+        <span>Latest event</span>
+        <strong>{event?.event_name ?? "waiting"}</strong>
+      </div>
+    </div>
+  );
+}
+
 function DemoControlPage() {
   const state = useAppState();
   return (
     <main className="page two-col demo-control-page">
       <section>
-        <h1>Demo control</h1>
-        <p className="lead">Switch personas, review consent, and inspect the event trail behind each storefront action.</p>
+        <div className="demo-hero">
+          <span className="eyebrow">Presenter command center</span>
+          <h1>Demo control</h1>
+          <p className="lead">Switch profile scenarios, verify consent, and inspect the exact storefront signals being sent to Meiro.</p>
+          <div className="actions">
+            <Link to="/playbooks" className="primary-cta">Open playbooks</Link>
+            <Link to="/account" className="secondary-action">View hydrated account</Link>
+          </div>
+        </div>
+        <DemoSignalStrip />
+        <div className="demo-section-heading">
+          <div>
+            <span className="eyebrow">Local personas</span>
+            <h2>Presenter shortcuts</h2>
+          </div>
+          <p className="muted">Use these to demonstrate journeys before or alongside live Profile API data.</p>
+        </div>
         <div className="persona-grid">
           {personas.map((persona) => (
             <button type="button" className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
