@@ -40,6 +40,15 @@ export default async (req: Request) => {
 
     const body = await response.text();
 
+    if (response.status === 404) {
+      return json({
+        attributes: {},
+        profile_not_found: true,
+        identifier_type: identifierType,
+        identifier_value: identifierValue,
+      }, 200);
+    }
+
     if (!response.ok) {
       return json({
         error: `Meiro Profile API returned ${response.status}`,

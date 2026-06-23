@@ -173,6 +173,7 @@ assert(app.includes("email: checkoutDetails.email") && app.includes("phone: chec
 assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");
 assert(profileApiFunction.includes('getEnv("VITE_MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy tolerates legacy token env");
 assert(profileApiFunction.includes("upstream_profile_api_error"), "Profile API proxy reports upstream errors");
+assert(profileApiFunction.includes("profile_not_found"), "Profile API proxy treats upstream 404 as empty profile");
 assert(meiroProfileApi.includes("profileApiErrorMessage"), "Profile API client renders proxy error messages");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
