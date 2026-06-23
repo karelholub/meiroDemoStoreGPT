@@ -38,7 +38,9 @@ Profile API hydration is enabled through the server-side Netlify Function at `/a
 /api/meiro-profile?identifier_type=user_id&identifier_value={profile.email}
 ```
 
-The function forwards to `MEIRO_PROFILE_API_ENDPOINT` using the server-only `MEIRO_PROFILE_API_TOKEN` as the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply email/user_id and phone identifiers.
+When `VITE_MEIRO_PROFILE_API_IDENTIFIER_TYPE=user_id`, the storefront first uses the Meiro SDK cookie `mpt_user_id_js` as the Profile API identifier value. It falls back to profile email only if the cookie is not available yet. The app watches this cookie after page load so Profile API hydration can retry once the SDK creates it.
+
+The function forwards to `MEIRO_PROFILE_API_ENDPOINT` using the server-only `MEIRO_PROFILE_API_TOKEN` as the `X-API-Token` header. Returned attributes are normalized into the local `CustomerProfile` shape and reused by banners, account fields, lifecycle slots, and `next_best_product` recommendations. Supported identifier configuration values are `user_id`, `email`, `phone`, `device_id`, and `browser`; the current UI can supply SDK `mpt_user_id_js`, email/user_id, and phone identifiers.
 
 ## Profile API Attribute Coverage
 

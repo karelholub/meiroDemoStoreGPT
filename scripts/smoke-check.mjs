@@ -23,6 +23,7 @@ function extractArrayBlock(source, exportName) {
 const app = read("src/App.tsx");
 const products = read("src/data/products.ts");
 const categories = read("src/data/categories.ts");
+const appState = read("src/store/appState.tsx");
 const events = read("src/integrations/meiro/eventSchemas.ts");
 const meiroClient = read("src/integrations/meiro/meiroClient.ts");
 const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
@@ -170,6 +171,9 @@ assert(app.includes("optionalProfileApiFields"), "optional Profile API placehold
 assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
 assert(app.includes("review_text_length"), "review event sends review text length only");
 assert(app.includes("email: checkoutDetails.email") && app.includes("phone: checkoutDetails.phone"), "purchase event includes top-level email and phone");
+assert(meiroProfileApi.includes("mpt_user_id_js"), "Profile API identifier reads Meiro SDK user id cookie");
+assert(meiroProfileApi.includes('preferred === "user_id" && mptUserId'), "Profile API user_id prefers Meiro SDK cookie");
+assert(appState.includes("setMptUserId") && appState.includes("window.setInterval(refreshMptUserId"), "app watches Meiro SDK user id cookie");
 assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");
 assert(profileApiFunction.includes('getEnv("VITE_MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy tolerates legacy token env");
 assert(profileApiFunction.includes("upstream_profile_api_error"), "Profile API proxy reports upstream errors");

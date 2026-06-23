@@ -35,15 +35,32 @@ function getPreferredIdentifierType(): ProfileIdentifierType {
   return ["user_id", "email", "phone", "device_id", "browser"].includes(value) ? value : "user_id";
 }
 
-export function getProfileApiIdentifier(profile: CustomerProfile): { identifierType: ProfileIdentifierType; identifierValue: string } | undefined {
+export function getProfileApiIdentifier(profile: CustomerProfile, mptUserId = getMptUserIdCookie()): { identifierType: ProfileIdentifierType; identifierValue: string } | undefined {
   const preferred = getPreferredIdentifierType();
 
+  if (preferred === "user_id" && mptUserId) return { identifierType: "user_id", identifierValue: mptUserId };
   if (preferred === "phone" && profile.phone) return { identifierType: "phone", identifierValue: profile.phone };
   if ((preferred === "email" || preferred === "user_id") && profile.email) return { identifierType: preferred, identifierValue: profile.email };
+  if (mptUserId) return { identifierType: "user_id", identifierValue: mptUserId };
   if (profile.email) return { identifierType: "user_id", identifierValue: profile.email };
   if (profile.phone) return { identifierType: "phone", identifierValue: profile.phone };
 
   return undefined;
+}
+
+export function getMptUserIdCookie() {
+  if (typeof document === "undefined") return undefined;
+  const cookie = document.cookie
+    .split(";")
+    .map((item) => item.trim())
+    .find((item) => item.startsWith("mpt_user_id_js="));
+  const value = cookie?.split("=").slice(1).join("=");
+  if (!value) return undefined;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, identifierValue: string): Promise<ProfileApiResult> {

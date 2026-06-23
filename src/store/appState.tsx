@@ -3,7 +3,7 @@ import { products } from "../data/products";
 import { personas } from "../data/personas";
 import type { ProfileApiScenario } from "../data/profileApiScenarios";
 import { setMeiroConsentState, setMeiroEventSink, setMeiroSdkCallSink, trackEvent } from "../integrations/meiro/meiroClient";
-import { fetchMeiroProfile, getMeiroProfileApiStatus, getProfileApiIdentifier } from "../integrations/meiro/meiroProfileApi";
+import { fetchMeiroProfile, getMeiroProfileApiStatus, getMptUserIdCookie, getProfileApiIdentifier } from "../integrations/meiro/meiroProfileApi";
 import type { CartItem, ConsentState, CustomerProfile, MeiroSdkCall, PersonalizationDecision, ProfileApiStatus, TrackingEvent } from "../types";
 import { loadLocal, saveLocal } from "../utils/storage";
 
@@ -61,6 +61,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [meiroSdkCalls, setMeiroSdkCalls] = useState<MeiroSdkCall[]>(() => loadLocal("esc_meiro_sdk_calls", []));
   const [personalizationDecisions, setPersonalizationDecisions] = useState<PersonalizationDecision[]>(() => loadLocal("esc_personalization_decisions", []));
   const [profileApiStatus, setProfileApiStatus] = useState<ProfileApiStatus>({ state: "idle" });
+  const [mptUserId, setMptUserId] = useState(() => getMptUserIdCookie());
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => loadLocal("esc_recently_viewed", []));
   const [lastOrderId, setLastOrderId] = useState<string | undefined>(() => loadLocal("esc_last_order", undefined));
 
@@ -82,8 +83,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => setMeiroConsentState(consent), [consent]);
 
   useEffect(() => {
+    const refreshMptUserId = () => {
+      const next = getMptUserIdCookie();
+      setMptUserId((current) => (current === next ? current : next));
+    };
+
+    refreshMptUserId();
+    const interval = window.setInterval(refreshMptUserId, 1500);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const config = getMeiroProfileApiStatus();
-    const identifier = getProfileApiIdentifier(profile);
+    const identifier = getProfileApiIdentifier(profile, mptUserId);
     let cancelled = false;
 
     if (!consent.personalization) {
@@ -148,7 +160,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [consent.personalization, personaId, profile.email, profile.phone, profile.profileApiUpdatedAt]);
+  }, [consent.personalization, personaId, profile.email, profile.phone, profile.profileApiUpdatedAt, mptUserId]);
 
   const setConsent = (next: ConsentState) => {
     setConsentState(next);

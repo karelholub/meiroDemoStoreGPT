@@ -28,7 +28,7 @@ MEIRO_PROFILE_API_TOKEN=your-profile-api-token
 ```
 
 SDK tracking is enabled by default. Set `VITE_MEIRO_SDK_ENABLED=false` to run in local mock mode only.
-Profile API hydration is enabled through the Netlify Function at `/api/meiro-profile`. Keep `MEIRO_PROFILE_API_TOKEN` server-side only; do not expose it as a `VITE_` variable. The storefront queries with the identified profile email as `user_id` by default, then merges returned attributes into local personalization and recommendation state.
+Profile API hydration is enabled through the Netlify Function at `/api/meiro-profile`. Keep `MEIRO_PROFILE_API_TOKEN` server-side only; do not expose it as a `VITE_` variable. The storefront uses the Meiro SDK `mpt_user_id_js` cookie as the `user_id` identifier when available, then falls back to profile email/phone and merges returned attributes into local personalization and recommendation state.
 
 If analytics consent is disabled, behavioral events are suppressed by the Meiro wrapper and logged as `[Meiro Demo Event Suppressed]` in debug mode. `consent_updated` still fires so consent changes remain auditable.
 
