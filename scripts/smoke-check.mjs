@@ -176,6 +176,8 @@ assert(meiroProfileApi.includes("mpt_user_id_js"), "Profile API identifier reads
 assert(meiroProfileApi.includes('preferred === "user_id" && mptUserId'), "Profile API user_id prefers Meiro SDK cookie");
 assert(meiroProfileApi.includes("unwrapAttributeValue(value[attributeName], attributeName)") && meiroProfileApi.includes("flattenAttributeFields"), "Profile API mapper unwraps nested Meiro attribute wrappers");
 assert(meiroProfileApi.includes("Object.keys(value).length === 1"), "Profile API mapper unwraps one-field attribute objects");
+assert(meiroProfileApi.includes("last_purchase_contact.email") && meiroProfileApi.includes("last_purchase_address.street_address"), "Profile API mapper reads grouped purchase contact and address");
+assert(meiroProfileApi.includes("assignAffinityBoolean") && meiroProfileApi.includes('"high"'), "Profile API mapper accepts affinity labels");
 assert(appState.includes("setMptUserId") && appState.includes("window.setInterval(refreshMptUserId"), "app watches Meiro SDK user id cookie");
 assert(!appState.includes("profile.phone, profile.profileApiUpdatedAt, mptUserId"), "Profile API hydration does not loop on updated timestamp");
 assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");

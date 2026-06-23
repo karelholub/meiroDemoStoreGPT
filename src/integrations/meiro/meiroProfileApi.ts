@@ -126,15 +126,15 @@ function mapAttributesToCustomerProfile(attributes: Record<string, unknown>): Pa
     profileApiUpdatedAt: new Date().toISOString(),
   };
 
-  assignString(patch, "email", read(attributes, ["email", "user_email"]));
-  assignString(patch, "phone", read(attributes, ["phone", "phone_number", "mobile_phone"]));
-  assignString(patch, "firstName", read(attributes, ["first_name", "firstName", "given_name"]));
-  assignString(patch, "surname", read(attributes, ["surname", "last_name", "family_name"]));
-  assignString(patch, "streetAddress", read(attributes, ["street_address", "address_line_1", "shipping_address", "shipping_street_address"]));
+  assignString(patch, "email", read(attributes, ["email", "user_email", "last_purchase_contact.email"]));
+  assignString(patch, "phone", read(attributes, ["phone", "phone_number", "mobile_phone", "last_purchase_contact.phone"]));
+  assignString(patch, "firstName", read(attributes, ["first_name", "firstName", "given_name", "last_purchase_contact.first_name"]));
+  assignString(patch, "surname", read(attributes, ["surname", "last_name", "family_name", "last_purchase_contact.surname"]));
+  assignString(patch, "streetAddress", read(attributes, ["street_address", "address_line_1", "shipping_address", "shipping_street_address", "last_purchase_address.street_address"]));
   assignString(patch, "apartmentOrCompany", read(attributes, ["apartment_or_company", "address_line_2", "shipping_address_line_2"]));
-  assignString(patch, "city", read(attributes, ["city", "shipping_city"]));
-  assignString(patch, "postalCode", read(attributes, ["postal_code", "zip", "shipping_postal_code"]));
-  assignString(patch, "country", read(attributes, ["country", "shipping_country"]));
+  assignString(patch, "city", read(attributes, ["city", "shipping_city", "last_purchase_address.city"]));
+  assignString(patch, "postalCode", read(attributes, ["postal_code", "zip", "shipping_postal_code", "last_purchase_address.postal_code"]));
+  assignString(patch, "country", read(attributes, ["country", "shipping_country", "last_purchase_address.country"]));
   assignString(patch, "currentLifeSituation", read(attributes, ["current_life_situation", "life_situation"]));
   assignString(patch, "preferredCategory", read(attributes, ["preferred_category"]));
   assignString(patch, "lifecycleStage", read(attributes, ["lifecycle_stage", "lifecycleStage"]));
@@ -161,7 +161,7 @@ function mapAttributesToCustomerProfile(attributes: Record<string, unknown>): Pa
   assignBoolean(patch, "repeatBuyer", read(attributes, ["repeat_buyer", "second_purchase"]));
   assignBoolean(patch, "pushOptIn", read(attributes, ["push_opt_in", "push_consent"]));
   assignBoolean(patch, "marketingConsent", read(attributes, ["marketing_consent", "email_marketing_consent"]));
-  assignBoolean(patch, "discountAffinity", read(attributes, ["discount_affinity", "discount_sensitive", "coupon_user"]));
+  assignAffinityBoolean(patch, "discountAffinity", read(attributes, ["discount_affinity", "discount_sensitive", "coupon_user"]));
 
   assignStringArray(patch, "recentlyViewedCategories", read(attributes, ["recently_viewed_categories", "viewed_categories"]));
   assignStringArray(patch, "recommendedTags", read(attributes, ["recommended_tags", "recommendation_tags"]));
@@ -183,10 +183,17 @@ function read(attributes: Record<string, unknown>, names: string[]) {
   for (const name of names) {
     const direct = attributes[name];
     if (direct !== undefined) return direct;
+    const nested = readPath(attributes, name);
+    if (nested !== undefined) return nested;
     const match = lowerEntries.find(([key]) => key === name.toLowerCase());
     if (match) return match[1];
   }
   return undefined;
+}
+
+function readPath(attributes: Record<string, unknown>, path: string) {
+  if (!path.includes(".")) return undefined;
+  return path.split(".").reduce<unknown>((current, part) => (isRecord(current) ? current[part] : undefined), attributes);
 }
 
 function unwrapAttributeValue(value: unknown, attributeName?: string): unknown {
@@ -239,6 +246,18 @@ function assignNumber<T extends keyof CustomerProfile>(patch: Partial<CustomerPr
 function assignBoolean<T extends keyof CustomerProfile>(patch: Partial<CustomerProfile>, key: T, value: unknown) {
   if (typeof value === "boolean") patch[key] = value as CustomerProfile[T];
   if (typeof value === "string" && ["true", "false"].includes(value.toLowerCase())) patch[key] = (value.toLowerCase() === "true") as CustomerProfile[T];
+}
+
+function assignAffinityBoolean<T extends keyof CustomerProfile>(patch: Partial<CustomerProfile>, key: T, value: unknown) {
+  if (typeof value === "boolean") {
+    patch[key] = value as CustomerProfile[T];
+    return;
+  }
+
+  const text = asString(value)?.toLowerCase();
+  if (!text) return;
+  if (["high", "medium", "true", "yes", "1"].includes(text)) patch[key] = true as CustomerProfile[T];
+  if (["low", "none", "false", "no", "0"].includes(text)) patch[key] = false as CustomerProfile[T];
 }
 
 function assignStringArray<T extends keyof CustomerProfile>(patch: Partial<CustomerProfile>, key: T, value: unknown) {

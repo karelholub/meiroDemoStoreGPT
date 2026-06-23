@@ -48,8 +48,8 @@ The storefront consumes these Profile API attributes when present. The current r
 
 | Attribute | Main surfaces |
 | --- | --- |
-| `email`, `first_name`, `surname`, `phone` | account identity, checkout contact prefill |
-| `street_address`, `apartment_or_company`, `city`, `postal_code`, `country` | checkout shipping prefill |
+| `last_purchase_contact` (`email`, `first_name`, `surname`, `phone`) | account identity, checkout contact prefill |
+| `last_purchase_address` (`street_address`, `city`, `postal_code`, `country`) | checkout shipping prefill |
 | `vip_tier`, `lifetime_value`, `purchase_count` | homepage banner, account banner, VIP lifecycle slot |
 | `recommended_tags`, `category_affinity` | homepage recommendations, category intro, recommendation ordering |
 | `predicted_reorder_date`, `last_purchased_sku`, `days_since_last_purchase` | top banner, replenishment slot, reorder product, review/referral product, win-back slots |
@@ -59,7 +59,7 @@ The storefront consumes these Profile API attributes when present. The current r
 | `next_best_product_ids`, `next_best_action` | optional recommendation/content override fields |
 | `delivery_status`, `repeat_buyer`, `has_left_review`, `referral_code` | optional post-delivery/review/referral fields; not expected until OMS/review/referral source fields exist |
 
-Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` for `vip_tier`, `total_orders` for `purchase_count`, and `recommended_product_ids` for `next_best_product_ids`.
+Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` for `vip_tier`, `total_orders` for `purchase_count`, flat contact/address fields for the grouped `last_purchase_contact` and `last_purchase_address` attributes, and `recommended_product_ids` for `next_best_product_ids`. `discount_affinity` can be boolean or a label such as `high`.
 
 `/demo-control` shows a configured-attribute missing-values list after a profile loads. It only treats the currently configured real-time attributes as required. Optional recommendation/content fields and post-delivery placeholders are shown separately so they do not look like Profile API failures.
 
