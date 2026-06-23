@@ -818,7 +818,16 @@ function CheckoutPage() {
                     country: checkoutDetails.country,
                   });
                   const orderId = completeOrder();
-                  trackEvent("order_completed", { order_id: orderId, customer_type: profile.customerType, ...checkoutPayload(), ...orderPayload, total_value: orderPayload.cart_value, currency: "EUR" });
+                  trackEvent("order_completed", {
+                    order_id: orderId,
+                    customer_type: profile.customerType,
+                    email: checkoutDetails.email,
+                    phone: checkoutDetails.phone,
+                    ...checkoutPayload(),
+                    ...orderPayload,
+                    total_value: orderPayload.cart_value,
+                    currency: "EUR",
+                  });
                   navigate("/thank-you");
                 }}>Complete simulated order</button>
               )}

@@ -167,6 +167,7 @@ assert(app.includes("configuredProfileApiFields"), "configured Profile API field
 assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
 assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
 assert(app.includes("review_text_length"), "review event sends review text length only");
+assert(app.includes("email: checkoutDetails.email") && app.includes("phone: checkoutDetails.phone"), "purchase event includes top-level email and phone");
 assert(profileApiFunction.includes('getEnv("MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy reads server-side token");
 assert(profileApiFunction.includes('getEnv("VITE_MEIRO_PROFILE_API_TOKEN")'), "Profile API proxy tolerates legacy token env");
 assert(profileApiFunction.includes("upstream_profile_api_error"), "Profile API proxy reports upstream errors");
