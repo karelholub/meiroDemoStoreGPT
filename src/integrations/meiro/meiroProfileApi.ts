@@ -113,7 +113,11 @@ function extractProfileAttributes(raw: unknown): Record<string, unknown> {
     (isRecord(data) && isRecord(data.attributes) && data.attributes) ||
     source;
 
-  return Object.fromEntries(Object.entries(attributes).map(([key, value]) => [key, unwrapAttributeValue(value)]));
+  const unwrapped = Object.fromEntries(Object.entries(attributes).map(([key, value]) => [key, unwrapAttributeValue(value, key)]));
+  return {
+    ...unwrapped,
+    ...flattenAttributeFields(unwrapped),
+  };
 }
 
 function mapAttributesToCustomerProfile(attributes: Record<string, unknown>): Partial<CustomerProfile> {
@@ -185,11 +189,37 @@ function read(attributes: Record<string, unknown>, names: string[]) {
   return undefined;
 }
 
-function unwrapAttributeValue(value: unknown): unknown {
+function unwrapAttributeValue(value: unknown, attributeName?: string): unknown {
+  if (Array.isArray(value)) {
+    const unwrappedItems = value.map((item) => unwrapAttributeValue(item, attributeName));
+    return unwrappedItems.length === 1 ? unwrappedItems[0] : unwrappedItems;
+  }
+
   if (!isRecord(value)) return value;
-  if ("value" in value) return value.value;
-  if (Array.isArray(value.values)) return value.values;
-  return value;
+  if ("value" in value) return unwrapAttributeValue(value.value, attributeName);
+  if (Array.isArray(value.values)) return unwrapAttributeValue(value.values, attributeName);
+  if (attributeName && attributeName in value) return unwrapAttributeValue(value[attributeName], attributeName);
+
+  return Object.fromEntries(Object.entries(value).map(([key, nestedValue]) => [key, unwrapAttributeValue(nestedValue, key)]));
+}
+
+function flattenAttributeFields(attributes: Record<string, unknown>) {
+  const fields: Record<string, unknown> = {};
+
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) return;
+    if (!isRecord(value)) return;
+
+    Object.entries(value).forEach(([key, nestedValue]) => {
+      if (fields[key] === undefined && !isRecord(nestedValue) && !Array.isArray(nestedValue)) {
+        fields[key] = nestedValue;
+      }
+      visit(nestedValue);
+    });
+  };
+
+  Object.values(attributes).forEach(visit);
+  return fields;
 }
 
 function assignString<T extends keyof CustomerProfile>(patch: Partial<CustomerProfile>, key: T, value: unknown) {
