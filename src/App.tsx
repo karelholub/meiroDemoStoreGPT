@@ -325,6 +325,7 @@ const ecommercePlaybooks = [
 ] as const;
 
 type ProfileAttributeRow = {
+  category: "configured" | "optional" | "post_delivery";
   label: string;
   field: string;
   value: unknown;
@@ -370,6 +371,29 @@ function hasProfileValue(value: unknown) {
   return true;
 }
 
+const configuredProfileApiFields = new Set([
+  "vip_tier",
+  "lifetime_value",
+  "purchase_count",
+  "total_orders",
+  "days_since_last_purchase",
+  "last_purchased_category",
+  "last_viewed_product_id",
+  "has_active_cart",
+  "last_abandoned_cart_value",
+  "cart_item_ids",
+  "predicted_reorder_date",
+  "last_purchased_sku",
+  "journey_membership",
+]);
+
+const optionalProfileApiFields = new Set([
+  "delivery_status",
+  "referral_code",
+  "has_left_review",
+  "repeat_buyer",
+]);
+
 function PlaybookSummaryCard({ playbook }: { playbook: (typeof ecommercePlaybooks)[number] }) {
   const state = useAppState();
   return (
@@ -381,7 +405,10 @@ function PlaybookSummaryCard({ playbook }: { playbook: (typeof ecommercePlaybook
         {playbook.profileFields.map((field) => {
           const value = profileFieldValue(field, state.profile);
           const populated = hasProfileValue(value);
-          return <code className={populated ? "filled" : "missing"} key={field}>{field}{populated ? `: ${formatProfileValue(value)}` : ""}</code>;
+          const expected = configuredProfileApiFields.has(field);
+          const optional = optionalProfileApiFields.has(field);
+          const className = populated ? "filled" : expected ? "missing" : optional ? "optional" : "";
+          return <code className={className} key={field}>{field}{populated ? `: ${formatProfileValue(value)}` : optional ? ": optional source" : ""}</code>;
         })}
       </div>
       <div className="actions">
@@ -1029,17 +1056,23 @@ function formatProfileValue(value: unknown) {
 function profileAttributeRows(state: ReturnType<typeof useAppState>): ProfileAttributeRow[] {
   const profile = state.profile;
   return [
-    { label: "VIP", field: "vip_tier", value: profile.vipTier, surface: "top banner, account, lifecycle slot" },
-    { label: "Next products", field: "next_best_product_ids", value: profile.nextBestProductIds, surface: "homepage recommendation rail" },
-    { label: "Next action", field: "next_best_action", value: profile.nextBestAction, surface: "hero, thank-you banner" },
-    { label: "Reorder", field: "predicted_reorder_date", value: profile.predictedReorderDate, surface: "replenishment slot" },
-    { label: "Last SKU", field: "last_purchased_sku", value: profile.lastPurchasedSku, surface: "reorder product, review/referral product" },
-    { label: "Cart intent", field: "has_active_cart / cart_item_ids", value: profile.hasActiveCart || profile.cartItemIds?.length ? formatProfileValue(profile.cartItemIds ?? profile.hasActiveCart) : undefined, surface: "hero, cart recovery, cross-sell" },
-    { label: "Abandoned value", field: "last_abandoned_cart_value", value: profile.lastAbandonedCartValue, surface: "cart recovery message" },
-    { label: "Affinity", field: "category_affinity", value: profile.categoryAffinity ?? profile.preferredCategory, surface: "category intro, recommendations" },
-    { label: "Lapsed", field: "days_since_last_purchase", value: profile.daysSinceLastPurchase, surface: "win-back slot" },
-    { label: "Delivery", field: "delivery_status", value: profile.deliveryStatus, surface: "review/referral page" },
-    { label: "Referral", field: "referral_code", value: profile.referralCode, surface: "review/referral card" },
+    { category: "configured", label: "VIP", field: "vip_tier", value: profile.vipTier, surface: "top banner, account, lifecycle slot" },
+    { category: "configured", label: "LTV", field: "lifetime_value", value: profile.lifetimeValue, surface: "account banner, VIP slot" },
+    { category: "configured", label: "Orders", field: "purchase_count", value: profile.purchaseCount, surface: "account banner, VIP slot" },
+    { category: "configured", label: "Reorder", field: "predicted_reorder_date", value: profile.predictedReorderDate, surface: "top banner, replenishment slot" },
+    { category: "configured", label: "Last SKU", field: "last_purchased_sku", value: profile.lastPurchasedSku, surface: "reorder product, review/referral product" },
+    { category: "configured", label: "Last category", field: "last_purchased_category", value: profile.lastPurchasedCategory, surface: "win-back, thank-you, recommendation context" },
+    { category: "configured", label: "Days since", field: "days_since_last_purchase", value: profile.daysSinceLastPurchase, surface: "win-back slot" },
+    { category: "configured", label: "Last viewed", field: "last_viewed_product_id", value: profile.lastViewedProductId, surface: "recently viewed rail" },
+    { category: "configured", label: "Active cart", field: "has_active_cart", value: profile.hasActiveCart, surface: "hero and cart recovery" },
+    { category: "configured", label: "Abandoned value", field: "last_abandoned_cart_value", value: profile.lastAbandonedCartValue, surface: "cart recovery message" },
+    { category: "configured", label: "Cart items", field: "cart_item_ids", value: profile.cartItemIds, surface: "cart recovery, cross-sell" },
+    { category: "configured", label: "Journeys", field: "journey_membership", value: profile.journeyMembership, surface: "win-back and lifecycle labels" },
+    { category: "optional", label: "Next products", field: "next_best_product_ids", value: profile.nextBestProductIds, surface: "homepage recommendation rail" },
+    { category: "optional", label: "Next action", field: "next_best_action", value: profile.nextBestAction, surface: "hero, thank-you banner" },
+    { category: "post_delivery", label: "Delivery", field: "delivery_status", value: profile.deliveryStatus, surface: "review/referral page" },
+    { category: "post_delivery", label: "Referral", field: "referral_code", value: profile.referralCode, surface: "review/referral card" },
+    { category: "post_delivery", label: "Review", field: "has_left_review", value: profile.hasLeftReview, surface: "review/referral form state" },
   ];
 }
 
@@ -1047,7 +1080,9 @@ function ProfileApiInspector() {
   const state = useAppState();
   const attributeCount = Object.keys(state.profile.profileApiAttributes ?? {}).length;
   const rows = profileAttributeRows(state);
-  const missingRows = rows.filter((row) => !hasProfileValue(row.value));
+  const configuredMissingRows = rows.filter((row) => row.category === "configured" && !hasProfileValue(row.value));
+  const optionalMissingRows = rows.filter((row) => row.category === "optional" && !hasProfileValue(row.value));
+  const postDeliveryMissingRows = rows.filter((row) => row.category === "post_delivery" && !hasProfileValue(row.value));
   const loadedLabel =
     state.profileApiStatus.state === "loaded"
       ? `${attributeCount} attributes loaded`
@@ -1076,12 +1111,33 @@ function ProfileApiInspector() {
         ))}
       </div>
       <div className="missing-attributes">
-        <strong>{state.profileApiStatus.state === "loaded" ? "Missing Profile API values" : "Profile API values to check"}</strong>
-        <p className="muted">{missingRows.length === 0 ? "All visible personalization placeholders have values." : "Add these attributes to Meiro CDP/Profile API to fill the remaining visible placeholders."}</p>
-        {missingRows.length > 0 && (
+        <strong>{state.profileApiStatus.state === "loaded" ? "Configured attributes still missing values" : "Configured Profile API values to check"}</strong>
+        <p className="muted">{configuredMissingRows.length === 0 ? "All configured real-time attributes used by visible storefront surfaces have values." : "These configured attributes are still empty in the current Profile API response."}</p>
+        {configuredMissingRows.length > 0 && (
           <div className="playbook-fields">
-            {missingRows.map((row) => <code className="missing" key={row.field}>{row.field}</code>)}
+            {configuredMissingRows.map((row) => <code className="missing" key={row.field}>{row.field}</code>)}
           </div>
+        )}
+        {(optionalMissingRows.length > 0 || postDeliveryMissingRows.length > 0) && (
+          <details className="optional-attributes">
+            <summary>Optional placeholders not expected from current setup</summary>
+            {optionalMissingRows.length > 0 && (
+              <>
+                <p className="muted">Recommendation/content placeholders:</p>
+                <div className="playbook-fields">
+                  {optionalMissingRows.map((row) => <code className="missing" key={row.field}>{row.field}</code>)}
+                </div>
+              </>
+            )}
+            {postDeliveryMissingRows.length > 0 && (
+              <>
+                <p className="muted">Post-delivery placeholders need OMS/review/referral source fields:</p>
+                <div className="playbook-fields">
+                  {postDeliveryMissingRows.map((row) => <code className="missing" key={row.field}>{row.field}</code>)}
+                </div>
+              </>
+            )}
+          </details>
         )}
       </div>
     </section>

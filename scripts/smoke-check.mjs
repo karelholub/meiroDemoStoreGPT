@@ -156,9 +156,11 @@ assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage 
 });
 assert(app.includes("ProfileApiScenarioControls"), "demo-control exposes seeded Profile API controls");
 assert(app.includes("applyProfileApiScenario"), "app state can apply seeded Profile API scenarios");
-assert(app.includes("Missing Profile API values"), "demo-control shows missing Profile API values");
+assert(app.includes("Configured attributes still missing values"), "demo-control shows missing configured Profile API values");
 assert(app.includes("last_purchased_sku"), "Profile API proof includes last purchased SKU");
 assert(app.includes("profileFieldValue"), "playbooks can show populated Profile API field values");
+assert(app.includes("configuredProfileApiFields"), "configured Profile API fields are grouped separately");
+assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
 

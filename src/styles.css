@@ -1359,6 +1359,12 @@ dd {
   border-color: rgba(152, 86, 68, 0.22);
 }
 
+.playbook-fields code.optional {
+  color: #645c51;
+  background: rgba(30, 27, 24, 0.06);
+  border-color: rgba(30, 27, 24, 0.12);
+}
+
 .journey-slots {
   width: min(var(--content-max), calc(100% - (var(--gutter) * 2)));
   margin: var(--space-7) auto;
@@ -1589,6 +1595,17 @@ dd {
 
 .missing-attributes p {
   margin: 0;
+}
+
+.optional-attributes {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.optional-attributes summary {
+  cursor: pointer;
+  color: #5f6557;
+  font-weight: 800;
 }
 
 .scenario-buttons {

@@ -42,24 +42,24 @@ The function forwards to `MEIRO_PROFILE_API_ENDPOINT` using the server-only `MEI
 
 ## Profile API Attribute Coverage
 
-The storefront consumes these Profile API attributes when present:
+The storefront consumes these Profile API attributes when present. The current real-time Profile API set covers VIP/value, purchase recency, last purchase, cart, reorder, and journey membership.
 
 | Attribute | Main surfaces |
 | --- | --- |
 | `email`, `first_name`, `surname`, `phone` | account identity, checkout contact prefill |
 | `street_address`, `apartment_or_company`, `city`, `postal_code`, `country` | checkout shipping prefill |
 | `vip_tier`, `lifetime_value`, `purchase_count` | homepage banner, account banner, VIP lifecycle slot |
-| `next_best_product_ids`, `recommended_tags`, `category_affinity` | homepage recommendations, category intro, recommendation ordering |
-| `next_best_action` | homepage hero, thank-you next action |
+| `recommended_tags`, `category_affinity` | homepage recommendations, category intro, recommendation ordering |
 | `predicted_reorder_date`, `last_purchased_sku`, `days_since_last_purchase` | top banner, replenishment slot, reorder product, review/referral product, win-back slots |
 | `has_active_cart`, `cart_item_ids`, `last_abandoned_cart_value` | hero recovery, cart banner, cross-sell recommendations |
 | `last_viewed_product_id`, `viewed_product_count` | recently viewed rail and browse-abandonment proof |
-| `delivery_status`, `repeat_buyer`, `has_left_review`, `referral_code` | review/referral page |
-| `marketing_consent`, `push_opt_in`, `journey_membership`, `discount_affinity` | consent proof, journey labels, cart discount slot |
+| `journey_membership`, `marketing_consent`, `push_opt_in`, `discount_affinity` | journey labels, consent proof, cart discount slot |
+| `next_best_product_ids`, `next_best_action` | optional recommendation/content override fields |
+| `delivery_status`, `repeat_buyer`, `has_left_review`, `referral_code` | optional post-delivery/review/referral fields; not expected until OMS/review/referral source fields exist |
 
 Common aliases are accepted in `meiroProfileApi.ts`, for example `loyalty_tier` for `vip_tier`, `total_orders` for `purchase_count`, and `recommended_product_ids` for `next_best_product_ids`.
 
-`/demo-control` shows a **Missing Profile API values** list after a profile loads. Anything listed there is a visible website placeholder that still needs a value from Meiro CDP/Profile API.
+`/demo-control` shows a configured-attribute missing-values list after a profile loads. It only treats the currently configured real-time attributes as required. Optional recommendation/content fields and post-delivery placeholders are shown separately so they do not look like Profile API failures.
 
 `src/data/profileApiScenarios.ts` contains deterministic seeded profiles for presenter QA. Loading one from `/demo-control` marks Profile API status as loaded with `identifier_type=scenario` and populates the same normalized profile fields that the live API would populate. This does not call the live Profile API and is meant only to validate UI surfaces and demo flow.
 
