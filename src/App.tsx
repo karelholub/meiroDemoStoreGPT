@@ -511,6 +511,11 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
 }
 
 function HomePage() {
+  const heroProducts = [
+    products.find((product) => product.id === "strategic-nap-pillow"),
+    products.find((product) => product.id === "executive-decision-dice"),
+    products.find((product) => product.id === "im-fine-care-parcel"),
+  ].filter(Boolean) as Product[];
   const heroText = (
     <>
       Everything you need for the life you did not fully plan.
@@ -534,6 +539,26 @@ function HomePage() {
             <span><strong>0</strong> real payments</span>
           </div>
         </div>
+        <div className="hero-showcase" aria-label="Featured survival supplies">
+          <span className="eyebrow">Featured survival kit</span>
+          <div className="hero-product-stack">
+            {heroProducts.map((product) => (
+              <Link key={product.id} to={`/product/${product.slug}`} className="hero-product">
+                <ProductVisual product={product} size="thumb" />
+                <span>{product.name}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="hero-signal">
+            <strong>Personalized slots ready</strong>
+            <span>Hero, catalog rails, cart recovery, and lifecycle offers can all be filled from Meiro profile attributes.</span>
+          </div>
+        </div>
+      </section>
+      <section className="home-intro" aria-label="Homepage personalization summary">
+        <span className="eyebrow">Demo commerce surface</span>
+        <h2>Retail polish on top, CDP proof underneath.</h2>
+        <p>Browse categories, trigger cart intent, complete a checkout, and watch Profile API attributes reshape the storefront without changing the experience.</p>
       </section>
       <section className="category-strip">
         {categories.map((category) => (
