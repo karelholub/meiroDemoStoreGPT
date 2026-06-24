@@ -1,5 +1,6 @@
 import type { AppState } from "../../store/appState";
 import type { PersonalizationDecision, PersonalizationZoneId } from "../../types";
+import { formatProfileDate } from "../../utils/format";
 
 type DecisionInput = Omit<PersonalizationDecision, "personaId" | "timestamp">;
 
@@ -142,7 +143,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `Reorder reminder: your next replenishment window is ${profile.predictedReorderDate}.`,
+          content: `Reorder reminder: your next replenishment window is ${formatProfileDate(profile.predictedReorderDate)}.`,
           ruleId: "profile_api.reorder_top_banner",
           reason: "Profile attributes supplied predicted_reorder_date.",
         },

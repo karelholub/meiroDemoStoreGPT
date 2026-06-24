@@ -10,6 +10,7 @@ import { getPersonalizationDecision } from "./integrations/meiro/meiroPersonaliz
 import { getMeiroProfileApiStatus } from "./integrations/meiro/meiroProfileApi";
 import { AppStateProvider, useAppState } from "./store/appState";
 import type { ConsentState, CustomerProfile, PersonalizationZoneId, Product, RecommendationStrategy } from "./types";
+import { formatMaybeProfileDate, formatProfileDate } from "./utils/format";
 import { recommendProducts } from "./utils/recommendations";
 
 function navigate(path: string) {
@@ -471,8 +472,9 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
     state.profile.journeyMembership?.some((item) => item.toLowerCase().includes("win-back")) ||
     Boolean(state.profile.daysSinceLastPurchase && state.profile.daysSinceLastPurchase >= 60);
   const vip = state.personaId === "high_value" || state.profile.lifecycleStage === "high_value_customer" || ["gold", "platinum"].includes(String(state.profile.vipTier ?? "").toLowerCase());
+  const predictedReorderDate = formatProfileDate(state.profile.predictedReorderDate);
   const reorderHint = state.profile.predictedReorderDate
-    ? `Predicted reorder date: ${state.profile.predictedReorderDate}.`
+    ? `Predicted reorder date: ${predictedReorderDate}.`
     : state.profile.daysSinceLastPurchase
       ? `${state.profile.daysSinceLastPurchase} days since last purchase.`
       : "Ready for Profile API fields such as predicted_reorder_date and last_purchased_sku.";
@@ -487,7 +489,7 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
           <ProductVisual product={reorderProduct} size="thumb" />
           <div>
             <strong>{reorderProduct.name}</strong>
-            <span>{state.profile.predictedReorderDate ? `Reorder on ${state.profile.predictedReorderDate}` : "Suggested reorder in 3 days"}</span>
+            <span>{state.profile.predictedReorderDate ? `Reorder on ${predictedReorderDate}` : "Suggested reorder in 3 days"}</span>
           </div>
         </div>
         <Link to={`/product/${reorderProduct.slug}`} className="signal-link">Reorder product</Link>
@@ -962,7 +964,7 @@ function AccountPage() {
           <div><dt>VIP tier</dt><dd>{profile.vipTier ?? "Not assigned"}</dd></div>
           <div><dt>Lifetime value</dt><dd>{profile.lifetimeValue !== undefined ? <Money value={profile.lifetimeValue} /> : "Not calculated"}</dd></div>
           <div><dt>Purchase count</dt><dd>{profile.purchaseCount ?? "Not counted"}</dd></div>
-          <div><dt>Reorder date</dt><dd>{profile.predictedReorderDate ?? "Not predicted yet"}</dd></div>
+          <div><dt>Reorder date</dt><dd>{formatProfileDate(profile.predictedReorderDate) ?? "Not predicted yet"}</dd></div>
           <div><dt>Last purchase</dt><dd>{profile.lastPurchasedSku ?? profile.lastPurchasedCategory ?? "Not known"}</dd></div>
           <div><dt>Active cart</dt><dd>{profile.hasActiveCart ? "Yes" : profile.lastAbandonedCartValue ? `Abandoned value ${profile.lastAbandonedCartValue}` : "No profile signal"}</dd></div>
           <div><dt>Last viewed</dt><dd>{profile.lastViewedProductId ?? "No product attribute"}</dd></div>
@@ -996,7 +998,7 @@ function AccountPage() {
             ["vip_tier", profile.vipTier],
             ["lifetime_value", profile.lifetimeValue],
             ["purchase_count", profile.purchaseCount],
-            ["predicted_reorder_date", profile.predictedReorderDate],
+            ["predicted_reorder_date", formatProfileDate(profile.predictedReorderDate)],
             ["last_purchased_sku", profile.lastPurchasedSku],
             ["days_since_last_purchase", profile.daysSinceLastPurchase],
             ["last_purchased_category", profile.lastPurchasedCategory],
@@ -1084,7 +1086,7 @@ function formatProfileValue(value: unknown) {
   if (Array.isArray(value)) return value.length ? value.join(", ") : "empty";
   if (typeof value === "boolean") return value ? "yes" : "no";
   if (typeof value === "number") return String(value);
-  return String(value);
+  return String(formatMaybeProfileDate(value));
 }
 
 function profileAttributeRows(state: ReturnType<typeof useAppState>): ProfileAttributeRow[] {
@@ -1093,7 +1095,7 @@ function profileAttributeRows(state: ReturnType<typeof useAppState>): ProfileAtt
     { category: "configured", label: "VIP", field: "vip_tier", value: profile.vipTier, surface: "top banner, account, lifecycle slot" },
     { category: "configured", label: "LTV", field: "lifetime_value", value: profile.lifetimeValue, surface: "account banner, VIP slot" },
     { category: "configured", label: "Orders", field: "purchase_count", value: profile.purchaseCount, surface: "account banner, VIP slot" },
-    { category: "configured", label: "Reorder", field: "predicted_reorder_date", value: profile.predictedReorderDate, surface: "top banner, replenishment slot" },
+    { category: "configured", label: "Reorder", field: "predicted_reorder_date", value: formatProfileDate(profile.predictedReorderDate), surface: "top banner, replenishment slot" },
     { category: "configured", label: "Last SKU", field: "last_purchased_sku", value: profile.lastPurchasedSku, surface: "reorder product, review/referral product" },
     { category: "configured", label: "Last category", field: "last_purchased_category", value: profile.lastPurchasedCategory, surface: "win-back, thank-you, recommendation context" },
     { category: "configured", label: "Days since", field: "days_since_last_purchase", value: profile.daysSinceLastPurchase, surface: "win-back slot" },

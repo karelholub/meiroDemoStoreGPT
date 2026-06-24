@@ -167,6 +167,7 @@ assert(app.includes("ProfileApiScenarioControls"), "demo-control exposes seeded 
 assert(app.includes("applyProfileApiScenario"), "app state can apply seeded Profile API scenarios");
 assert(app.includes("Configured attributes still missing values"), "demo-control shows missing configured Profile API values");
 assert(app.includes("last_purchased_sku"), "Profile API proof includes last purchased SKU");
+assert(app.includes("formatProfileDate") && !app.includes("Reorder on ${state.profile.predictedReorderDate}"), "Reorder dates are formatted for visible UI");
 assert(app.includes("profileFieldValue"), "playbooks can show populated Profile API field values");
 assert(app.includes("configuredProfileApiFields"), "configured Profile API fields are grouped separately");
 assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
