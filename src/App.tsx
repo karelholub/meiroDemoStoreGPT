@@ -600,7 +600,7 @@ function Newsletter() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          trackEvent("newsletter_signup", { email_domain: email.split("@")[1] ?? "unknown", marketing_consent: consent.marketing });
+          trackEvent("newsletter_signup", { email, email_domain: email.split("@")[1] ?? "unknown", marketing_consent: consent.marketing });
           setEmail("");
           setSubmitted(true);
         }}
@@ -925,7 +925,7 @@ function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
         updateProfile(profile);
         setConsent({ necessary: true, analytics: true, personalization: form.personalization, marketing: form.marketing });
         identifyUser(profile);
-        trackEvent(mode === "login" ? "user_logged_in" : "user_registered", { email_domain: form.email.split("@")[1], preferred_category: form.preferredCategory });
+        trackEvent(mode === "login" ? "user_logged_in" : "user_registered", { email: form.email, email_domain: form.email.split("@")[1], preferred_category: form.preferredCategory });
         navigate("/account");
       }}>
         <input aria-label="Email" required type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />

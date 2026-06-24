@@ -206,6 +206,8 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
   if (mptEventName === "login" || mptEventName === "sign_up") {
     return withoutEmptyValues({
       ...base,
+      email: payload.email,
+      email_domain: payload.email_domain,
       method: payload.method ?? "demo_store",
     });
   }
