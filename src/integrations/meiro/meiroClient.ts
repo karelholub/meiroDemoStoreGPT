@@ -216,6 +216,8 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
     return withoutEmptyValues({
       ...base,
       transaction_id: payload.order_id,
+      email: payload.email,
+      phone: payload.phone,
       currency: payload.currency ?? "EUR",
       value,
       items,

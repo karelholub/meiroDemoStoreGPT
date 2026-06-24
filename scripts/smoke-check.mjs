@@ -174,6 +174,7 @@ assert(app.includes("optionalProfileApiFields"), "optional Profile API placehold
 assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
 assert(app.includes("review_text_length"), "review event sends review text length only");
 assert(app.includes("email: checkoutDetails.email") && app.includes("phone: checkoutDetails.phone"), "purchase event includes top-level email and phone");
+assert(meiroClient.includes("transaction_id: payload.order_id") && meiroClient.includes("email: payload.email") && meiroClient.includes("phone: payload.phone"), "Meiro purchase SDK payload forwards contact fields");
 assert(app.includes('trackEvent(mode === "login" ? "user_logged_in" : "user_registered", { email: form.email'), "registration event includes top-level email");
 assert(app.includes('trackEvent("newsletter_signup", { email,'), "newsletter sign-up event includes top-level email");
 assert(meiroClient.includes("email: payload.email") && meiroClient.includes("email_domain: payload.email_domain"), "Meiro sign-up/login SDK payload forwards email fields");
