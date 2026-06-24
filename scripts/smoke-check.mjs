@@ -32,6 +32,7 @@ const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const profileApiFunction = read("netlify/functions/meiro-profile.ts");
 const netlify = read("netlify.toml");
 const productFeed = read("public/product-feed.xml");
+const profileSeed = read("data/meiro_profile_seed_1500.csv");
 
 const routePaths = [
   "/",
@@ -191,6 +192,9 @@ assert(productFeed.includes('xmlns:g="http://base.google.com/ns/1.0"'), "XML pro
 assert((productFeed.match(/<item>/g) || []).length === productRows.length, "XML product feed includes every product");
 assert(productFeed.includes("<g:id>monday-survival-kit</g:id>"), "XML product feed includes stable product ids");
 assert(productFeed.includes("<g:custom_label_0>"), "XML product feed includes recommendation labels");
+assert(profileSeed.trimEnd().split("\n").length === 1501, "Profile seed CSV has 1500 sample profiles");
+assert(profileSeed.startsWith("user_id,email,phone,first_name,surname"), "Profile seed CSV starts with identity columns");
+assert(profileSeed.includes("last_purchase_contact.email") && profileSeed.includes("last_purchase_address.street_address"), "Profile seed CSV includes grouped purchase attributes");
 
 [
   "README.md",

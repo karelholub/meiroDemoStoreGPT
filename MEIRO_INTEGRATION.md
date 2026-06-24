@@ -87,6 +87,18 @@ For a different deployed hostname:
 SITE_URL=https://example.com npm run feed
 ```
 
+## Profile Seed Data
+
+`data/meiro_profile_seed_1500.csv` contains 1,500 spreadsheet-ready sample profiles for seeding Meiro CDP from Google Sheets or another table source. The file includes identity fields, grouped `last_purchase_contact.*` and `last_purchase_address.*` columns, VIP/value attributes, purchase recency, cart intent, recommendation hints, consent/preference signals, and post-delivery review/referral fields.
+
+Regenerate it with:
+
+```bash
+npm run seed:profiles
+```
+
+Set `PROFILE_SEED_ROWS=5000` or another positive number to generate a larger file.
+
 ## Implemented MPT Bootstrap
 
 When enabled, `meiroClient.ts` creates the queue-compatible `window.mpt` function, calls:

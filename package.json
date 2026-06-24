@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "feed": "node scripts/generate-product-feed.mjs",
+    "seed:profiles": "node scripts/generate-profile-seed.mjs",
     "build": "tsc && vite build",
     "smoke": "node scripts/smoke-check.mjs",
     "check": "npm run build && npm run smoke",
