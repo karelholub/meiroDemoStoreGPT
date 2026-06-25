@@ -27,6 +27,7 @@ const appState = read("src/store/appState.tsx");
 const events = read("src/integrations/meiro/eventSchemas.ts");
 const meiroClient = read("src/integrations/meiro/meiroClient.ts");
 const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
+const meiroPersonalization = read("src/integrations/meiro/meiroPersonalization.ts");
 const meiroProfileApi = read("src/integrations/meiro/meiroProfileApi.ts");
 const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const profileApiFunction = read("netlify/functions/meiro-profile.ts");
@@ -128,6 +129,9 @@ assert(meiroClient.includes("eventNameMap"), "Meiro internal-to-canonical event 
 assert(meiroClient.includes("buildMptEventPayload"), "Meiro SDK event payload sanitizer exists");
 assert(meiroClient.includes("sdkContextPayload"), "Meiro SDK context payload uses SDK-safe field names");
 assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK events do not forward internal event names as payload fields");
+assert(app.includes("Fictional essentials for meetings, Mondays, sleep"), "homepage hero subcopy is shopper-facing");
+assert(meiroPersonalization.includes("heroCopyForNextBestAction") && meiroPersonalization.includes("Time to restock your coping kit."), "homepage hero maps next_best_action to retail copy");
+assert(meiroPersonalization.includes("content: nextBestHero"), "homepage hero does not render raw next_best_action values");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",

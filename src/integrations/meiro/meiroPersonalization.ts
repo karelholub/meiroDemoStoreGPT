@@ -19,6 +19,28 @@ function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
 }
 
+function normalizedAction(action?: string) {
+  return action?.toLowerCase().replaceAll("-", "_").trim();
+}
+
+function heroCopyForNextBestAction(action?: string) {
+  const normalized = normalizedAction(action);
+  if (!normalized) return undefined;
+
+  if (normalized.includes("reorder") || normalized.includes("replenish")) return "Time to restock your coping kit.";
+  if (normalized.includes("recover_cart") || normalized.includes("cart")) return "Your cart is still emotionally available.";
+  if (normalized.includes("review")) return "Tell us how the supplies performed.";
+  if (normalized.includes("vip") || normalized.includes("perk") || normalized.includes("early_access")) return "Premium calm, unlocked.";
+  if (normalized.includes("complete_profile")) return "Make your survival shelf easier to personalize.";
+  if (normalized.includes("browse") || normalized.includes("new_arrivals")) return "Fresh supplies for your current reality.";
+
+  return "Your next best supplies are ready.";
+}
+
+function heroReasonForNextBestAction(action?: string) {
+  return action ? `Profile attributes supplied next_best_action (${action}); storefront mapped it to shopper-facing copy.` : "Profile attributes supplied next_best_action.";
+}
+
 export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state: AppState): PersonalizationDecision {
   if (!state.consent.personalization) {
     return decision(
@@ -39,14 +61,15 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
   const profileSource = profile.profileApiUpdatedAt ? "Profile API" : "local profile";
 
   if (zoneId === "homepage_hero") {
-    if (profile.nextBestAction) {
+    const nextBestHero = heroCopyForNextBestAction(profile.nextBestAction);
+    if (nextBestHero) {
       return decision(
         {
           zoneId,
           decision: "personalized",
-          content: profile.nextBestAction,
+          content: nextBestHero,
           ruleId: "profile_api.next_best_action.hero",
-          reason: `${profileSource} supplied next_best_action.`,
+          reason: heroReasonForNextBestAction(profile.nextBestAction),
         },
         state,
       );
@@ -68,9 +91,21 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "Your supplies are still waiting. A rare unfinished task with a simple button.",
+          content: "Still thinking it over? We saved the useful bits.",
           ruleId: "profile_api.active_cart.hero",
           reason: "Profile attributes indicate active cart or high intent.",
+        },
+        state,
+      );
+    }
+    if (profile.vipTier && ["gold", "platinum"].includes(profile.vipTier.toLowerCase())) {
+      return decision(
+        {
+          zoneId,
+          decision: "personalized",
+          content: "Premium calm, unlocked.",
+          ruleId: "profile_api.vip_hero",
+          reason: "Profile attributes supplied a high-value vip_tier.",
         },
         state,
       );
@@ -131,7 +166,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `${profile.vipTier} tier unlocked: early access and improbably composed packaging are ready.`,
+          content: `${profile.vipTier} access unlocked. Early drops and composed packaging are ready.`,
           ruleId: "profile_api.vip_top_banner",
           reason: "Profile attributes supplied vip_tier.",
         },
@@ -143,7 +178,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `Reorder reminder: your next replenishment window is ${formatProfileDate(profile.predictedReorderDate)}.`,
+          content: `Your next replenishment window is ${formatProfileDate(profile.predictedReorderDate)}.`,
           ruleId: "profile_api.reorder_top_banner",
           reason: "Profile attributes supplied predicted_reorder_date.",
         },

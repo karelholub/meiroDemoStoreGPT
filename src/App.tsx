@@ -530,7 +530,7 @@ function HomePage() {
         <div className="hero-copy">
           <PersonalizationZone zoneId="homepage_top_banner" fallback="Free simulated shipping over EUR 120. Emotional shipping remains variable." className="banner" />
           <h1><PersonalizationZone zoneId="homepage_hero" fallback={heroText} /></h1>
-          <p>Elegant demo commerce for identity resolution, product affinity, cart intent, and consent-aware personalization.</p>
+          <p>Fictional essentials for meetings, Mondays, sleep, parenting chaos, and tiny emergencies of being human.</p>
           <div className="hero-actions">
             <Link to="/products" className="primary-cta">Shop survival essentials</Link>
             <Link to="/demo-control" className="secondary-cta">Open demo control</Link>
