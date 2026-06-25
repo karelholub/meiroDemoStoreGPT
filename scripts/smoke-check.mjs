@@ -135,6 +135,7 @@ assert(meiroPersonalization.includes("content: nextBestHero"), "homepage hero do
 assert(app.includes("Last viewed products") && app.includes('source="recently_viewed"'), "search page includes recently viewed product rail");
 assert(app.includes('strategy="next_best_product"'), "search page includes recommended product rail");
 assert(app.includes("cart-empty-panel") && app.includes("Empty cart recovery picks"), "cart page includes polished empty-cart recovery surface");
+assert(app.includes("demo-nav-link") && app.includes("cart-count") && app.includes("pathname === item.to"), "top menu includes active route styling and stable cart count markup");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",

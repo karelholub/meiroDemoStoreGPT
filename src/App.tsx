@@ -155,17 +155,28 @@ function BrandLogo({ compact = false }: { compact?: boolean }) {
 
 function Header() {
   const { cart } = useAppState();
+  const path = usePath();
+  const [pathname] = path.split("?");
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const navItems = [
+    { to: "/products", label: "Shop" },
+    { to: "/search", label: "Search" },
+    { to: "/account", label: "Account" },
+    { to: "/playbooks", label: "Playbooks" },
+    { to: "/demo-control", label: "Demo", className: "demo-nav-link" },
+  ];
   return (
     <header className="site-header">
       <Link to="/" className="brand"><BrandLogo /></Link>
-      <nav>
-        <Link to="/products">Shop</Link>
-        <Link to="/search">Search</Link>
-        <Link to="/account">Account</Link>
-        <Link to="/playbooks">Playbooks</Link>
-        <Link to="/demo-control">Demo</Link>
-        <Link to="/cart" className="cart-link">Cart {count > 0 && <span>{count}</span>}</Link>
+      <nav aria-label="Primary navigation">
+        {navItems.map((item) => {
+          const active = pathname === item.to || (item.to === "/products" && (pathname.startsWith("/category/") || pathname.startsWith("/product/")));
+          return <Link key={item.to} to={item.to} className={[active ? "active" : "", item.className ?? ""].filter(Boolean).join(" ")}>{item.label}</Link>;
+        })}
+        <Link to="/cart" className={["cart-link", pathname === "/cart" ? "active" : ""].filter(Boolean).join(" ")} aria-label={count > 0 ? `Cart with ${count} items` : "Cart"}>
+          <span className="cart-label">Cart</span>
+          <span className="cart-count">{count}</span>
+        </Link>
       </nav>
     </header>
   );
