@@ -2355,13 +2355,31 @@ dd {
 }
 
 .demo-control-page {
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.48fr);
-  align-items: start;
-  gap: clamp(1.5rem, 3vw, 2.6rem);
+  display: grid;
+  gap: var(--space-5);
 }
 
-.demo-control-page > section:first-child {
+.demo-control-top,
+.demo-control-workspace,
+.demo-main-column {
   min-width: 0;
+}
+
+.demo-control-top {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.demo-control-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.42fr);
+  align-items: start;
+  gap: clamp(1.25rem, 3vw, 2rem);
+}
+
+.demo-main-column {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .demo-control-page .lead {
@@ -2426,7 +2444,7 @@ dd {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
-  margin: var(--space-5) 0;
+  margin: 0;
 }
 
 .demo-signal-strip div {
@@ -2458,7 +2476,7 @@ dd {
   align-items: end;
   justify-content: space-between;
   gap: var(--space-5);
-  margin-top: var(--space-5);
+  margin: 0;
 }
 
 .demo-section-heading h2 {
@@ -2476,13 +2494,18 @@ dd {
   align-self: start;
 }
 
+.demo-control-page > .profile-inspector,
+.demo-control-page > .debug.inline {
+  width: 100%;
+}
+
 .demo-control-page .control-card,
 .demo-control-page .debug.inline {
   box-shadow: 0 18px 55px rgba(30, 27, 24, 0.055);
 }
 
 .demo-control-page .debug.inline {
-  max-height: 720px;
+  max-height: 560px;
   overflow: auto;
 }
 
@@ -2516,6 +2539,10 @@ dd {
 .attribute-grid {
   display: grid;
   gap: var(--space-2);
+}
+
+.demo-control-page > .profile-inspector .attribute-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .attribute-row {
@@ -2951,6 +2978,10 @@ body.consent-visible .debug-toggle {
     gap: var(--space-5);
   }
 
+  .demo-control-workspace {
+    grid-template-columns: 1fr;
+  }
+
   .demo-hero {
     grid-template-columns: 1fr;
   }
@@ -3193,7 +3224,20 @@ body.consent-visible .debug-toggle {
   }
 
   .demo-signal-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demo-control-page .persona-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .demo-control-page .persona {
+    padding: 0.8rem;
+  }
+
+  .demo-control-page .persona span {
+    font-size: 0.82rem;
   }
 
   .review-product-strip {
@@ -3328,11 +3372,24 @@ body.consent-visible .debug-toggle {
   }
 
   .demo-progress-card {
-    min-height: 118px;
+    min-height: 104px;
   }
 
-  .demo-signal-strip {
+  .demo-control-page .demo-signal-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demo-control-page > .profile-inspector .attribute-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demo-control-page .attribute-row {
     grid-template-columns: 1fr;
+    padding: 0.65rem;
+  }
+
+  .demo-control-page .attribute-row small {
+    font-size: 0.76rem;
   }
 
   .account-behavior h2 {

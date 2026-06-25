@@ -1400,8 +1400,8 @@ function DemoControlPage() {
     state.personaId !== "anonymous_new",
   ].filter(Boolean).length;
   return (
-    <main className="page two-col demo-control-page">
-      <section>
+    <main className="page demo-control-page">
+      <section className="demo-control-top">
         <div className="demo-hero">
           <div>
             <span className="eyebrow">Presenter command center</span>
@@ -1419,48 +1419,52 @@ function DemoControlPage() {
           </div>
         </div>
         <DemoSignalStrip />
-        <div className="demo-section-heading">
-          <div>
-            <span className="eyebrow">Local personas</span>
-            <h2>Presenter shortcuts</h2>
-          </div>
-          <p className="muted">Use these to demonstrate journeys before or alongside live Profile API data.</p>
-        </div>
-        <div className="persona-grid">
-          {personas.map((persona) => (
-            <button type="button" className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
-              <strong>{persona.name}</strong>
-              <span>{persona.description}</span>
-            </button>
-          ))}
-        </div>
       </section>
-      <aside className="demo-side">
-        <MeiroStatusCard />
-        <ProfileApiInspector />
-        <ProfileApiScenarioControls />
-        <PresenterChecklist />
-        <section className="control-card">
-          <h2>Use case coverage</h2>
-          <p className="muted">Eight ecommerce playbooks have a visible web surface ready for Meiro journeys, catalog feeds, or Profile API attributes.</p>
-          <Link to="/playbooks" className="signal-link">Open playbooks</Link>
-        </section>
-        <section className="control-card">
-          <h2>Consent state</h2>
-          {(["analytics", "personalization", "marketing"] as const).map((key) => (
-            <label key={key}>
-              <input
-                type="checkbox"
-                checked={state.consent[key]}
-                onChange={(event) => state.setConsent({ ...state.consent, [key]: event.target.checked, necessary: true })}
-              />
-              {key}
-            </label>
-          ))}
-          <button type="button" className="ghost" onClick={state.clearDebugHistory}>Clear event history</button>
-        </section>
-        <DebugPanel inline />
-      </aside>
+      <section className="demo-control-workspace">
+        <div className="demo-main-column">
+          <div className="demo-section-heading">
+            <div>
+              <span className="eyebrow">Local personas</span>
+              <h2>Presenter shortcuts</h2>
+            </div>
+            <p className="muted">Use these to demonstrate journeys before or alongside live Profile API data.</p>
+          </div>
+          <div className="persona-grid">
+            {personas.map((persona) => (
+              <button type="button" className={state.personaId === persona.id ? "active persona" : "persona"} key={persona.id} onClick={() => state.setPersona(persona.id)}>
+                <strong>{persona.name}</strong>
+                <span>{persona.description}</span>
+              </button>
+            ))}
+          </div>
+          <ProfileApiScenarioControls />
+        </div>
+        <aside className="demo-side">
+          <MeiroStatusCard />
+          <PresenterChecklist />
+          <section className="control-card">
+            <h2>Use case coverage</h2>
+            <p className="muted">Eight ecommerce playbooks have a visible web surface ready for Meiro journeys, catalog feeds, or Profile API attributes.</p>
+            <Link to="/playbooks" className="signal-link">Open playbooks</Link>
+          </section>
+          <section className="control-card">
+            <h2>Consent state</h2>
+            {(["analytics", "personalization", "marketing"] as const).map((key) => (
+              <label key={key}>
+                <input
+                  type="checkbox"
+                  checked={state.consent[key]}
+                  onChange={(event) => state.setConsent({ ...state.consent, [key]: event.target.checked, necessary: true })}
+                />
+                {key}
+              </label>
+            ))}
+            <button type="button" className="ghost" onClick={state.clearDebugHistory}>Clear event history</button>
+          </section>
+        </aside>
+      </section>
+      <ProfileApiInspector />
+      <DebugPanel inline />
     </main>
   );
 }
