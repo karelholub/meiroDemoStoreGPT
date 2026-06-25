@@ -1,4 +1,5 @@
 import type { CartItem, Product } from "../../types";
+import { cartItemCount, enrichCartItems } from "../../utils/productLookup";
 
 export const productPayload = (product: Product) => ({
   product_id: product.id,
@@ -8,16 +9,10 @@ export const productPayload = (product: Product) => ({
   tags: product.tags,
 });
 
-export const cartPayload = (items: CartItem[], products: Product[]) => {
-  const enriched = items
-    .map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-      return product ? { item, product } : undefined;
-    })
-    .filter(Boolean) as { item: CartItem; product: Product }[];
-
+export const cartPayload = (items: CartItem[]) => {
+  const enriched = enrichCartItems(items);
   return {
-    cart_size: enriched.reduce((sum, { item }) => sum + item.quantity, 0),
+    cart_size: cartItemCount(items),
     cart_value: enriched.reduce((sum, { item, product }) => sum + item.quantity * product.price, 0),
     items: enriched.map(({ item, product }) => ({
       product_id: product.id,

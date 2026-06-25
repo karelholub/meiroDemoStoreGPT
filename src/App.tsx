@@ -11,6 +11,7 @@ import { getMeiroProfileApiStatus } from "./integrations/meiro/meiroProfileApi";
 import { AppStateProvider, useAppState } from "./store/appState";
 import type { ConsentState, CustomerProfile, PersonalizationZoneId, Product, RecommendationStrategy } from "./types";
 import { formatMaybeProfileDate, formatProfileDate } from "./utils/format";
+import { enrichCartItems, findProductById, findProductByIdOrSlug, findProductsByIds, findProductsByIdsOrSlugs } from "./utils/productLookup";
 import { recommendProducts } from "./utils/recommendations";
 
 function navigate(path: string) {
@@ -472,8 +473,8 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
   const recentCategories = state.profile.recentlyViewedCategories;
   const favoriteCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? recentCategories[recentCategories.length - 1] ?? "Sleep & Recovery";
   const reorderProduct =
-    products.find((product) => product.id === state.profile.lastPurchasedSku || product.slug === state.profile.lastPurchasedSku) ??
-    products.find((product) => state.profile.purchases.includes(product.id)) ??
+    findProductByIdOrSlug(state.profile.lastPurchasedSku) ??
+    findProductsByIds(state.profile.purchases)[0] ??
     products.find((product) => product.category === favoriteCategory) ??
     products[0];
   const categoryPicks = products.filter((product) => product.category === favoriteCategory).slice(0, compact ? 2 : 3);
@@ -524,11 +525,7 @@ function LifecyclePlaybookSlots({ compact = false }: { compact?: boolean }) {
 }
 
 function HomePage() {
-  const heroProducts = [
-    products.find((product) => product.id === "strategic-nap-pillow"),
-    products.find((product) => product.id === "executive-decision-dice"),
-    products.find((product) => product.id === "im-fine-care-parcel"),
-  ].filter(Boolean) as Product[];
+  const heroProducts = findProductsByIds(["strategic-nap-pillow", "executive-decision-dice", "im-fine-care-parcel"]);
   const heroText = (
     <>
       Everything you need for the life you did not fully plan.
@@ -647,7 +644,7 @@ function ProductsPage({ categorySlug }: { categorySlug?: string }) {
 
 function ProductPage({ slug }: { slug: string }) {
   const { addToCart, viewProduct } = useAppState();
-  const product = products.find((item) => item.slug === slug);
+  const product = findProductByIdOrSlug(slug);
   useEffect(() => {
     if (!product) return;
     viewProduct(product.id);
@@ -682,15 +679,13 @@ function ProductPage({ slug }: { slug: string }) {
 function CartPage() {
   const state = useAppState();
   const { cart, addToCart, removeFromCart, setQuantity } = state;
-  const enriched = cart.map((item) => ({ item, product: products.find((product) => product.id === item.productId)! })).filter((row) => row.product);
-  const profileCartProducts = (state.profile.cartItemIds ?? [])
-    .map((id) => products.find((product) => product.id === id || product.slug === id))
-    .filter(Boolean) as Product[];
+  const enriched = enrichCartItems(cart);
+  const profileCartProducts = findProductsByIdsOrSlugs(state.profile.cartItemIds);
   const emptyCartPicks = (profileCartProducts.length > 0 ? profileCartProducts : recommendProducts("next_best_product", state, { limit: 3 })).slice(0, 3);
   const emptyCartIds = emptyCartPicks.map((product) => product.id).join(",");
   const total = enriched.reduce((sum, row) => sum + row.product.price * row.item.quantity, 0);
 
-  useEffect(() => trackEvent("cart_view", cartPayload(cart, products)), [cart.map((item) => `${item.productId}:${item.quantity}`).join(",")]);
+  useEffect(() => trackEvent("cart_view", cartPayload(cart)), [cart.map((item) => `${item.productId}:${item.quantity}`).join(",")]);
   useEffect(() => {
     if (enriched.length === 0 && emptyCartPicks.length > 0) {
       trackEvent("recommendation_viewed", {
@@ -815,14 +810,14 @@ function CheckoutPage() {
     }));
   }, [profile.email, profile.phone, profile.firstName, profile.surname, profile.streetAddress, profile.apartmentOrCompany, profile.city, profile.postalCode, profile.country]);
   const completeStep = () => {
-    const payload = { step: steps[step], ...checkoutPayload(), ...cartPayload(state.cart, products) };
+    const payload = { step: steps[step], ...checkoutPayload(), ...cartPayload(state.cart) };
     if (step === 0) trackEvent("checkout_contact_submitted", payload);
     if (step === 1) trackEvent("checkout_shipping_submitted", payload);
     if (step === 2) trackEvent("checkout_payment_submitted", payload);
     trackEvent("checkout_step_completed", payload);
     setStep(step + 1);
   };
-  useEffect(() => trackEvent("checkout_started", cartPayload(state.cart, products)), []);
+  useEffect(() => trackEvent("checkout_started", cartPayload(state.cart)), []);
   if (state.cart.length === 0) {
     return (
       <main className="page narrow checkout-empty">
@@ -876,7 +871,7 @@ function CheckoutPage() {
                 <button type="button" onClick={completeStep}>Continue</button>
               ) : (
                 <button type="button" onClick={() => {
-                  const orderPayload = cartPayload(state.cart, products);
+                  const orderPayload = cartPayload(state.cart);
                   state.updateProfile({
                     email: checkoutDetails.email,
                     phone: checkoutDetails.phone,
@@ -914,14 +909,14 @@ function CheckoutPage() {
 function OrderReview() {
   const { cart } = useAppState();
   return <div className="order-review">{cart.map((item) => {
-    const product = products.find((p) => p.id === item.productId);
+    const product = findProductById(item.productId);
     return product ? <p key={item.productId}><span>Qty {item.quantity}</span><strong>{product.name}</strong></p> : null;
   })}</div>;
 }
 
 function CheckoutSummary() {
   const { cart } = useAppState();
-  const enriched = cart.map((item) => ({ item, product: products.find((product) => product.id === item.productId) })).filter((entry): entry is { item: typeof cart[number]; product: Product } => Boolean(entry.product));
+  const enriched = enrichCartItems(cart);
   const subtotal = enriched.reduce((sum, { item, product }) => sum + item.quantity * product.price, 0);
 
   return (
@@ -1067,7 +1062,7 @@ function AccountPage() {
             action={{ label: "View products", to: "/products" }}
           />
         ) : (
-          <ProductGrid items={recentlyViewed.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[]} />
+          <ProductGrid items={findProductsByIds(recentlyViewed)} />
         )}
       </section>
       <LifecyclePlaybookSlots compact />
@@ -1109,7 +1104,7 @@ function SearchPage() {
   }, [query]);
   const lastViewedItems = recommendProducts("recently_viewed", state, { limit: 4 });
   const lastViewedIds = lastViewedItems.map((product) => product.id).join(",");
-  const lastViewedProduct = products.find((product) => product.id === state.profile.lastViewedProductId || product.slug === state.profile.lastViewedProductId) ?? products.find((product) => product.id === state.recentlyViewed[0]);
+  const lastViewedProduct = findProductByIdOrSlug(state.profile.lastViewedProductId) ?? findProductById(state.recentlyViewed[0]);
   const affinityLabel = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? state.profile.lastPurchasedCategory ?? state.profile.recommendedTags[0] ?? "profile signals";
   useEffect(() => {
     if (lastViewedItems.length > 0) {
@@ -1540,9 +1535,9 @@ function PlaybooksPage() {
 function ReviewReferralPage() {
   const state = useAppState();
   const reviewedProduct =
-    products.find((product) => product.id === state.profile.lastPurchasedSku || product.slug === state.profile.lastPurchasedSku) ??
-    products.find((product) => state.profile.purchases.includes(product.id)) ??
-    products.find((product) => product.id === "monday-survival-kit") ??
+    findProductByIdOrSlug(state.profile.lastPurchasedSku) ??
+    findProductsByIds(state.profile.purchases)[0] ??
+    findProductById("monday-survival-kit") ??
     products[0];
   const [submitted, setSubmitted] = useState(false);
   const [reviewText, setReviewText] = useState("");

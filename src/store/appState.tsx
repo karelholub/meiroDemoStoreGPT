@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { products } from "../data/products";
 import { personas } from "../data/personas";
 import type { ProfileApiScenario } from "../data/profileApiScenarios";
 import { setMeiroConsentState, setMeiroEventSink, setMeiroSdkCallSink, trackEvent } from "../integrations/meiro/meiroClient";
 import { fetchMeiroProfile, getMeiroProfileApiStatus, getMptUserIdCookie, getProfileApiIdentifier } from "../integrations/meiro/meiroProfileApi";
 import type { CartItem, ConsentState, CustomerProfile, MeiroSdkCall, PersonalizationDecision, ProfileApiStatus, TrackingEvent } from "../types";
+import { cartItemCount, cartTotal, findProductById } from "../utils/productLookup";
 import { loadLocal, saveLocal } from "../utils/storage";
 
 const defaultConsent: ConsentState = {
@@ -168,22 +168,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToCart = (productId: string) => {
-    const product = products.find((item) => item.id === productId);
+    const product = findProductById(productId);
     if (!product) return;
     setCart((items) => {
       const exists = items.find((item) => item.productId === productId);
       const next = exists
         ? items.map((item) => (item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item))
         : [...items, { productId, quantity: 1, cartOpener: items.length === 0 }];
-      const total = next.reduce((sum, item) => sum + item.quantity * (products.find((p) => p.id === item.productId)?.price ?? 0), 0);
       trackEvent("product_added_to_cart", {
         product_id: product.id,
         product_name: product.name,
         category: product.category,
         price: product.price,
         quantity: 1,
-        cart_value: total,
-        cart_size: next.reduce((sum, item) => sum + item.quantity, 0),
+        cart_value: cartTotal(next),
+        cart_size: cartItemCount(next),
         cart_opener: next.find((item) => item.cartOpener)?.productId,
       });
       return next;
@@ -191,7 +190,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromCart = (productId: string) => {
-    const product = products.find((item) => item.id === productId);
+    const product = findProductById(productId);
     setCart((items) => items.filter((item) => item.productId !== productId));
     if (product) trackEvent("product_removed_from_cart", { product_id: product.id, product_name: product.name });
   };
@@ -204,7 +203,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const clearCart = () => setCart([]);
 
   const viewProduct = (productId: string) => {
-    const product = products.find((item) => item.id === productId);
+    const product = findProductById(productId);
     if (!product) return;
     setRecentlyViewed((items) => [productId, ...items.filter((item) => item !== productId)].slice(0, 8));
     setProfile((current) => ({

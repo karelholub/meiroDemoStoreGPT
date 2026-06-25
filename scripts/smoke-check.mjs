@@ -25,10 +25,13 @@ const products = read("src/data/products.ts");
 const categories = read("src/data/categories.ts");
 const appState = read("src/store/appState.tsx");
 const events = read("src/integrations/meiro/eventSchemas.ts");
+const meiroEvents = read("src/integrations/meiro/meiroEvents.ts");
 const meiroClient = read("src/integrations/meiro/meiroClient.ts");
 const meiroConfig = read("src/integrations/meiro/meiroConfig.ts");
 const meiroPersonalization = read("src/integrations/meiro/meiroPersonalization.ts");
 const meiroProfileApi = read("src/integrations/meiro/meiroProfileApi.ts");
+const productLookup = read("src/utils/productLookup.ts");
+const recommendations = read("src/utils/recommendations.ts");
 const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const profileApiFunction = read("netlify/functions/meiro-profile.ts");
 const netlify = read("netlify.toml");
@@ -137,6 +140,9 @@ assert(app.includes('strategy="next_best_product"'), "search page includes recom
 assert(app.includes("cart-empty-panel") && app.includes("Empty cart recovery picks"), "cart page includes polished empty-cart recovery surface");
 assert(app.includes("demo-nav-link") && app.includes("cart-count") && app.includes("pathname === item.to"), "top menu includes active route styling and stable cart count markup");
 assert(app.includes("account-summary-grid") && app.includes("demo-progress-card"), "account and demo pages include polished summary surfaces");
+assert(productLookup.includes("productsById") && productLookup.includes("enrichCartItems"), "product lookup helpers centralize product indexing and cart enrichment");
+assert(appState.includes("findProductById") && recommendations.includes("findProductByIdOrSlug"), "state and recommendation paths use indexed product lookups");
+assert(app.includes("enrichCartItems(cart)") && meiroEvents.includes("enrichCartItems(items)"), "cart UI and Meiro payloads share cart enrichment");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",

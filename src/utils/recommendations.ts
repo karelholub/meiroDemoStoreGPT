@@ -1,6 +1,7 @@
 import { products } from "../data/products";
 import type { AppState } from "../store/appState";
 import type { Product, RecommendationStrategy } from "../types";
+import { findProductById, findProductByIdOrSlug, findProductsByIds } from "./productLookup";
 
 export function recommendProducts(
   strategy: RecommendationStrategy,
@@ -8,7 +9,7 @@ export function recommendProducts(
   options: { currentProductId?: string; category?: string; limit?: number } = {},
 ): Product[] {
   const limit = options.limit ?? 4;
-  const current = products.find((product) => product.id === options.currentProductId);
+  const current = findProductById(options.currentProductId);
   let scored = products.filter((product) => product.id !== options.currentProductId);
   const profileCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? state.profile.lastPurchasedCategory;
   const purchasedIds = new Set([...(state.profile.purchases ?? []), state.profile.lastPurchasedSku].filter(Boolean));
@@ -17,9 +18,9 @@ export function recommendProducts(
     return [state.profile.lastViewedProductId, ...state.recentlyViewed]
       .filter((id): id is string => Boolean(id))
       .filter((id, index, ids) => ids.indexOf(id) === index)
-      .map((id) => products.find((product) => product.id === id))
-      .filter(Boolean)
-      .slice(0, limit) as Product[];
+      .map((id) => findProductById(id))
+      .filter((product): product is Product => Boolean(product))
+      .slice(0, limit);
   }
 
   if (strategy === "same_category" && (options.category || current?.category)) {
@@ -37,7 +38,7 @@ export function recommendProducts(
   if (strategy === "cart_cross_sell") {
     const profileCartItems = state.profile.cartItemIds ?? [];
     const activeCartIds = [...state.cart.map((item) => item.productId), ...profileCartItems];
-    const cartTags = activeCartIds.flatMap((productId) => products.find((product) => product.id === productId)?.recommendationTags ?? []);
+    const cartTags = findProductsByIds(activeCartIds).flatMap((product) => product.recommendationTags);
     scored = scored
       .filter((product) => !activeCartIds.includes(product.id))
       .sort((a, b) => scoreTagOverlap(b, cartTags) - scoreTagOverlap(a, cartTags));
@@ -46,9 +47,9 @@ export function recommendProducts(
   if (strategy === "next_best_product") {
     if (state.profile.nextBestProductIds?.length) {
       const nextBest = state.profile.nextBestProductIds
-        .map((id) => products.find((product) => product.id === id || product.slug === id))
-        .filter(Boolean)
-        .slice(0, limit) as Product[];
+        .map((id) => findProductByIdOrSlug(id))
+        .filter((product): product is Product => Boolean(product))
+        .slice(0, limit);
       if (nextBest.length > 0) return nextBest;
     }
 
