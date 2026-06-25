@@ -1320,14 +1320,48 @@ function DemoControlPage() {
 }
 
 function ThankYouPage() {
+  const state = useAppState();
+  const orderId = state.lastOrderId ?? "ESC-DEMO";
+  const firstName = state.profile.firstName;
+  const nextAction = state.profile.nextBestAction ?? "review_or_refer";
+  const reorderDate = formatProfileDate(state.profile.predictedReorderDate);
+
   return (
-    <main className="page narrow">
-      <h1>Thank you. The order is simulated, the signals are not.</h1>
-      <PersonalizationZone zoneId="thank_you_next_best_action" fallback="Recommended next step: review account profile enrichment." className="banner" />
-      <div className="actions">
-        <Link to="/account" className="primary-cta">View profile</Link>
-        <Link to="/review" className="secondary-action">Review or refer</Link>
-      </div>
+    <main className="page thank-you-page">
+      <section className="thank-you-hero">
+        <div>
+          <span className="eyebrow">Order signal received</span>
+          <h1>{firstName ? `Thank you, ${firstName}.` : "Thank you."} The order is simulated, the signals are not.</h1>
+          <PersonalizationZone zoneId="thank_you_next_best_action" fallback="Recommended next step: review account profile enrichment." className="banner" />
+          <div className="actions">
+            <Link to="/review" className="primary-cta">Review or refer</Link>
+            <Link to="/account" className="secondary-action">View profile</Link>
+          </div>
+        </div>
+        <aside className="receipt-card" aria-label="Simulated order receipt">
+          <span className="eyebrow">Demo receipt</span>
+          <dl>
+            <div><dt>Order</dt><dd>{orderId}</dd></div>
+            <div><dt>Event</dt><dd>purchase</dd></div>
+            <div><dt>Profile key</dt><dd>{state.profile.email ?? state.profile.phone ?? "anonymous device"}</dd></div>
+            <div><dt>Next action</dt><dd>{nextAction.replaceAll("_", " ")}</dd></div>
+          </dl>
+        </aside>
+      </section>
+      <section className="post-purchase-strip" aria-label="Post-purchase personalization signals">
+        <div>
+          <span>Profile enriched</span>
+          <strong>{state.profile.purchaseCount !== undefined ? `${state.profile.purchaseCount} orders` : "purchase count ready"}</strong>
+        </div>
+        <div>
+          <span>Reorder timing</span>
+          <strong>{reorderDate ?? "waiting for prediction"}</strong>
+        </div>
+        <div>
+          <span>Lifecycle</span>
+          <strong>{state.profile.lifecycleStage.replaceAll("_", " ")}</strong>
+        </div>
+      </section>
       <LifecyclePlaybookSlots compact />
     </main>
   );

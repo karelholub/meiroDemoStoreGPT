@@ -1678,6 +1678,111 @@ dd {
   letter-spacing: 0.08em;
 }
 
+.thank-you-page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.thank-you-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.92), rgba(239, 232, 220, 0.78)),
+    url("/assets/products/gifts-im-fine.jpg") center right/cover;
+  border: 1px solid rgba(30, 27, 24, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 20px 70px rgba(30, 27, 24, 0.06);
+}
+
+.thank-you-hero h1 {
+  max-width: 15ch;
+  margin: 0.35rem 0 var(--space-4);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.55rem, 5.8vw, 4.8rem);
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.thank-you-hero .banner {
+  max-width: 680px;
+  color: #4d453b;
+  background: rgba(255, 253, 248, 0.84);
+}
+
+.receipt-card {
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  color: #fffaf1;
+  background: rgba(30, 27, 24, 0.86);
+  border: 1px solid rgba(255, 253, 248, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(30, 27, 24, 0.18);
+}
+
+.receipt-card .eyebrow {
+  color: rgba(255, 250, 241, 0.7);
+}
+
+.receipt-card dl {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.receipt-card div {
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid rgba(255, 250, 241, 0.16);
+}
+
+.receipt-card div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.receipt-card dt,
+.post-purchase-strip span {
+  color: rgba(255, 250, 241, 0.68);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.receipt-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.post-purchase-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.post-purchase-strip div {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 112px;
+  padding: var(--space-4);
+  background: #6f7565;
+  border-radius: 8px;
+}
+
+.post-purchase-strip strong {
+  color: #fffaf1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  line-height: 1.08;
+}
+
 .actions,
 .chips {
   display: flex;
@@ -2264,8 +2369,13 @@ body.consent-visible .debug-toggle {
   .two-col,
   .checkout-layout,
   .newsletter,
+  .thank-you-hero,
   .journey-slots {
     grid-template-columns: 1fr;
+  }
+
+  .post-purchase-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .checkout-summary {
@@ -2352,6 +2462,23 @@ body.consent-visible .debug-toggle {
 
   .home-intro {
     padding-top: var(--space-5);
+  }
+
+  .thank-you-hero {
+    padding: var(--space-4);
+  }
+
+  .thank-you-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.25rem, 12vw, 3.35rem);
+  }
+
+  .receipt-card {
+    padding: var(--space-4);
+  }
+
+  .post-purchase-strip {
+    grid-template-columns: 1fr;
   }
 
   .hero-actions,
