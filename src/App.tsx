@@ -907,38 +907,66 @@ function CheckoutSummary() {
 function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
   const { updateProfile, setConsent } = useAppState();
   const [form, setForm] = useState({ email: "", firstName: "", currentLifeSituation: "Too many meetings", preferredCategory: categories[0].name, marketing: false, personalization: true });
+  const isLogin = mode === "login";
   return (
-    <main className="page narrow">
-      <h1>{mode === "login" ? "Login simulation" : "Registration simulation"}</h1>
-      <form className="form-card" onSubmit={(event) => {
-        event.preventDefault();
-        const profile = {
-          email: form.email,
-          firstName: form.firstName,
-          currentLifeSituation: form.currentLifeSituation,
-          preferredCategory: form.preferredCategory,
-          customerType: "registered" as const,
-          lifecycleStage: mode === "login" ? "known_customer" : "registered",
-          categoryAffinity: form.preferredCategory,
-          recommendedTags: [form.preferredCategory.toLowerCase()],
-        };
-        updateProfile(profile);
-        setConsent({ necessary: true, analytics: true, personalization: form.personalization, marketing: form.marketing });
-        identifyUser(profile);
-        trackEvent(mode === "login" ? "user_logged_in" : "user_registered", { email: form.email, email_domain: form.email.split("@")[1], preferred_category: form.preferredCategory });
-        navigate("/account");
-      }}>
-        <input aria-label="Email" required type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
-        <input aria-label="First name" required placeholder="First name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
-        <select aria-label="Current life situation" value={form.currentLifeSituation} onChange={(event) => setForm({ ...form, currentLifeSituation: event.target.value })}>
-          {["Too many meetings", "Parenting chaos", "Trying to sleep", "Marketing burnout", "Generally fine, suspiciously"].map((item) => <option key={item}>{item}</option>)}
-        </select>
-        <select aria-label="Preferred category" value={form.preferredCategory} onChange={(event) => setForm({ ...form, preferredCategory: event.target.value })}>
-          {categories.map((category) => <option key={category.slug}>{category.name}</option>)}
-        </select>
-        <label><input type="checkbox" checked={form.marketing} onChange={(event) => setForm({ ...form, marketing: event.target.checked })} /> Marketing consent</label>
-        <label><input type="checkbox" checked={form.personalization} onChange={(event) => setForm({ ...form, personalization: event.target.checked })} /> Personalization consent</label>
-        <button>{mode === "login" ? "Simulate login" : "Create demo profile"}</button>
+    <main className="page register-page">
+      <section className="register-hero">
+        <span className="eyebrow">{isLogin ? "Identity resolution" : "Profile creation"}</span>
+        <h1>{isLogin ? "Recognize a returning customer." : "Create a profile Meiro can stitch."}</h1>
+        <p>{isLogin ? "Simulate a known visitor returning with email-based identity and preference context." : "Capture a minimal identity signal, consent state, and category preference for the personalization demo."}</p>
+        <div className="register-proof">
+          <div><strong>email</strong><span>sent on sign_up/login</span></div>
+          <div><strong>consent</strong><span>updates SDK storage rights</span></div>
+          <div><strong>affinity</strong><span>shapes the storefront</span></div>
+        </div>
+      </section>
+      <form className="form-card register-form" onSubmit={(event) => {
+          event.preventDefault();
+          const profile = {
+            email: form.email,
+            firstName: form.firstName,
+            currentLifeSituation: form.currentLifeSituation,
+            preferredCategory: form.preferredCategory,
+            customerType: "registered" as const,
+            lifecycleStage: isLogin ? "known_customer" : "registered",
+            categoryAffinity: form.preferredCategory,
+            recommendedTags: [form.preferredCategory.toLowerCase()],
+          };
+          updateProfile(profile);
+          setConsent({ necessary: true, analytics: true, personalization: form.personalization, marketing: form.marketing });
+          identifyUser(profile);
+          trackEvent(isLogin ? "user_logged_in" : "user_registered", { email: form.email, email_domain: form.email.split("@")[1], preferred_category: form.preferredCategory });
+          navigate("/account");
+        }}>
+        <div className="form-section-heading">
+          <span className="eyebrow">{isLogin ? "Login signal" : "Sign-up signal"}</span>
+          <h2>{isLogin ? "Known profile details" : "Profile details"}</h2>
+        </div>
+        <label>
+          <span>Email</span>
+          <input aria-label="Email" required type="email" placeholder="mira@example.com" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
+        </label>
+        <label>
+          <span>First name</span>
+          <input aria-label="First name" required placeholder="Mira" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
+        </label>
+        <label>
+          <span>Current life situation</span>
+          <select aria-label="Current life situation" value={form.currentLifeSituation} onChange={(event) => setForm({ ...form, currentLifeSituation: event.target.value })}>
+            {["Too many meetings", "Parenting chaos", "Trying to sleep", "Marketing burnout", "Generally fine, suspiciously"].map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Preferred category</span>
+          <select aria-label="Preferred category" value={form.preferredCategory} onChange={(event) => setForm({ ...form, preferredCategory: event.target.value })}>
+            {categories.map((category) => <option key={category.slug}>{category.name}</option>)}
+          </select>
+        </label>
+        <div className="consent-choice-list" aria-label="Consent choices">
+          <label><input type="checkbox" checked={form.marketing} onChange={(event) => setForm({ ...form, marketing: event.target.checked })} /><span><strong>Marketing consent</strong><small>Allow lifecycle nudges and fictional launches.</small></span></label>
+          <label><input type="checkbox" checked={form.personalization} onChange={(event) => setForm({ ...form, personalization: event.target.checked })} /><span><strong>Personalization consent</strong><small>Allow profile-aware banners and recommendations.</small></span></label>
+        </div>
+        <button>{isLogin ? "Simulate login" : "Create demo profile"}</button>
       </form>
     </main>
   );

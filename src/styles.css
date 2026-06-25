@@ -1263,6 +1263,134 @@ dd {
   max-width: 760px;
 }
 
+.register-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(340px, 0.72fr);
+  align-items: stretch;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: var(--space-5) 0;
+}
+
+.register-hero {
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-5);
+  min-height: 520px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: #fffaf1;
+  background:
+    linear-gradient(135deg, rgba(30, 27, 24, 0.86), rgba(30, 27, 24, 0.42)),
+    url("/assets/products/work-meetings.jpg") center/cover;
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(30, 27, 24, 0.18);
+}
+
+.register-hero .eyebrow {
+  color: rgba(255, 250, 241, 0.74);
+}
+
+.register-hero h1 {
+  max-width: 10ch;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 6.5vw, 5.2rem);
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.register-hero p {
+  max-width: 560px;
+  margin: 0;
+  color: rgba(255, 250, 241, 0.86);
+  font-size: clamp(1.02rem, 2vw, 1.18rem);
+  line-height: 1.55;
+}
+
+.register-proof {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.register-proof div {
+  display: grid;
+  gap: 0.25rem;
+  min-height: 104px;
+  padding: var(--space-3);
+  background: rgba(255, 250, 241, 0.12);
+  border: 1px solid rgba(255, 250, 241, 0.2);
+  border-radius: 8px;
+}
+
+.register-proof strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+}
+
+.register-proof span {
+  color: rgba(255, 250, 241, 0.76);
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.register-form {
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.form-section-heading h2 {
+  margin: 0.25rem 0 var(--space-2);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 4vw, 2.65rem);
+  line-height: 1;
+}
+
+.register-form label {
+  display: grid;
+  gap: 0.45rem;
+  color: #544e45;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.register-form label > span:first-child {
+  color: #6f7565;
+}
+
+.consent-choice-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.25rem 0;
+}
+
+.consent-choice-list label {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  padding: 0.75rem;
+  background: rgba(111, 117, 101, 0.08);
+  border: 1px solid rgba(111, 117, 101, 0.16);
+  border-radius: 8px;
+}
+
+.consent-choice-list input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.1rem;
+}
+
+.consent-choice-list span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.consent-choice-list small {
+  color: #686259;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 .checkout-empty .empty-state {
   margin-top: var(--space-5);
 }
@@ -2369,9 +2497,14 @@ body.consent-visible .debug-toggle {
   .two-col,
   .checkout-layout,
   .newsletter,
+  .register-page,
   .thank-you-hero,
   .journey-slots {
     grid-template-columns: 1fr;
+  }
+
+  .register-hero {
+    min-height: 440px;
   }
 
   .post-purchase-strip {
@@ -2479,6 +2612,24 @@ body.consent-visible .debug-toggle {
 
   .post-purchase-strip {
     grid-template-columns: 1fr;
+  }
+
+  .register-page {
+    gap: var(--space-4);
+  }
+
+  .register-hero {
+    min-height: auto;
+    padding: var(--space-4);
+  }
+
+  .register-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.35rem, 12vw, 3.55rem);
+  }
+
+  .register-proof {
+    display: none;
   }
 
   .hero-actions,
