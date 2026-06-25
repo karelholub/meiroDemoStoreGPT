@@ -1046,38 +1046,87 @@ function AccountPage() {
 }
 
 function SearchPage() {
+  const state = useAppState();
   const [query, setQuery] = useState(new URLSearchParams(window.location.search).get("q") ?? "");
   const results = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return [];
     return products.filter((product) => [product.name, product.category, product.shortDescription, ...product.tags].join(" ").toLowerCase().includes(q));
   }, [query]);
+  const lastViewedItems = recommendProducts("recently_viewed", state, { limit: 4 });
+  const lastViewedIds = lastViewedItems.map((product) => product.id).join(",");
+  const lastViewedProduct = products.find((product) => product.id === state.profile.lastViewedProductId || product.slug === state.profile.lastViewedProductId) ?? products.find((product) => product.id === state.recentlyViewed[0]);
+  const affinityLabel = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? state.profile.lastPurchasedCategory ?? state.profile.recommendedTags[0] ?? "profile signals";
+  useEffect(() => {
+    if (lastViewedItems.length > 0) {
+      trackEvent("recommendation_viewed", { strategy: "recently_viewed", title: "Last viewed products", product_ids: lastViewedItems.map((item) => item.id) });
+    }
+  }, [lastViewedIds]);
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     trackEvent("search_submitted", { search_query: query, result_count: results.length });
   };
   return (
-    <main className="page">
-      <h1>Search</h1>
-      <form className="search" onSubmit={submit}>
-        <input aria-label="Search products" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="meeting, sleep, please help" />
-        <button>Search</button>
-      </form>
-      <div className="chips">{["meeting", "sleep", "parenting", "marketing", "Monday", "overthinking", "please help"].map((term) => <button type="button" onClick={() => setQuery(term)} key={term}>{term}</button>)}</div>
-      <p>{query ? `${results.length} results` : "Try a popular fake search."}</p>
-      <div onClickCapture={(event) => {
-        const id = (event.target as HTMLElement).closest("[data-product-id]")?.getAttribute("data-product-id");
-        if (id) trackEvent("search_result_clicked", { search_query: query, product_id: id });
-      }}>
+    <main className="page search-page">
+      <section className="search-hero">
+        <div>
+          <span className="eyebrow">Intent capture</span>
+          <h1>Search supplies for the current crisis.</h1>
+          <p>Search terms become Meiro intent signals while recently viewed and recommended products stay close enough to act on.</p>
+        </div>
+        <div className="search-context-panel" aria-label="Personalized search context">
+          <div>
+            <span>Last viewed</span>
+            <strong>{lastViewedProduct?.name ?? "Waiting for product view"}</strong>
+          </div>
+          <div>
+            <span>Recommendation basis</span>
+            <strong>{affinityLabel}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="search-workbench">
+        <div className="search-card">
+          <form className="search" onSubmit={submit}>
+            <input aria-label="Search products" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="meeting, sleep, please help" />
+            <button>Search</button>
+          </form>
+          <div className="chips search-chips">{["meeting", "sleep", "parenting", "marketing", "Monday", "overthinking", "please help"].map((term) => <button type="button" onClick={() => setQuery(term)} key={term}>{term}</button>)}</div>
+        </div>
+        <p className="search-result-count">{query ? `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"` : "Try a popular fake search or use the personalized rails below."}</p>
+      </section>
+
+      <section className="search-results" onClickCapture={(event) => {
+          const id = (event.target as HTMLElement).closest("[data-product-id]")?.getAttribute("data-product-id");
+          if (id) trackEvent("search_result_clicked", { search_query: query, product_id: id });
+        }}>
         {query && results.length === 0 ? (
           <EmptyState
             title="No supplies match that particular crisis."
             body="Try meeting, sleep, parenting, marketing, Monday, overthinking, or please help."
           />
-        ) : (
+        ) : query ? (
           <div className="product-grid">{results.map((product) => <div data-product-id={product.id} key={product.id}><ProductCard product={product} /></div>)}</div>
+        ) : null}
+      </section>
+
+      <section className="rail search-personalized-rail">
+        <div className="section-heading">
+          <h2>Last viewed products</h2>
+        </div>
+        {lastViewedItems.length > 0 ? (
+          <div className="rail-grid">
+            {lastViewedItems.map((product) => <ProductCard key={product.id} product={product} source="recently_viewed" />)}
+          </div>
+        ) : (
+          <div className="search-empty-rail">
+            <strong>No viewed product yet</strong>
+            <p>Open any product detail or expose <code>last_viewed_product_id</code> through the Profile API to fill this rail.</p>
+          </div>
         )}
-      </div>
+      </section>
+      <RecommendationRail title={`Recommended from ${affinityLabel}`} strategy="next_best_product" limit={4} />
     </main>
   );
 }

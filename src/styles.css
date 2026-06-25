@@ -982,6 +982,142 @@ s {
   gap: var(--space-3);
 }
 
+.search-page {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.search-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.42fr);
+  align-items: end;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.6rem, 5vw, 3rem);
+  color: #fffaf1;
+  background:
+    linear-gradient(135deg, rgba(30, 27, 24, 0.9), rgba(30, 27, 24, 0.46)),
+    url("/assets/products/tiny-dopamine.jpg") center/cover;
+  border-radius: 8px;
+}
+
+.search-hero .eyebrow {
+  color: rgba(255, 250, 241, 0.72);
+}
+
+.search-hero h1 {
+  max-width: 13ch;
+  margin: var(--space-2) 0 var(--space-3);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.65rem, 6vw, 5rem);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.search-hero p {
+  max-width: 690px;
+  margin: 0;
+  color: rgba(255, 250, 241, 0.84);
+  font-size: clamp(1rem, 1.7vw, 1.16rem);
+  line-height: 1.55;
+}
+
+.search-context-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.search-context-panel div {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 104px;
+  padding: var(--space-4);
+  background: rgba(255, 250, 241, 0.13);
+  border: 1px solid rgba(255, 250, 241, 0.22);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.search-context-panel span {
+  color: rgba(255, 250, 241, 0.68);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.search-context-panel strong {
+  color: #fffaf1;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  line-height: 1.12;
+}
+
+.search-workbench {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.search-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: #fffdf8;
+  border: 1px solid rgba(30, 27, 24, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 16px 50px rgba(30, 27, 24, 0.06);
+}
+
+.search-card .search {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.search-card input {
+  min-height: 3.4rem;
+  font-size: 1.03rem;
+}
+
+.search-card button {
+  min-height: 3.4rem;
+}
+
+.search-chips {
+  margin-top: 0;
+}
+
+.search-result-count {
+  margin: 0;
+  color: #686259;
+  font-weight: 800;
+}
+
+.search-results {
+  min-height: 0;
+}
+
+.search-personalized-rail {
+  padding-bottom: var(--space-3);
+}
+
+.search-empty-rail {
+  display: grid;
+  gap: 0.35rem;
+  padding: var(--space-5);
+  background: #fffdf8;
+  border: 1px dashed rgba(111, 117, 101, 0.36);
+  border-radius: 8px;
+}
+
+.search-empty-rail strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+}
+
+.search-empty-rail p {
+  max-width: 620px;
+  margin: 0;
+  color: #686259;
+}
+
 .trust-band {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2497,6 +2633,7 @@ body.consent-visible .debug-toggle {
   .two-col,
   .checkout-layout,
   .newsletter,
+  .search-hero,
   .register-page,
   .thank-you-hero,
   .journey-slots {
@@ -2505,6 +2642,10 @@ body.consent-visible .debug-toggle {
 
   .register-hero {
     min-height: 440px;
+  }
+
+  .search-context-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .post-purchase-strip {
@@ -2595,6 +2736,46 @@ body.consent-visible .debug-toggle {
 
   .home-intro {
     padding-top: var(--space-5);
+  }
+
+  .search-hero {
+    padding: var(--space-4);
+  }
+
+  .search-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.1rem, 10vw, 3rem);
+  }
+
+  .search-context-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .search-context-panel div {
+    min-height: 92px;
+    padding: var(--space-3);
+  }
+
+  .search-context-panel strong {
+    font-size: 1.04rem;
+  }
+
+  .search-card .search {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .search-card {
+    padding: var(--space-3);
+  }
+
+  .search-card input,
+  .search-card button {
+    min-height: 3rem;
+  }
+
+  .search-chips {
+    gap: 0.5rem;
   }
 
   .thank-you-hero {

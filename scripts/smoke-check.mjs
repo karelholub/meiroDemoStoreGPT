@@ -132,6 +132,8 @@ assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK event
 assert(app.includes("Fictional essentials for meetings, Mondays, sleep"), "homepage hero subcopy is shopper-facing");
 assert(meiroPersonalization.includes("heroCopyForNextBestAction") && meiroPersonalization.includes("Time to restock your coping kit."), "homepage hero maps next_best_action to retail copy");
 assert(meiroPersonalization.includes("content: nextBestHero"), "homepage hero does not render raw next_best_action values");
+assert(app.includes("Last viewed products") && app.includes('source="recently_viewed"'), "search page includes recently viewed product rail");
+assert(app.includes('strategy="next_best_product"'), "search page includes recommended product rail");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",
