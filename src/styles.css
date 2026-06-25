@@ -1933,6 +1933,8 @@ dd {
 }
 
 .account-page .profile-card {
+  display: grid;
+  gap: var(--space-4);
   align-content: start;
   min-height: 0;
   padding: clamp(1.25rem, 3vw, 2rem);
@@ -1940,6 +1942,7 @@ dd {
 
 .account-page .profile-card h1 {
   max-width: 8.5ch;
+  margin: 0;
   font-size: clamp(2.4rem, 5.2vw, 4.25rem);
 }
 
@@ -1948,13 +1951,68 @@ dd {
   max-width: 100%;
 }
 
+.account-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.account-summary-grid div {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 104px;
+  padding: var(--space-3);
+  background: rgba(111, 117, 101, 0.08);
+  border: 1px solid rgba(111, 117, 101, 0.16);
+  border-radius: 8px;
+}
+
+.account-summary-grid span {
+  color: #6f7565;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-summary-grid strong {
+  align-self: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  line-height: 1.08;
+}
+
+.account-page .profile-card .spec-list {
+  max-height: 520px;
+  overflow: auto;
+  padding: var(--space-3);
+  background: rgba(255, 253, 248, 0.62);
+  border: 1px solid rgba(30, 27, 24, 0.08);
+  border-radius: 8px;
+  margin-top: 0;
+}
+
+.account-page .profile-card .spec-list div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
 .account-behavior {
   min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid rgba(30, 27, 24, 0.08);
+  border-radius: 8px;
 }
 
 .account-behavior h2 {
   max-width: 13ch;
-  margin-top: 1.25rem;
+  margin: 0;
   font-size: clamp(1.45rem, 2.2vw, 1.85rem);
   line-height: 1.05;
 }
@@ -2312,17 +2370,56 @@ dd {
 
 .demo-hero {
   display: grid;
-  gap: var(--space-3);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid rgba(30, 27, 24, 0.1);
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.28fr);
+  gap: var(--space-4);
+  align-items: end;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.92), rgba(239, 232, 220, 0.72));
+  border: 1px solid rgba(30, 27, 24, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 20px 70px rgba(30, 27, 24, 0.055);
 }
 
 .demo-hero h1 {
   margin: 0;
+  max-width: 9ch;
 }
 
 .demo-hero .actions {
+  grid-column: 1 / -1;
   margin-top: var(--space-2);
+}
+
+.demo-progress-card {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 150px;
+  padding: var(--space-4);
+  color: #fffaf1;
+  background: #6f7565;
+  border-radius: 8px;
+}
+
+.demo-progress-card span {
+  color: rgba(255, 250, 241, 0.72);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-progress-card strong {
+  align-self: end;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.25rem, 5vw, 3.7rem);
+  line-height: 0.95;
+}
+
+.demo-progress-card p {
+  margin: 0;
+  color: rgba(255, 250, 241, 0.78);
+  font-weight: 750;
 }
 
 .demo-signal-strip {
@@ -2335,9 +2432,10 @@ dd {
 .demo-signal-strip div {
   min-width: 0;
   padding: var(--space-3);
-  background: rgba(255, 253, 248, 0.76);
-  border: 1px solid rgba(30, 27, 24, 0.08);
+  background: rgba(255, 253, 248, 0.86);
+  border: 1px solid rgba(30, 27, 24, 0.1);
   border-radius: 8px;
+  box-shadow: 0 12px 34px rgba(30, 27, 24, 0.04);
 }
 
 .demo-signal-strip span {
@@ -2398,6 +2496,7 @@ dd {
 .control-card h2 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.08;
 }
 
 .control-card label {
@@ -2852,12 +2951,20 @@ body.consent-visible .debug-toggle {
     gap: var(--space-5);
   }
 
+  .demo-hero {
+    grid-template-columns: 1fr;
+  }
+
   .demo-signal-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .account-page {
     gap: var(--space-5);
+  }
+
+  .account-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .account-page .profile-api-card {
@@ -3200,6 +3307,32 @@ body.consent-visible .debug-toggle {
   .account-page .profile-card h1 {
     max-width: 7.5ch;
     font-size: clamp(2.25rem, 12vw, 3.3rem);
+  }
+
+  .account-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-summary-grid div {
+    min-height: 92px;
+    padding: 0.75rem;
+  }
+
+  .account-summary-grid strong {
+    font-size: 1rem;
+  }
+
+  .account-page .profile-card .spec-list {
+    max-height: 390px;
+    padding: var(--space-2);
+  }
+
+  .demo-progress-card {
+    min-height: 118px;
+  }
+
+  .demo-signal-strip {
+    grid-template-columns: 1fr;
   }
 
   .account-behavior h2 {

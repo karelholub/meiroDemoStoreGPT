@@ -1019,6 +1019,8 @@ function RegisterPage({ mode = "register" }: { mode?: "register" | "login" }) {
 function AccountPage() {
   const state = useAppState();
   const { profile, consent, recentlyViewed } = state;
+  const identityLabel = profile.email ?? profile.phone ?? "anonymous device";
+  const affinityLabel = profile.categoryAffinity ?? profile.preferredCategory ?? "Still emerging";
   const profileApiSummary =
     state.profileApiStatus.state === "loaded"
       ? `Loaded via ${state.profileApiStatus.identifierType}`
@@ -1026,8 +1028,15 @@ function AccountPage() {
   return (
     <main className="page two-col account-page">
       <section className="profile-card">
+        <span className="eyebrow">Identity profile</span>
         <h1>{profile.firstName ? `${profile.firstName}'s profile` : "Anonymous profile"}</h1>
         <PersonalizationZone zoneId="account_lifecycle_banner" fallback="Local profile enrichment is ready for Meiro identity resolution." className="banner" />
+        <div className="account-summary-grid" aria-label="Profile summary">
+          <div><span>Identifier</span><strong>{identityLabel}</strong></div>
+          <div><span>Lifecycle</span><strong>{profile.lifecycleStage.replaceAll("_", " ")}</strong></div>
+          <div><span>Affinity</span><strong>{affinityLabel}</strong></div>
+          <div><span>Profile API</span><strong>{profileApiSummary}</strong></div>
+        </div>
         <dl className="spec-list">
           <div><dt>Email</dt><dd>{profile.email ?? "Unknown visitor"}</dd></div>
           <div><dt>Phone</dt><dd>{profile.phone ?? "Not known"}</dd></div>
@@ -1049,6 +1058,7 @@ function AccountPage() {
         </dl>
       </section>
       <section className="account-behavior">
+        <span className="eyebrow">Behavior merge</span>
         <h2>Visible behavior Meiro could merge</h2>
         {recentlyViewed.length === 0 ? (
           <EmptyState
@@ -1333,6 +1343,7 @@ function MeiroStatusCard() {
 
   return (
     <section className="control-card">
+      <span className="eyebrow">Integration</span>
       <h2>Meiro status</h2>
       <dl className="status-list">
         {rows.map(([label, value]) => (
@@ -1381,13 +1392,27 @@ function DemoSignalStrip() {
 
 function DemoControlPage() {
   const state = useAppState();
+  const completedSignals = [
+    state.recentlyViewed.length > 0,
+    state.cart.length > 0,
+    state.profile.customerType === "registered",
+    state.profileApiStatus.state === "loaded",
+    state.personaId !== "anonymous_new",
+  ].filter(Boolean).length;
   return (
     <main className="page two-col demo-control-page">
       <section>
         <div className="demo-hero">
-          <span className="eyebrow">Presenter command center</span>
-          <h1>Demo control</h1>
-          <p className="lead">Switch profile scenarios, verify consent, and inspect the exact storefront signals being sent to Meiro.</p>
+          <div>
+            <span className="eyebrow">Presenter command center</span>
+            <h1>Demo control</h1>
+            <p className="lead">Switch profile scenarios, verify consent, and inspect the exact storefront signals being sent to Meiro.</p>
+          </div>
+          <div className="demo-progress-card">
+            <span>Demo readiness</span>
+            <strong>{completedSignals}/5</strong>
+            <p>core signals active</p>
+          </div>
           <div className="actions">
             <Link to="/playbooks" className="primary-cta">Open playbooks</Link>
             <Link to="/account" className="secondary-action">View hydrated account</Link>
