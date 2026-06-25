@@ -670,33 +670,66 @@ function ProductPage({ slug }: { slug: string }) {
 
 function CartPage() {
   const state = useAppState();
-  const { cart, removeFromCart, setQuantity } = state;
+  const { cart, addToCart, removeFromCart, setQuantity } = state;
   const enriched = cart.map((item) => ({ item, product: products.find((product) => product.id === item.productId)! })).filter((row) => row.product);
   const profileCartProducts = (state.profile.cartItemIds ?? [])
     .map((id) => products.find((product) => product.id === id || product.slug === id))
     .filter(Boolean) as Product[];
+  const emptyCartPicks = (profileCartProducts.length > 0 ? profileCartProducts : recommendProducts("next_best_product", state, { limit: 3 })).slice(0, 3);
+  const emptyCartIds = emptyCartPicks.map((product) => product.id).join(",");
   const total = enriched.reduce((sum, row) => sum + row.product.price * row.item.quantity, 0);
 
   useEffect(() => trackEvent("cart_view", cartPayload(cart, products)), [cart.map((item) => `${item.productId}:${item.quantity}`).join(",")]);
+  useEffect(() => {
+    if (enriched.length === 0 && emptyCartPicks.length > 0) {
+      trackEvent("recommendation_viewed", {
+        strategy: profileCartProducts.length > 0 ? "profile_cart_recovery" : "next_best_product",
+        title: "Empty cart recovery picks",
+        product_ids: emptyCartPicks.map((product) => product.id),
+      });
+    }
+  }, [enriched.length, emptyCartIds, profileCartProducts.length]);
 
   return (
-    <main className="page two-col">
-      <section>
-        <h1>Cart</h1>
+    <main className="page two-col cart-page">
+      <section className="cart-main">
+        <div className="cart-heading">
+          <span className="eyebrow">Cart intent</span>
+          <h1>{enriched.length > 0 ? "Cart" : "Empty cart, useful signals."}</h1>
+        </div>
         <PersonalizationZone zoneId="cart_abandonment_banner" fallback="Your cart has focus. A rare and beautiful thing." className="banner" />
         {enriched.length === 0 ? (
-          <>
-            <EmptyState
-              title={state.profile.hasActiveCart || profileCartProducts.length > 0 ? "Meiro sees cart intent for this profile." : "Your cart is peacefully empty."}
-              body={state.profile.lastAbandonedCartValue ? `Profile API reports an abandoned cart worth EUR ${state.profile.lastAbandonedCartValue}. Add a product locally to run the checkout demo.` : "A rare state. Add something mildly useful to demonstrate cart intent, cart opener logic, and abandonment messaging."}
-              action={{ label: "Browse survival essentials", to: "/products" }}
-            />
-            {profileCartProducts.length > 0 && (
-              <div className="mini-products">
-                {profileCartProducts.map((product) => <ProductVisual key={product.id} product={product} size="thumb" />)}
+          <section className="cart-empty-panel">
+            <div className="cart-empty-copy">
+              <span className="empty-mark">ESC</span>
+              <h2>{state.profile.hasActiveCart || profileCartProducts.length > 0 ? "Meiro sees cart intent for this profile." : "No local cart yet."}</h2>
+              <p>{state.profile.lastAbandonedCartValue ? `Profile API reports an abandoned cart worth EUR ${state.profile.lastAbandonedCartValue}. Restore one of these products to launch the checkout demo.` : "Start with one product to create the cart opener signal, then use checkout to demonstrate abandonment, cross-sell, and purchase events."}</p>
+              <div className="cart-signal-grid" aria-label="Cart profile signals">
+                <div><span>active cart</span><strong>{state.profile.hasActiveCart ? "yes" : "not yet"}</strong></div>
+                <div><span>profile value</span><strong>{state.profile.lastAbandonedCartValue ? <Money value={state.profile.lastAbandonedCartValue} /> : "pending"}</strong></div>
+                <div><span>item ids</span><strong>{state.profile.cartItemIds?.length ?? 0}</strong></div>
+              </div>
+              <div className="actions">
+                <Link to="/products" className="primary-cta">Browse survival essentials</Link>
+                <Link to="/search" className="secondary-cta">Search by crisis</Link>
+              </div>
+            </div>
+            {emptyCartPicks.length > 0 && (
+              <div className="cart-empty-picks" aria-label="Recommended cart starters">
+                <span className="eyebrow">{profileCartProducts.length > 0 ? "Profile API cart items" : "Recommended starters"}</span>
+                {emptyCartPicks.map((product) => (
+                  <article className="cart-pick" key={product.id}>
+                    <ProductVisual product={product} size="thumb" />
+                    <div>
+                      <strong>{product.name}</strong>
+                      <span><Money value={product.price} /></span>
+                    </div>
+                    <button type="button" onClick={() => addToCart(product.id)}>Add</button>
+                  </article>
+                ))}
               </div>
             )}
-          </>
+          </section>
         ) : enriched.map(({ item, product }) => (
           <div className="cart-row" key={product.id}>
             <ProductVisual product={product} size="thumb" />

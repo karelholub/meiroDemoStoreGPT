@@ -134,6 +134,7 @@ assert(meiroPersonalization.includes("heroCopyForNextBestAction") && meiroPerson
 assert(meiroPersonalization.includes("content: nextBestHero"), "homepage hero does not render raw next_best_action values");
 assert(app.includes("Last viewed products") && app.includes('source="recently_viewed"'), "search page includes recently viewed product rail");
 assert(app.includes('strategy="next_best_product"'), "search page includes recommended product rail");
+assert(app.includes("cart-empty-panel") && app.includes("Empty cart recovery picks"), "cart page includes polished empty-cart recovery surface");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",
