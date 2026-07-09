@@ -23,6 +23,7 @@ function extractArrayBlock(source, exportName) {
 const app = read("src/App.tsx");
 const products = read("src/data/products.ts");
 const categories = read("src/data/categories.ts");
+const styles = read("src/styles.css");
 const appState = read("src/store/appState.tsx");
 const events = read("src/integrations/meiro/eventSchemas.ts");
 const meiroEvents = read("src/integrations/meiro/meiroEvents.ts");
@@ -143,6 +144,9 @@ assert(app.includes("account-summary-grid") && app.includes("demo-progress-card"
 assert(productLookup.includes("productsById") && productLookup.includes("enrichCartItems"), "product lookup helpers centralize product indexing and cart enrichment");
 assert(appState.includes("findProductById") && recommendations.includes("findProductByIdOrSlug"), "state and recommendation paths use indexed product lookups");
 assert(app.includes("enrichCartItems(cart)") && meiroEvents.includes("enrichCartItems(items)"), "cart UI and Meiro payloads share cart enrichment");
+assert(!styles.includes("Inter,") && !styles.includes("#fbf8f2"), "homepage avoids overused Inter stack and old cream page background");
+assert(styles.includes(".hero .banner") && styles.includes("rgba(30, 27, 24, 0.66)"), "hero banner has dark contrast backing");
+assert(styles.includes(".product-card .eyebrow") && styles.includes("text-transform: none"), "long product category labels are not forced uppercase");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",
