@@ -7,6 +7,8 @@
     "dev": "vite",
     "feed": "node scripts/generate-product-feed.mjs",
     "seed:profiles": "node scripts/generate-profile-seed.mjs",
+    "simulate:meiro": "node scripts/simulate-meiro-events.mjs",
+    "simulate:meiro:dry": "node scripts/simulate-meiro-events.mjs --dry-run --profiles 5",
     "build": "tsc && vite build",
     "smoke": "node scripts/smoke-check.mjs",
     "check": "npm run build && npm run smoke",

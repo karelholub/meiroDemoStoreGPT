@@ -33,6 +33,7 @@ const meiroPersonalization = read("src/integrations/meiro/meiroPersonalization.t
 const meiroProfileApi = read("src/integrations/meiro/meiroProfileApi.ts");
 const productLookup = read("src/utils/productLookup.ts");
 const recommendations = read("src/utils/recommendations.ts");
+const simulator = read("scripts/simulate-meiro-events.mjs");
 const profileApiScenarios = read("src/data/profileApiScenarios.ts");
 const profileApiFunction = read("netlify/functions/meiro-profile.ts");
 const netlify = read("netlify.toml");
@@ -147,6 +148,7 @@ assert(app.includes("enrichCartItems(cart)") && meiroEvents.includes("enrichCart
 assert(!styles.includes("Inter,") && !styles.includes("#fbf8f2"), "homepage avoids overused Inter stack and old cream page background");
 assert(styles.includes(".hero .banner") && styles.includes("rgba(30, 27, 24, 0.66)"), "hero banner has dark contrast backing");
 assert(styles.includes(".product-card .eyebrow") && styles.includes("text-transform: none"), "long product category labels are not forced uppercase");
+assert(simulator.includes("DEFAULT_PROFILES = 5000") && simulator.includes("browser_id") && simulator.includes("inbound_user_ids"), "Meiro simulator sends 5000 distinct profiles with stitching identifiers");
 [
   "product_added_to_cart: \"add_to_cart\"",
   "product_removed_from_cart: \"remove_from_cart\"",
