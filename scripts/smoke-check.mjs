@@ -140,6 +140,7 @@ assert(ui.includes("HeaderSearch") && ui.includes("MegaMenu") && ui.includes("Ca
 assert(ui.includes("quick-add") && ui.includes("WishlistButton"), "product cards have quick-add and favourites");
 assert(ui.includes("ratingDistribution") && ui.includes("gallery-thumbs"), "product page has gallery and reviews");
 assert(ui.includes("useMeiroRecommendations") && profileApiFunction.includes('"recommendations", "item_id"'), "storefront rails use the Meiro recommendation engine via the Profile API proxy");
+assert(ui.includes("MEIRO_PRODUCT_ENGINE_KEY"), "product pages use the product-context recommendation engine");
 assert(ui.includes('id="vitaly-meiro-hero"'), "homepage has the anchor for the Vitaly inline web banner");
 assert(ui.includes("demo-progress-card"), "demo control keeps the readiness summary");
 assert(productLookup.includes("productsById") && productLookup.includes("enrichCartItems"), "product lookup helpers centralize product indexing and cart enrichment");

@@ -3,7 +3,7 @@ import { categories, categorySlug, collections } from "../data/categories";
 import { isPurchasable, products } from "../data/products";
 import { ratingDistribution, reviewsFor } from "../data/reviews";
 import { trackEvent } from "../integrations/meiro/meiroClient";
-import { engineLevelLabels, useMeiroRecommendations } from "../integrations/meiro/meiroRecommendations";
+import { MEIRO_PRODUCT_ENGINE_KEY, engineLevelLabels, useMeiroRecommendations } from "../integrations/meiro/meiroRecommendations";
 import { cartPayload, productPayload } from "../integrations/meiro/meiroEvents";
 import { useAppState } from "../store/appState";
 import type { Product } from "../types";
@@ -224,7 +224,7 @@ function EngineNote({ engine }: { engine: ReturnType<typeof useMeiroRecommendati
   const label = engineLevelLabels[engine.levelKey ?? "popular"] ?? "Recommended";
   return (
     <span className="engine-note">
-      <LeafIcon size={14} /> {label} · {engine.personalised ? "personalised by" : "from"} the Meiro recommendation engine
+      <LeafIcon size={14} /> {label} · {engine.personalised && !(engine.levelKey ?? "").startsWith("item") ? "personalised by" : "from"} the Meiro recommendation engine
     </span>
   );
 }
@@ -419,7 +419,7 @@ export function ProductPage({ slug }: { slug: string }) {
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
   useDocumentTitle(product ? `${product.brand} ${product.name}` : "Product not found");
-  const engine = useMeiroRecommendations({ itemId: product?.id, enabled: Boolean(product) });
+  const engine = useMeiroRecommendations({ itemId: product?.id, enabled: Boolean(product), engineKey: MEIRO_PRODUCT_ENGINE_KEY });
 
   useEffect(() => {
     if (!product) return;
@@ -571,7 +571,7 @@ export function ProductPage({ slug }: { slug: string }) {
         title={<PersonalizationZone zoneId="product_detail_cross_sell" fallback="You may also like" inline />}
         trackingTitle="product_detail_cross_sell"
         subtitle={engine.items.length ? <EngineNote engine={engine} /> : undefined}
-        strategy={engine.items.length ? "meiro_engine:vitaly_for_you" : "similar_tags"}
+        strategy={engine.items.length ? "meiro_engine:vitaly_with_product" : "similar_tags"}
         items={engine.items.length ? engine.items.slice(0, 10).map((row) => row.product) : undefined}
         currentProductId={product.id}
         limit={10}
