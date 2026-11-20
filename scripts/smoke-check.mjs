@@ -139,6 +139,7 @@ assert(ui.includes("Empty cart recovery picks"), "cart page includes empty-cart 
 assert(ui.includes("HeaderSearch") && ui.includes("MegaMenu") && ui.includes("CartDrawer"), "header has search suggestions, mega menu and cart drawer");
 assert(ui.includes("quick-add") && ui.includes("WishlistButton"), "product cards have quick-add and favourites");
 assert(ui.includes("ratingDistribution") && ui.includes("gallery-thumbs"), "product page has gallery and reviews");
+assert(ui.includes('id="vitaly-meiro-hero"'), "homepage has the anchor for the Vitaly inline web banner");
 assert(ui.includes("demo-progress-card"), "demo control keeps the readiness summary");
 assert(productLookup.includes("productsById") && productLookup.includes("enrichCartItems"), "product lookup helpers centralize product indexing and cart enrichment");
 assert(appState.includes("findProductById") && recommendations.includes("findProductByIdOrSlug"), "state and recommendation paths use indexed product lookups");

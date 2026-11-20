@@ -4602,3 +4602,15 @@ body.consent-visible .debug-toggle {
     bottom: 84px;
   }
 }
+
+/* Meiro inline web banner slot: invisible until the SDK injects a banner */
+.meiro-inline-slot:not(:empty) {
+  margin-top: clamp(24px, 3vw, 40px);
+}
+
+.meiro-inline-slot iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-lg);
+}

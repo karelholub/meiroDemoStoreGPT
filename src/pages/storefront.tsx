@@ -63,6 +63,9 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Anchor for the Meiro inline web banner "Vitaly · A06/A12 New VITALY Select products – VIP early access" (anchorType id). */}
+      <div id="vitaly-meiro-hero" className="meiro-inline-slot" />
+
       <section className="category-scroller" aria-label="Shop by category">
         <SectionHeader title="Shop by category" action={{ label: "All products", to: "/products" }} />
         <div className="category-track">
