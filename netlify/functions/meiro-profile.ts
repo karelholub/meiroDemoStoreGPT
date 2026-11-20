@@ -30,6 +30,11 @@ export default async (req: Request) => {
   const outboundUrl = new URL(endpoint);
   outboundUrl.searchParams.set("identifier_type", identifierType);
   outboundUrl.searchParams.set("identifier_value", identifierValue);
+  // Recommendation engine context: which engines to rank and the product/category being viewed.
+  for (const key of ["recommendations", "item_id", "category_id"]) {
+    const value = inboundUrl.searchParams.get(key);
+    if (value) outboundUrl.searchParams.set(key, value.slice(0, 200));
+  }
 
   try {
     const response = await fetch(outboundUrl, {

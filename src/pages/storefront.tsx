@@ -3,6 +3,7 @@ import { categories, categorySlug, collections } from "../data/categories";
 import { isPurchasable, products } from "../data/products";
 import { ratingDistribution, reviewsFor } from "../data/reviews";
 import { trackEvent } from "../integrations/meiro/meiroClient";
+import { engineLevelLabels, useMeiroRecommendations } from "../integrations/meiro/meiroRecommendations";
 import { cartPayload, productPayload } from "../integrations/meiro/meiroEvents";
 import { useAppState } from "../store/appState";
 import type { Product } from "../types";
@@ -38,6 +39,8 @@ import { LifecycleSlots } from "./lifecycle";
 
 export function HomePage() {
   useDocumentTitle(undefined);
+  const { cart } = useAppState();
+  const engine = useMeiroRecommendations({ refreshKey: cart.map((item) => item.productId).join(",") });
   const selectProducts = products.filter((product) => product.brand === "VITALY Select" && isPurchasable(product) && !product.detail.toLowerCase().includes("sample")).slice(0, 4);
   const launches = products.filter((product) => product.stockStatus === "preorder");
   const newIn = products.filter((product) => product.isNew && product.stockStatus !== "preorder" && isPurchasable(product)).slice(0, 8);
@@ -81,8 +84,9 @@ export function HomePage() {
       <ProductRail
         title={<PersonalizationZone zoneId="homepage_recommendation_rail" fallback="Recommended for you" inline />}
         trackingTitle="homepage_recommendation_rail"
-        subtitle="Based on what customers like you buy together"
-        strategy="next_best_product"
+        subtitle={engine.items.length ? <EngineNote engine={engine} /> : "Based on what customers like you buy together"}
+        strategy={engine.items.length ? "meiro_engine:vitaly_for_you" : "next_best_product"}
+        items={engine.items.length ? engine.items.slice(0, 10).map((row) => row.product) : undefined}
         limit={10}
       />
 
@@ -213,6 +217,15 @@ export function Newsletter() {
         </form>
       )}
     </section>
+  );
+}
+
+function EngineNote({ engine }: { engine: ReturnType<typeof useMeiroRecommendations> }) {
+  const label = engineLevelLabels[engine.levelKey ?? "popular"] ?? "Recommended";
+  return (
+    <span className="engine-note">
+      <LeafIcon size={14} /> {label} · {engine.personalised ? "personalised by" : "from"} the Meiro recommendation engine
+    </span>
   );
 }
 
@@ -406,6 +419,7 @@ export function ProductPage({ slug }: { slug: string }) {
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
   useDocumentTitle(product ? `${product.brand} ${product.name}` : "Product not found");
+  const engine = useMeiroRecommendations({ itemId: product?.id, enabled: Boolean(product) });
 
   useEffect(() => {
     if (!product) return;
@@ -556,7 +570,9 @@ export function ProductPage({ slug }: { slug: string }) {
       <ProductRail
         title={<PersonalizationZone zoneId="product_detail_cross_sell" fallback="You may also like" inline />}
         trackingTitle="product_detail_cross_sell"
-        strategy="similar_tags"
+        subtitle={engine.items.length ? <EngineNote engine={engine} /> : undefined}
+        strategy={engine.items.length ? "meiro_engine:vitaly_for_you" : "similar_tags"}
+        items={engine.items.length ? engine.items.slice(0, 10).map((row) => row.product) : undefined}
         currentProductId={product.id}
         limit={10}
       />

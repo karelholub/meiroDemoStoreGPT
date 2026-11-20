@@ -4614,3 +4614,12 @@ body.consent-visible .debug-toggle {
   border: 0;
   border-radius: var(--radius-lg);
 }
+
+.engine-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--violet-700);
+  font-weight: 700;
+  font-size: 0.88rem;
+}

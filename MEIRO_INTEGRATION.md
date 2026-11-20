@@ -1,5 +1,9 @@
 # Meiro Integration Notes
 
+## Recommendation engine
+
+`src/integrations/meiro/meiroRecommendations.ts` reads engine **Vitaly · Picked for you** (`vitaly_for_you`) from the `web-perso` Profile API endpoint through the Netlify proxy (`recommendations` and `item_id` are forwarded). The homepage "Recommended for you" rail and the product-page rail show it, with `item_id` context on product pages. Unknown visitors get the bestsellers level. If the engine returns nothing, the local rules apply. In `npm run dev`, Vite proxies `/api/meiro-profile` to the deployed site.
+
 ## Vitaly alignment (2026-11)
 
 - Product ids, names, brands, categories and prices come from the **Vitaly · Products** catalog on meiro-demo, so `item_id` values match catalog external ids and the saved feeds.
