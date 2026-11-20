@@ -6,25 +6,10 @@ const outputPath = path.join(root, "data/meiro_profile_seed_1500.csv");
 const rowCount = Number(process.env.PROFILE_SEED_ROWS || 1500);
 const generatedAt = "2026-06-24T08:00:00.000Z";
 
-const categories = [
-  "Work & Meetings",
-  "Parenting & Chaos",
-  "Sleep & Recovery",
-  "Existential Wellness",
-  "Marketing Therapy",
-  "Tiny Dopamine",
-  "Gifts for People Who Say I'm Fine",
-];
-
-const productsByCategory = {
-  "Work & Meetings": ["monday-survival-kit", "executive-decision-dice", "meeting-email-mug", "quarterly-planning-flask", "legacy-system-incense", "calendar-boundary-rope"],
-  "Parenting & Chaos": ["parenting-chaos-first-aid", "bedtime-negotiation-toolkit", "school-morning-calculator", "fake-calm-spray", "snack-diplomacy-kit", "tiny-sock-locator"],
-  "Sleep & Recovery": ["strategic-nap-pillow", "low-battery-human-charger", "nervous-system-blanket", "do-not-perform-mask", "strategic-silence-diffuser", "midnight-thoughts-tray"],
-  "Existential Wellness": ["premium-overthinking-blanket", "personalized-regret-journal", "introvert-recovery-tent", "emotionally-available-notebook", "ambient-dread-paperweight", "meaning-of-life-coaster"],
-  "Marketing Therapy": ["attribution-anxiety-blanket", "cookie-apocalypse-kit", "consent-banner-stress-ball", "roas-optimism-spray", "segment-naming-generator", "dashboard-shame-shield"],
-  "Tiny Dopamine": ["tiny-dopamine-pack", "five-minute-victory-badge", "inbox-zero-candle", "unsubscribe-stress-ball", "micro-joy-receipt", "compliment-emergency-card"],
-  "Gifts for People Who Say I'm Fine": ["im-fine-care-parcel", "subtext-reading-glasses", "deluxe-boundary-bell", "quietly-spiraling-tea", "polite-collapse-kit", "emotional-support-invoice"],
-};
+// Categories and product ids come from the Vitaly catalog export (natima-* = Meiro catalog external ids).
+const catalog = JSON.parse(fs.readFileSync(path.join(root, "src/data/vitalyCatalog.json"), "utf8")).filter((item) => item.stockQty !== 0);
+const categories = [...new Set(catalog.map((item) => item.category))];
+const productsByCategory = Object.fromEntries(categories.map((category) => [category, catalog.filter((item) => item.category === category).map((item) => item.id)]));
 
 const firstNames = ["Alex", "Jamie", "Taylor", "Morgan", "Casey", "Riley", "Jordan", "Avery", "Quinn", "Sam", "Dana", "Robin", "Chris", "Nina", "Maya", "Leo", "Iris", "Tomas", "Eva", "Noah"];
 const surnames = ["Novak", "Kral", "Dvorak", "Svoboda", "Urban", "Baker", "Reed", "Stone", "Fischer", "Miller", "Brown", "Walker", "Young", "King", "Lopez", "Garcia", "Nielsen", "Klein", "Weber", "Hart"];
@@ -122,8 +107,8 @@ function buildProfile(number) {
   const lastSku = pick(products, index * 17);
   const lastViewed = pick(productsByCategory[secondaryCategory], index * 19);
   const purchaseCount = purchaseCountForSegment(segment, index);
-  const averageOrderValue = purchaseCount ? 24 + ((index * 7) % 95) : 0;
-  const lifetimeValue = purchaseCount ? purchaseCount * averageOrderValue + ((index * 13) % 31) : 0;
+  const averageOrderValue = purchaseCount ? 450 + ((index * 37) % 1800) : 0; // CZK
+  const lifetimeValue = purchaseCount ? purchaseCount * averageOrderValue + ((index * 13) % 310) : 0;
   const daysSinceLastPurchase = purchaseCount ? daysSinceForSegment(segment, index) : "";
   const hasActiveCart = segment === 2 || segment === 7 || (index % 17 === 0 && segment !== 0);
   const cartItems = hasActiveCart ? unique([lastViewed, pick(products, index + 3), pick(productsByCategory[pick(categories, index + 4)], index + 9)]).slice(0, 1 + (index % 3)) : [];
@@ -184,7 +169,7 @@ function buildProfile(number) {
     signup_channel: pick(signupChannels, index * 41),
     discount_affinity: discountAffinity,
     delivery_status: deliveryStatus,
-    referral_code: purchaseCount ? `ESC-${firstName.slice(0, 3).toUpperCase()}-${String(number).padStart(4, "0")}` : "",
+    referral_code: purchaseCount ? `VITALY-${firstName.slice(0, 3).toUpperCase()}-${String(number).padStart(4, "0")}` : "",
     has_left_review: String(hasLeftReview),
     repeat_buyer: String(purchaseCount >= 2),
     last_seen_at: addDays(generatedAt, -(index % 30)),
@@ -223,9 +208,9 @@ function lifecycleFor({ segment, purchaseCount, hasActiveCart, lapsed, vipTier }
 
 function tierForValue(value) {
   if (!value) return "bronze";
-  if (value >= 1800) return "platinum";
-  if (value >= 800) return "gold";
-  if (value >= 220) return "silver";
+  if (value >= 20000) return "platinum";
+  if (value >= 9000) return "gold";
+  if (value >= 3000) return "silver";
   return "bronze";
 }
 

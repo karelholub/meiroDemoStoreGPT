@@ -21,6 +21,17 @@ function extractArrayBlock(source, exportName) {
 }
 
 const app = read("src/App.tsx");
+const ui = [
+  app,
+  read("src/pages/storefront.tsx"),
+  read("src/pages/account.tsx"),
+  read("src/pages/demo.tsx"),
+  read("src/pages/lifecycle.tsx"),
+  read("src/ui/components.tsx"),
+  read("src/ui/layout.tsx"),
+].join("\n");
+const catalog = JSON.parse(read("src/data/vitalyCatalog.json"));
+const serviceWorker = read("public/mpt-service-worker.js");
 const products = read("src/data/products.ts");
 const categories = read("src/data/categories.ts");
 const styles = read("src/styles.css");
@@ -55,44 +66,28 @@ const routePaths = [
   "/demo-control",
   "/review",
   "/thank-you",
+  "/collections/",
+  "/kosik",
+  "/objednavka",
 ];
 
 routePaths.forEach((route) => {
   assert(app.includes(route), `route present: ${route}`);
 });
 
-const categoryNames = [...categories.matchAll(/name: "([^"]+)"/g)].map((match) => match[1]);
-assert(categoryNames.length === 7, "catalog has 7 categories");
-
-const productRows = [...products.matchAll(/make\("([^"]+)", "([^"]+)", "([^"]+)"/g)].map((match) => ({
-  id: match[1],
-  name: match[2],
-  category: match[3],
-}));
-assert(productRows.length >= 35, `catalog has at least 35 products (${productRows.length})`);
-assert(!products.includes("images.unsplash.com"), "catalog uses local product imagery");
-
-const countsByCategory = productRows.reduce((counts, product) => {
-  counts[product.category] = (counts[product.category] ?? 0) + 1;
-  return counts;
-}, {});
-
+const categoryBlock = categories.split("export type Collection")[0];
+const categoryNames = [...categoryBlock.matchAll(/name: "([^"]+)",\s+description/g)].map((match) => match[1]);
+assert(categoryNames.length === 9, `catalog has 9 Vitaly categories (${categoryNames.length})`);
+assert(catalog.length >= 120, `Vitaly catalog export has at least 120 products (${catalog.length})`);
+assert(catalog.every((item) => /^natima-/.test(item.id)), "product ids are Meiro catalog external ids (natima-*)");
+assert(new Set(catalog.map((item) => item.slug)).size === catalog.length, "product slugs are unique");
+assert(catalog.filter((item) => item.brand === "VITALY Select").length >= 25, "catalog includes the VITALY Select line");
 categoryNames.forEach((category) => {
-  assert((countsByCategory[category] ?? 0) >= 5, `category has at least 5 products: ${category}`);
+  assert(catalog.some((item) => item.category === category), `category has products: ${category}`);
+  const slug = categories.split(`name: "${category}"`)[0].match(/slug: "([^"]+)"[^]*$/)?.[1];
+  assert(slug && fs.existsSync(path.join(root, "public", "assets", "lifestyle", `${slug}.jpg`)), `category image exists: ${category}`);
 });
-
-[
-  "work-meetings.jpg",
-  "parenting-chaos.jpg",
-  "sleep-recovery.jpg",
-  "existential-wellness.jpg",
-  "marketing-therapy.jpg",
-  "tiny-dopamine.jpg",
-  "gifts-im-fine.jpg",
-].forEach((file) => {
-  assert(products.includes(`/assets/products/${file}`), `catalog references product image: ${file}`);
-  assert(fs.existsSync(path.join(root, "public", "assets", "products", file)), `product image asset exists: ${file}`);
-});
+assert(products.includes('from "./vitalyCatalog.json"'), "products are built from the Vitaly catalog export");
 
 const requiredEvents = [
   "page_view",
@@ -117,6 +112,8 @@ const requiredEvents = [
   "personalization_clicked",
   "review_submitted",
   "consent_updated",
+  "wishlist_added",
+  "back_in_stock_requested",
 ];
 
 requiredEvents.forEach((eventName) => {
@@ -134,20 +131,22 @@ assert(meiroClient.includes("eventNameMap"), "Meiro internal-to-canonical event 
 assert(meiroClient.includes("buildMptEventPayload"), "Meiro SDK event payload sanitizer exists");
 assert(meiroClient.includes("sdkContextPayload"), "Meiro SDK context payload uses SDK-safe field names");
 assert(!meiroClient.includes("original_event_name: eventName"), "Meiro SDK events do not forward internal event names as payload fields");
-assert(app.includes("Fictional essentials for meetings, Mondays, sleep"), "homepage hero subcopy is shopper-facing");
-assert(meiroPersonalization.includes("heroCopyForNextBestAction") && meiroPersonalization.includes("Time to restock your coping kit."), "homepage hero maps next_best_action to retail copy");
+assert(meiroPersonalization.includes("heroCopyForNextBestAction") && meiroPersonalization.includes("Time to restock your daily essentials."), "homepage hero maps next_best_action to retail copy");
 assert(meiroPersonalization.includes("content: nextBestHero"), "homepage hero does not render raw next_best_action values");
-assert(app.includes("Last viewed products") && app.includes('source="recently_viewed"'), "search page includes recently viewed product rail");
-assert(app.includes('strategy="next_best_product"'), "search page includes recommended product rail");
-assert(app.includes("cart-empty-panel") && app.includes("Empty cart recovery picks"), "cart page includes polished empty-cart recovery surface");
-assert(app.includes("demo-nav-link") && app.includes("cart-count") && app.includes("pathname === item.to"), "top menu includes active route styling and stable cart count markup");
-assert(app.includes("account-summary-grid") && app.includes("demo-progress-card"), "account and demo pages include polished summary surfaces");
+assert(ui.includes("Last viewed products") && ui.includes('source="recently_viewed"'), "search page includes recently viewed product rail");
+assert(ui.includes('strategy="next_best_product"'), "storefront includes next-best-product rails");
+assert(ui.includes("Empty cart recovery picks"), "cart page includes empty-cart recovery surface");
+assert(ui.includes("HeaderSearch") && ui.includes("MegaMenu") && ui.includes("CartDrawer"), "header has search suggestions, mega menu and cart drawer");
+assert(ui.includes("quick-add") && ui.includes("WishlistButton"), "product cards have quick-add and favourites");
+assert(ui.includes("ratingDistribution") && ui.includes("gallery-thumbs"), "product page has gallery and reviews");
+assert(ui.includes("demo-progress-card"), "demo control keeps the readiness summary");
 assert(productLookup.includes("productsById") && productLookup.includes("enrichCartItems"), "product lookup helpers centralize product indexing and cart enrichment");
 assert(appState.includes("findProductById") && recommendations.includes("findProductByIdOrSlug"), "state and recommendation paths use indexed product lookups");
-assert(app.includes("enrichCartItems(cart)") && meiroEvents.includes("enrichCartItems(items)"), "cart UI and Meiro payloads share cart enrichment");
-assert(!styles.includes("Inter,") && !styles.includes("#fbf8f2"), "homepage avoids overused Inter stack and old cream page background");
-assert(styles.includes(".hero .banner") && styles.includes("rgba(30, 27, 24, 0.66)"), "hero banner has dark contrast backing");
-assert(styles.includes(".product-card .eyebrow") && styles.includes("text-transform: none"), "long product category labels are not forced uppercase");
+assert(ui.includes("enrichCartItems(cart)") && meiroEvents.includes("enrichCartItems(items)"), "cart UI and Meiro payloads share cart enrichment");
+assert(!styles.includes("Inter,") && !styles.includes("#fbf8f2"), "styles avoid the Inter stack and the old cream background");
+assert(styles.includes("--violet-600") && styles.includes("Poppins"), "styles use the Vitaly violet tokens and Poppins display face");
+assert(styles.includes("prefers-reduced-motion"), "motion has a reduced-motion fallback");
+assert(meiroClient.includes('STORE_CURRENCY = "CZK"'), "SDK payloads default to CZK like the Vitaly catalog");
 assert(simulator.includes("DEFAULT_PROFILES = 5000") && simulator.includes("browser_id") && simulator.includes("inbound_user_ids"), "Meiro simulator sends 5000 distinct profiles with stitching identifiers");
 [
   "product_added_to_cart: \"add_to_cart\"",
@@ -184,20 +183,20 @@ assert(meiroClient.includes("storage_allowlist"), "Meiro tracking rules storage 
 ].forEach((attributeName) => {
   assert(profileApiScenarios.includes(attributeName), `seeded Profile API attribute exists: ${attributeName}`);
 });
-assert(app.includes("ProfileApiScenarioControls"), "demo-control exposes seeded Profile API controls");
-assert(app.includes("applyProfileApiScenario"), "app state can apply seeded Profile API scenarios");
-assert(app.includes("Configured attributes still missing values"), "demo-control shows missing configured Profile API values");
-assert(app.includes("last_purchased_sku"), "Profile API proof includes last purchased SKU");
-assert(app.includes("formatProfileDate") && !app.includes("Reorder on ${state.profile.predictedReorderDate}"), "Reorder dates are formatted for visible UI");
-assert(app.includes("profileFieldValue"), "playbooks can show populated Profile API field values");
-assert(app.includes("configuredProfileApiFields"), "configured Profile API fields are grouped separately");
-assert(app.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
-assert(app.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
-assert(app.includes("review_text_length"), "review event sends review text length only");
-assert(app.includes("email: checkoutDetails.email") && app.includes("phone: checkoutDetails.phone"), "purchase event includes top-level email and phone");
+assert(ui.includes("ProfileApiScenarioControls"), "demo-control exposes seeded Profile API controls");
+assert(ui.includes("applyProfileApiScenario"), "app state can apply seeded Profile API scenarios");
+assert(ui.includes("Configured attributes still missing values"), "demo-control shows missing configured Profile API values");
+assert(ui.includes("last_purchased_sku"), "Profile API proof includes last purchased SKU");
+assert(ui.includes("formatProfileDate"), "Reorder dates are formatted for visible UI");
+assert(ui.includes("profileFieldValue"), "playbooks can show populated Profile API field values");
+assert(ui.includes("configuredProfileApiFields"), "configured Profile API fields are grouped separately");
+assert(ui.includes("optionalProfileApiFields"), "optional Profile API placeholders are grouped separately");
+assert(ui.includes('trackEvent("review_submitted"'), "review form submits a tracking event");
+assert(ui.includes("review_text_length"), "review event sends review text length only");
+assert(ui.includes("email: details.email") && ui.includes("phone: details.phone"), "purchase event includes top-level email and phone");
 assert(meiroClient.includes("transaction_id: payload.order_id") && meiroClient.includes("email: payload.email") && meiroClient.includes("phone: payload.phone"), "Meiro purchase SDK payload forwards contact fields");
-assert(app.includes('trackEvent(isLogin ? "user_logged_in" : "user_registered", { email: form.email'), "registration event includes top-level email");
-assert(app.includes('trackEvent("newsletter_signup", { email,'), "newsletter sign-up event includes top-level email");
+assert(ui.includes('trackEvent(isLogin ? "user_logged_in" : "user_registered", { email: form.email'), "registration event includes top-level email");
+assert(ui.includes('trackEvent("newsletter_signup", { email,'), "newsletter sign-up event includes top-level email");
 assert(meiroClient.includes("email: payload.email") && meiroClient.includes("email_domain: payload.email_domain"), "Meiro sign-up/login SDK payload forwards email fields");
 assert(meiroProfileApi.includes("mpt_user_id_js"), "Profile API identifier reads Meiro SDK user id cookie");
 assert(meiroProfileApi.includes('preferred === "user_id" && mptUserId'), "Profile API user_id prefers Meiro SDK cookie");
@@ -215,8 +214,11 @@ assert(meiroProfileApi.includes("profileApiErrorMessage"), "Profile API client r
 
 assert(netlify.includes('from = "/*"') && netlify.includes('to = "/index.html"'), "Netlify SPA redirect is configured");
 assert(productFeed.includes('xmlns:g="http://base.google.com/ns/1.0"'), "XML product feed uses Google Merchant-style namespace");
-assert((productFeed.match(/<item>/g) || []).length === productRows.length, "XML product feed includes every product");
-assert(productFeed.includes("<g:id>monday-survival-kit</g:id>"), "XML product feed includes stable product ids");
+assert((productFeed.match(/<item>/g) || []).length === catalog.length, "XML product feed includes every product");
+assert(productFeed.includes("<g:id>natima-3020</g:id>"), "XML product feed uses Meiro catalog external ids");
+assert(serviceWorker.trim() === "importScripts('https://meiro-demo.eu.pipes.meiro.io/mpt-service-worker.js');", "web push service worker imports the instance worker");
+assert(meiroConfig.includes(serviceWorker.match(/https:\/\/[^/]+/)[0]), "service worker domain matches the mpt.js domain");
+assert(netlify.includes('for = "/mpt-service-worker.js"') && netlify.indexOf('from = "/mpt-service-worker.js"') < netlify.indexOf('from = "/*"'), "service worker is served before the SPA catch-all");
 assert(productFeed.includes("<g:custom_label_0>"), "XML product feed includes recommendation labels");
 assert(profileSeed.trimEnd().split("\n").length === 1501, "Profile seed CSV has 1500 sample profiles");
 assert(profileSeed.startsWith("user_id,email,phone,first_name,surname"), "Profile seed CSV starts with identity columns");

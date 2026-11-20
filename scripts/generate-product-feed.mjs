@@ -3,48 +3,32 @@ import path from "node:path";
 
 const root = process.cwd();
 const siteUrl = process.env.SITE_URL || process.env.URL || "https://dmostoregpt.netlify.app";
-const productsSource = fs.readFileSync(path.join(root, "src/data/products.ts"), "utf8");
+const catalog = JSON.parse(fs.readFileSync(path.join(root, "src/data/vitalyCatalog.json"), "utf8"));
 const categoriesSource = fs.readFileSync(path.join(root, "src/data/categories.ts"), "utf8");
-
 const categorySlugs = Object.fromEntries(
   [...categoriesSource.matchAll(/slug: "([^"]+)",\s+name: "([^"]+)"/g)].map((match) => [match[2], match[1]]),
 );
 
-const baseDescriptions = {
-  work: "A composed little object for surviving workplace rituals while appearing beautifully prepared.",
-  chaos: "Designed for tiny domestic emergencies, large feelings, and the mysterious physics of school mornings.",
-  sleep: "A softer way to tell your body the day has technically ended.",
-  wellness: "For people who say they are fine with the confidence of a collapsing spreadsheet.",
-  marketing: "A premium salve for dashboards, segments, acronyms, and performance optimism.",
-  dopamine: "A compact spark of relief, wrapped with entirely too much dignity.",
-  gifts: "The thoughtful gift that says: I noticed the subtext and brought supplies.",
-};
-
-const rows = [...productsSource.matchAll(/make\("([^"]+)", "([^"]+)", "([^"]+)", (\d+), \[([^\]]*)\], "([^"]+)", (\d+), (\d+)\)/g)].map((match) => {
-  const [, id, name, category, price, tagsSource, copyKey, popularityScore, marginScore] = match;
-  const priceNumber = Number(price);
-  const popularity = Number(popularityScore);
-  const tags = [...tagsSource.matchAll(/"([^"]+)"/g)].map((tagMatch) => tagMatch[1]);
-  const categorySlug = categorySlugs[category] || id;
-  const stockStatus = popularity > 90 ? "low_stock" : popularity < 38 ? "out_of_stock" : "in_stock";
-
+const rows = catalog.map((item) => {
+  const availability = item.releaseDate && item.stockQty === 0 ? "preorder" : item.stockQty === 0 ? "out of stock" : item.stockQty !== null && item.stockQty <= 4 ? "limited availability" : "in stock";
+  const regular = item.compareAtPrice ?? item.price;
   return {
-    id,
-    sku: id,
-    title: name,
-    description: `${baseDescriptions[copyKey]} Finished in calm packaging, restrained copy, and enough plausible utility to anchor a very real customer journey.`,
-    link: `${siteUrl}/product/${id}`,
-    imageLink: `${siteUrl}/assets/products/${categorySlug}.jpg`,
-    price: `${priceNumber.toFixed(2)} EUR`,
-    salePrice: popularity > 86 ? `${priceNumber.toFixed(2)} EUR` : undefined,
-    compareAtPrice: popularity > 86 ? `${(priceNumber + 18).toFixed(2)} EUR` : undefined,
-    availability: stockStatus === "out_of_stock" ? "out of stock" : stockStatus === "low_stock" ? "limited availability" : "in stock",
-    condition: "new",
-    brand: "Existential Supplies Co.",
-    productType: category,
-    googleProductCategory: "Home & Garden",
-    tags,
-    customLabels: [stockStatus, `margin_${marginScore}`, `popularity_${popularity}`],
+    id: item.id,
+    sku: item.id,
+    title: item.title,
+    description: `${item.brand} ${item.name}${item.detail ? `, ${item.detail}` : ""}. ${item.category} from Vitaly.`,
+    link: `${siteUrl}/product/${item.slug}`,
+    imageLink: item.image,
+    price: `${regular.toFixed(2)} CZK`,
+    salePrice: item.compareAtPrice ? `${item.price.toFixed(2)} CZK` : undefined,
+    availability,
+    condition: item.isSecondChance ? "used" : "new",
+    brand: item.brand,
+    productType: item.category,
+    categorySlug: categorySlugs[item.category] ?? item.category,
+    googleProductCategory: "Health & Beauty > Health Care > Fitness & Nutrition > Vitamins & Supplements",
+    tags: [item.isVegan ? "vegan" : "", item.isNew ? "new" : "", item.isSecondChance ? "second_chance" : "", item.brand === "VITALY Select" ? "vitaly_select" : ""].filter(Boolean),
+    customLabels: [availability.replaceAll(" ", "_"), `pack_days_${item.packDays ?? "na"}`, `rating_${item.rating ?? "na"}`],
   };
 });
 
@@ -52,7 +36,7 @@ const generatedAt = new Date().toISOString();
 const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Existential Supplies Co. Product Feed</title>
+    <title>Vitaly Product Feed</title>
     <link>${escapeXml(siteUrl)}</link>
     <description>Catalog feed for Meiro CDP product recommendations, affinity models, and campaign personalization.</description>
     <lastBuildDate>${generatedAt}</lastBuildDate>
@@ -75,7 +59,7 @@ function renderItem(product) {
       <g:image_link>${escapeXml(product.imageLink)}</g:image_link>
       <g:availability>${escapeXml(product.availability)}</g:availability>
       <g:condition>${escapeXml(product.condition)}</g:condition>
-      <g:price>${escapeXml(product.compareAtPrice || product.price)}</g:price>${product.salePrice ? `\n      <g:sale_price>${escapeXml(product.salePrice)}</g:sale_price>` : ""}
+      <g:price>${escapeXml(product.price)}</g:price>${product.salePrice ? `\n      <g:sale_price>${escapeXml(product.salePrice)}</g:sale_price>` : ""}
       <g:brand>${escapeXml(product.brand)}</g:brand>
       <g:product_type>${escapeXml(product.productType)}</g:product_type>
       <g:google_product_category>${escapeXml(product.googleProductCategory)}</g:google_product_category>

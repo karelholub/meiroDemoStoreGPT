@@ -1,94 +1,167 @@
-import type { Product } from "../types";
+import type { Product, StockStatus } from "../types";
+import catalog from "./vitalyCatalog.json";
 
-const categoryImages: Record<string, string> = {
-  "Work & Meetings": "/assets/products/work-meetings.jpg",
-  "Parenting & Chaos": "/assets/products/parenting-chaos.jpg",
-  "Sleep & Recovery": "/assets/products/sleep-recovery.jpg",
-  "Existential Wellness": "/assets/products/existential-wellness.jpg",
-  "Marketing Therapy": "/assets/products/marketing-therapy.jpg",
-  "Tiny Dopamine": "/assets/products/tiny-dopamine.jpg",
-  "Gifts for People Who Say “I’m Fine”": "/assets/products/gifts-im-fine.jpg",
+/**
+ * Raw items exported from the "Vitaly · Products" catalog on meiro-demo
+ * (catalog b50a0dd7-5fab-487c-b3a7-fbb7596801e2). `id` is the catalog
+ * external id, so every `item_id` the storefront sends to Meiro matches the
+ * catalog, saved feeds and product-level attributes.
+ */
+type CatalogItem = {
+  id: string;
+  slug: string;
+  title: string;
+  name: string;
+  detail: string;
+  brand: string;
+  category: string;
+  price: number;
+  compareAtPrice: number | null;
+  image: string;
+  rating: number | null;
+  reviewCount: number;
+  packDays: number | null;
+  stockQty: number | null;
+  isVegan: boolean;
+  isNew: boolean;
+  isOnSale: boolean;
+  isSecondChance: boolean;
+  secondChanceReason: string | null;
+  modelFamily: string | null;
+  complementaryCategories: string[];
+  releaseDate: string | null;
 };
 
-const baseDescriptions = {
-  work: "A composed little object for surviving workplace rituals while appearing beautifully prepared.",
-  chaos: "Designed for tiny domestic emergencies, large feelings, and the mysterious physics of school mornings.",
-  sleep: "A softer way to tell your body the day has technically ended.",
-  wellness: "For people who say they are fine with the confidence of a collapsing spreadsheet.",
-  marketing: "A premium salve for dashboards, segments, acronyms, and performance optimism.",
-  dopamine: "A compact spark of relief, wrapped with entirely too much dignity.",
-  gifts: "The thoughtful gift that says: I noticed the subtext and brought supplies.",
+const categoryCopy: Record<string, { short: string; long: string; benefits: string[]; tags: string[] }> = {
+  "Vitamins & minerals": {
+    short: "A clean, well-absorbed daily essential for energy, immunity and long-term health.",
+    long: "Chosen for bioavailable forms and sensible doses, without unnecessary fillers. Take it with a meal and build it into your morning routine.",
+    benefits: ["Bioavailable, clinically studied form", "Supports immunity and energy metabolism", "No artificial colours or fillers"],
+    tags: ["immunity", "energy", "daily"],
+  },
+  Magnesium: {
+    short: "Gentle, well-tolerated magnesium for relaxed muscles, deeper sleep and steady energy.",
+    long: "Chelated forms such as bisglycinate and malate are easy on the stomach and absorb well. Take the calming forms in the evening and the energising ones in the morning.",
+    benefits: ["Helps reduce tiredness and fatigue", "Supports normal muscle and nerve function", "Gentle on digestion"],
+    tags: ["sleep", "stress", "recovery"],
+  },
+  "Herbs & adaptogens": {
+    short: "Standardised botanical extracts that help your body adapt to stress and stay balanced.",
+    long: "Every extract is standardised for its active compounds, so each dose is consistent. Give adaptogens four to eight weeks of daily use to notice the difference.",
+    benefits: ["Standardised active compounds", "Supports resilience to everyday stress", "Traditional botanicals, modern quality control"],
+    tags: ["stress", "focus", "balance"],
+  },
+  Probiotics: {
+    short: "Live cultures for gut comfort, regular digestion and a stronger immune system.",
+    long: "Multi-strain formulas with a guaranteed CFU count until the end of shelf life. Best taken on an empty stomach, ideally in the morning.",
+    benefits: ["Guaranteed live cultures", "Supports digestion and gut flora", "Acid-resistant delivery"],
+    tags: ["gut", "immunity", "digestion"],
+  },
+  "Omega-3": {
+    short: "High-purity EPA and DHA for heart, brain and eye health.",
+    long: "Molecularly distilled for purity and tested for heavy metals. Natural lemon flavour keeps it fresh, without fishy aftertaste.",
+    benefits: ["High EPA and DHA per serving", "Purity tested for heavy metals", "Supports heart and brain function"],
+    tags: ["heart", "brain", "focus"],
+  },
+  "Sports nutrition": {
+    short: "Performance and recovery support for training days and rest days alike.",
+    long: "Clean sports nutrition with transparent labels: no proprietary blends, no hidden extras. Mix it into water, milk or your favourite smoothie.",
+    benefits: ["Supports strength and muscle recovery", "Transparent label, no proprietary blends", "Easy to mix"],
+    tags: ["fitness", "recovery", "protein"],
+  },
+  "Organic food": {
+    short: "Certified organic pantry favourites for snacking and cooking well.",
+    long: "Certified organic, made from simple ingredients and full of flavour. A small upgrade to everyday eating that adds up.",
+    benefits: ["Certified organic", "Simple, recognisable ingredients", "Great for on-the-go snacking"],
+    tags: ["organic", "snack", "pantry"],
+  },
+  Cosmetics: {
+    short: "Natural care with short ingredient lists that skin understands.",
+    long: "Gentle formulas based on botanical oils and extracts, dermatologically tested and free from harsh additives. Suitable for daily use.",
+    benefits: ["Natural, plant-based ingredients", "Dermatologically tested", "Free from harsh additives"],
+    tags: ["skincare", "natural", "selfcare"],
+  },
+  "Eco household": {
+    short: "Plant-based cleaning and home care that is tough on dirt and kind to the planet.",
+    long: "Biodegradable, plant-based formulas in recyclable packaging. Refill sizes cut plastic waste and cost.",
+    benefits: ["Biodegradable plant-based formula", "Recyclable packaging and refill sizes", "Safe around kids and pets"],
+    tags: ["eco", "home", "refill"],
+  },
 };
 
-const make = (
-  id: string,
-  name: string,
-  category: string,
-  price: number,
-  tags: string[],
-  copyKey: keyof typeof baseDescriptions,
-  popularityScore: number,
-  marginScore: number,
-): Product => ({
-  id,
-  slug: id,
-  name,
-  category,
-  shortDescription: baseDescriptions[copyKey],
-  longDescription:
-    `${baseDescriptions[copyKey]} Finished in calm packaging, restrained copy, and enough plausible utility to anchor a very real customer journey.`,
-  price,
-  compareAtPrice: popularityScore > 86 ? price + 18 : undefined,
-  image: categoryImages[category],
-  tags,
-  personalityTags: tags.slice(0, 3),
-  recommendationTags: [...tags, category.toLowerCase()],
-  stockStatus: popularityScore > 90 ? "low_stock" : popularityScore < 38 ? "fake_sold_out" : "in_stock",
-  popularityScore,
-  marginScore,
-});
+/**
+ * Launch items carry a fixed release_date in the catalog. The demo keeps them
+ * "upcoming": a date that has already passed rolls forward in 30-day steps so
+ * the storefront always shows a future launch date for unreleased stock.
+ */
+function rollingReleaseDate(item: CatalogItem) {
+  if (!item.releaseDate) return undefined;
+  const date = new Date(`${item.releaseDate}T00:00:00Z`);
+  if (item.stockQty !== 0) return item.releaseDate;
+  const today = new Date();
+  while (date <= today) date.setUTCDate(date.getUTCDate() + 30);
+  return date.toISOString().slice(0, 10);
+}
 
-export const products: Product[] = [
-  make("monday-survival-kit", "Monday Survival Kit", "Work & Meetings", 49, ["meeting", "monday", "work"], "work", 96, 82),
-  make("executive-decision-dice", "Executive Decision Dice", "Work & Meetings", 32, ["decision", "leadership", "meetings"], "work", 79, 74),
-  make("meeting-email-mug", "Meeting That Could Have Been an Email Mug", "Work & Meetings", 28, ["meeting", "email", "mug"], "work", 91, 63),
-  make("quarterly-planning-flask", "Quarterly Planning Survival Flask", "Work & Meetings", 54, ["planning", "quarterly", "strategy"], "work", 73, 88),
-  make("legacy-system-incense", "Legacy System Incense", "Work & Meetings", 34, ["legacy", "systems", "calm"], "work", 61, 69),
-  make("calendar-boundary-rope", "Calendar Boundary Velvet Rope", "Work & Meetings", 44, ["calendar", "boundaries", "meetings"], "work", 68, 78),
-  make("parenting-chaos-first-aid", "Parenting Chaos First Aid Box", "Parenting & Chaos", 58, ["parenting", "chaos", "home"], "chaos", 88, 79),
-  make("bedtime-negotiation-toolkit", "Bedtime Negotiation Toolkit", "Parenting & Chaos", 47, ["parenting", "bedtime", "negotiation"], "chaos", 84, 71),
-  make("school-morning-calculator", "School Morning Probability Calculator", "Parenting & Chaos", 39, ["school", "morning", "parenting"], "chaos", 77, 66),
-  make("fake-calm-spray", "Fake Calm Spray", "Parenting & Chaos", 24, ["calm", "spray", "parenting"], "chaos", 93, 81),
-  make("snack-diplomacy-kit", "Snack Diplomacy Kit", "Parenting & Chaos", 36, ["snacks", "diplomacy", "kids"], "chaos", 70, 68),
-  make("tiny-sock-locator", "Tiny Sock Locator", "Parenting & Chaos", 29, ["laundry", "morning", "home"], "chaos", 64, 76),
-  make("strategic-nap-pillow", "Strategic Nap Pillow", "Sleep & Recovery", 62, ["sleep", "nap", "recovery"], "sleep", 87, 84),
-  make("low-battery-human-charger", "Low Battery Human Charger", "Sleep & Recovery", 72, ["sleep", "energy", "recovery"], "sleep", 82, 91),
-  make("nervous-system-blanket", "Nervous System Weighted Throw", "Sleep & Recovery", 86, ["sleep", "comfort", "recovery"], "sleep", 89, 89),
-  make("do-not-perform-mask", "Do Not Perform Sleep Mask", "Sleep & Recovery", 31, ["sleep", "mask", "boundaries"], "sleep", 74, 67),
-  make("strategic-silence-diffuser", "Strategic Silence Diffuser", "Sleep & Recovery", 55, ["silence", "recovery", "home"], "sleep", 69, 83),
-  make("midnight-thoughts-tray", "Midnight Thoughts Valet Tray", "Sleep & Recovery", 42, ["sleep", "overthinking", "night"], "sleep", 58, 72),
-  make("premium-overthinking-blanket", "Premium Overthinking Blanket", "Existential Wellness", 79, ["overthinking", "comfort", "anxiety"], "wellness", 97, 90),
-  make("personalized-regret-journal", "Personalized Regret Journal", "Existential Wellness", 38, ["journal", "regret", "reflection"], "wellness", 80, 77),
-  make("introvert-recovery-tent", "Introvert Recovery Tent", "Existential Wellness", 118, ["introvert", "recovery", "privacy"], "wellness", 83, 86),
-  make("emotionally-available-notebook", "Emotionally Available Notebook", "Existential Wellness", 26, ["notebook", "feelings", "reflection"], "wellness", 76, 70),
-  make("ambient-dread-paperweight", "Ambient Dread Paperweight", "Existential Wellness", 45, ["office", "dread", "object"], "wellness", 63, 82),
-  make("meaning-of-life-coaster", "Meaning of Life Coaster Set", "Existential Wellness", 33, ["coasters", "meaning", "home"], "wellness", 52, 65),
-  make("attribution-anxiety-blanket", "Attribution Anxiety Blanket", "Marketing Therapy", 74, ["marketing", "analytics", "attribution"], "marketing", 92, 87),
-  make("cookie-apocalypse-kit", "Cookie Apocalypse Kit", "Marketing Therapy", 59, ["cookies", "privacy", "marketing"], "marketing", 86, 85),
-  make("consent-banner-stress-ball", "Consent Banner Stress Ball", "Marketing Therapy", 19, ["consent", "privacy", "stress"], "marketing", 94, 58),
-  make("roas-optimism-spray", "ROAS Optimism Spray", "Marketing Therapy", 27, ["roas", "spray", "marketing"], "marketing", 78, 74),
-  make("segment-naming-generator", "Segment Naming Generator", "Marketing Therapy", 41, ["segments", "naming", "cdp"], "marketing", 75, 80),
-  make("dashboard-shame-shield", "Dashboard Shame Shield", "Marketing Therapy", 64, ["dashboard", "analytics", "burnout"], "marketing", 81, 83),
-  make("tiny-dopamine-pack", "Tiny Dopamine Pack", "Tiny Dopamine", 22, ["dopamine", "reward", "small"], "dopamine", 95, 73),
-  make("five-minute-victory-badge", "Five-Minute Victory Badge", "Tiny Dopamine", 16, ["victory", "badge", "reward"], "dopamine", 72, 62),
-  make("inbox-zero-candle", "Inbox Zero Candle", "Tiny Dopamine", 35, ["inbox", "candle", "work"], "dopamine", 85, 76),
-  make("unsubscribe-stress-ball", "Unsubscribe Button Stress Ball", "Tiny Dopamine", 18, ["unsubscribe", "stress", "button"], "dopamine", 90, 57),
-  make("micro-joy-receipt", "Micro-Joy Receipt Printer", "Tiny Dopamine", 52, ["joy", "receipt", "desk"], "dopamine", 67, 84),
-  make("compliment-emergency-card", "Emergency Compliment Card Deck", "Tiny Dopamine", 25, ["compliments", "cards", "gift"], "dopamine", 71, 69),
-  make("im-fine-care-parcel", "I’m Fine Care Parcel", "Gifts for People Who Say “I’m Fine”", 68, ["gift", "fine", "care"], "gifts", 93, 88),
-  make("subtext-reading-glasses", "Subtext Reading Glasses", "Gifts for People Who Say “I’m Fine”", 48, ["subtext", "gift", "relationships"], "gifts", 66, 75),
-  make("deluxe-boundary-bell", "Deluxe Boundary Bell", "Gifts for People Who Say “I’m Fine”", 40, ["boundaries", "bell", "gift"], "gifts", 70, 78),
-  make("quietly-spiraling-tea", "Quietly Spiraling Tea Set", "Gifts for People Who Say “I’m Fine”", 57, ["tea", "spiraling", "gift"], "gifts", 73, 82),
-  make("polite-collapse-kit", "Polite Collapse Kit", "Gifts for People Who Say “I’m Fine”", 61, ["collapse", "fine", "wellness"], "gifts", 69, 86),
-  make("emotional-support-invoice", "Emotional Support Invoice Pad", "Gifts for People Who Say “I’m Fine”", 29, ["invoice", "support", "gift"], "gifts", 55, 64),
-];
+function stockStatus(item: CatalogItem): StockStatus {
+  if (item.releaseDate && item.stockQty === 0) return "preorder";
+  if (item.stockQty === 0) return "out_of_stock";
+  if (item.stockQty !== null && item.stockQty <= 4) return "low_stock";
+  return "in_stock";
+}
+
+function popularity(reviewCount: number) {
+  return Math.min(100, Math.round((Math.log10(reviewCount + 1) / Math.log10(800)) * 100));
+}
+
+function toProduct(item: CatalogItem): Product {
+  const copy = categoryCopy[item.category] ?? categoryCopy["Vitamins & minerals"];
+  const isSelect = item.brand === "VITALY Select";
+  const supply = item.packDays ? `One pack lasts about ${item.packDays} days.` : "";
+  const secondChance = item.isSecondChance && item.secondChanceReason ? ` ${item.secondChanceReason}: the product itself is in perfect condition.` : "";
+  const tags = [
+    ...copy.tags,
+    item.category.toLowerCase(),
+    item.brand.toLowerCase(),
+    ...(item.isVegan ? ["vegan"] : []),
+    ...(item.isNew ? ["new"] : []),
+    ...(item.isOnSale || item.compareAtPrice ? ["sale"] : []),
+    ...(item.isSecondChance ? ["second chance"] : []),
+    ...(isSelect ? ["vitaly select"] : []),
+  ];
+  return {
+    id: item.id,
+    slug: item.slug,
+    title: item.title,
+    name: item.name,
+    detail: item.detail,
+    brand: item.brand,
+    category: item.category,
+    shortDescription: copy.short,
+    longDescription: `${isSelect ? "Part of VITALY Select, our own line developed with pharmacists. " : ""}${copy.long} ${supply}${secondChance}`.trim(),
+    benefits: isSelect ? [...copy.benefits.slice(0, 2), "Vegan capsules, made in the EU"] : copy.benefits,
+    price: item.price,
+    compareAtPrice: item.compareAtPrice ?? undefined,
+    image: item.image,
+    rating: item.rating ?? undefined,
+    reviewCount: item.reviewCount,
+    packDays: item.packDays ?? undefined,
+    stockQty: item.stockQty ?? undefined,
+    isVegan: item.isVegan,
+    isNew: item.isNew,
+    isSecondChance: item.isSecondChance,
+    secondChanceReason: item.secondChanceReason ?? undefined,
+    releaseDate: rollingReleaseDate(item),
+    complementaryCategories: item.complementaryCategories,
+    tags,
+    personalityTags: copy.tags,
+    recommendationTags: [...tags, ...item.complementaryCategories.map((category) => category.toLowerCase())],
+    stockStatus: stockStatus(item),
+    popularityScore: popularity(item.reviewCount),
+    marginScore: isSelect ? 85 : item.isSecondChance ? 40 : 60,
+  };
+}
+
+export const products: Product[] = (catalog as CatalogItem[]).map(toProduct);
+
+export const isPurchasable = (product: Product) => product.stockStatus !== "out_of_stock";

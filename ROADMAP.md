@@ -1,4 +1,4 @@
-# Existential Supplies Co. Roadmap
+# Vitaly Storefront Roadmap
 
 ## Milestone 1: Demo Foundation
 

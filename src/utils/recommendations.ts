@@ -10,7 +10,7 @@ export function recommendProducts(
 ): Product[] {
   const limit = options.limit ?? 4;
   const current = findProductById(options.currentProductId);
-  let scored = products.filter((product) => product.id !== options.currentProductId);
+  let scored = products.filter((product) => product.id !== options.currentProductId && product.stockStatus !== "out_of_stock" && !product.isSecondChance);
   const profileCategory = state.profile.categoryAffinity ?? state.profile.preferredCategory ?? state.profile.lastPurchasedCategory;
   const purchasedIds = new Set([...(state.profile.purchases ?? []), state.profile.lastPurchasedSku].filter(Boolean));
 

@@ -101,15 +101,15 @@ function eventsForProfile(index) {
     step += 1;
   };
 
-  push("page_view", pageContext("/", "Existential Supplies Co."));
+  push("page_view", pageContext("/", "Vitaly · Vitamins, minerals & natural care"));
   push("search", {
-    ...pageContext(`/search?q=${encodeURIComponent(searchedTerm)}`, "Search | Existential Supplies Co."),
+    ...pageContext(`/search?q=${encodeURIComponent(searchedTerm)}`, "Search · Vitaly"),
     search_query: searchedTerm,
     search_term: searchedTerm,
     result_count: categoryProducts.length,
   });
   push("view_search_results", {
-    ...pageContext(`/search?q=${encodeURIComponent(searchedTerm)}`, "Search results | Existential Supplies Co."),
+    ...pageContext(`/search?q=${encodeURIComponent(searchedTerm)}`, "Search results · Vitaly"),
     search_query: searchedTerm,
     item_list_id: `search_${slugify(searchedTerm)}`,
     item_list_name: `Search: ${searchedTerm}`,
@@ -118,7 +118,7 @@ function eventsForProfile(index) {
 
   viewedProducts.forEach((product, productIndex) => {
     push("view_item", {
-      ...pageContext(`/product/${product.slug}`, `${product.name} | Existential Supplies Co.`),
+      ...pageContext(`/product/${product.slug}`, `${product.name} · Vitaly`),
       ...productEventPayload(product),
       items: [itemPayload(product, productIndex + 1)],
     });
@@ -133,7 +133,7 @@ function eventsForProfile(index) {
   if (cartItems.length > 0) {
     cartProducts.forEach((product, productIndex) => {
       push("add_to_cart", {
-        ...pageContext(`/product/${product.slug}`, `${product.name} | Existential Supplies Co.`),
+        ...pageContext(`/product/${product.slug}`, `${product.name} · Vitaly`),
         ...productEventPayload(product),
         quantity: 1,
         cart_value: cartProducts.slice(0, productIndex + 1).reduce((sum, item) => sum + item.price, 0),
@@ -142,7 +142,7 @@ function eventsForProfile(index) {
       });
     });
     push("view_cart", {
-      ...pageContext("/cart", "Cart | Existential Supplies Co."),
+      ...pageContext("/cart", "Cart · Vitaly"),
       cart_size: cartItems.length,
       cart_value: cartValue,
       items: cartItems,
@@ -153,13 +153,13 @@ function eventsForProfile(index) {
   if (willPurchase && cartItems.length > 0) {
     const orderId = `SIM-${String(profileNumber).padStart(6, "0")}`;
     push("begin_checkout", {
-      ...pageContext("/checkout", "Checkout | Existential Supplies Co."),
+      ...pageContext("/checkout", "Checkout · Vitaly"),
       cart_size: cartItems.length,
       cart_value: cartValue,
       items: cartItems,
     });
     push("add_shipping_info", {
-      ...pageContext("/checkout", "Checkout shipping | Existential Supplies Co."),
+      ...pageContext("/checkout", "Checkout shipping · Vitaly"),
       street_address: profile.streetAddress,
       city: profile.city,
       postal_code: profile.postalCode,
@@ -167,22 +167,22 @@ function eventsForProfile(index) {
       shipping_speed: index % 3 === 0 ? "express_emotional_reassurance" : "standard",
       items: cartItems,
       value: cartValue,
-      currency: "EUR",
+      currency: "CZK",
     });
     push("add_payment_info", {
-      ...pageContext("/checkout", "Checkout payment | Existential Supplies Co."),
+      ...pageContext("/checkout", "Checkout payment · Vitaly"),
       payment_method: "demo_card_0000",
       items: cartItems,
       value: cartValue,
-      currency: "EUR",
+      currency: "CZK",
     });
     push("purchase", {
-      ...pageContext("/thank-you", "Thank you | Existential Supplies Co."),
+      ...pageContext("/thank-you", "Thank you · Vitaly"),
       order_id: orderId,
       transaction_id: orderId,
       value: cartValue,
       total_value: cartValue,
-      currency: "EUR",
+      currency: "CZK",
       coupon: index % 6 === 0 ? "SIMULATED-CALM" : undefined,
       items: cartItems,
       product_ids: cartItems.map((item) => item.item_id),
@@ -343,15 +343,18 @@ async function sendBatch(batch, batchIndex) {
 }
 
 function readProducts() {
-  const source = fs.readFileSync(path.join(root, "src/data/products.ts"), "utf8");
-  return [...source.matchAll(/make\("([^"]+)", "([^"]+)", "([^"]+)", ([0-9]+), \[([^\]]*)\]/g)].map((match) => ({
-    id: match[1],
-    slug: match[1],
-    name: match[2],
-    category: match[3],
-    price: Number(match[4]),
-    tags: [...match[5].matchAll(/"([^"]+)"/g)].map((tagMatch) => tagMatch[1]),
-  }));
+  const catalog = JSON.parse(fs.readFileSync(path.join(root, "src/data/vitalyCatalog.json"), "utf8"));
+  return catalog
+    .filter((item) => item.stockQty !== 0)
+    .map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      name: item.title,
+      brand: item.brand,
+      category: item.category,
+      price: item.price,
+      tags: [item.category.toLowerCase(), item.brand.toLowerCase()],
+    }));
 }
 
 function parseArgs(args) {
@@ -401,15 +404,17 @@ function unique(items) {
 
 function searchTermFor(category, index) {
   const termsByCategory = {
-    "Work & Meetings": ["meeting", "monday", "dashboard"],
-    "Parenting & Chaos": ["parenting", "school morning", "snacks"],
-    "Sleep & Recovery": ["sleep", "recovery", "nap"],
-    "Existential Wellness": ["overthinking", "comfort", "reflection"],
-    "Marketing Therapy": ["marketing", "consent", "analytics"],
-    "Tiny Dopamine": ["dopamine", "reward", "tiny victory"],
-    "Gifts for People Who Say “I’m Fine”": ["gift", "fine", "care parcel"],
+    "Vitamins & minerals": ["vitamin d", "zinc", "b complex"],
+    Magnesium: ["magnesium", "sleep", "bisglycinate"],
+    "Herbs & adaptogens": ["ashwagandha", "stress", "milk thistle"],
+    Probiotics: ["probiotics", "gut", "kids probiotics"],
+    "Omega-3": ["omega", "fish oil", "algae omega"],
+    "Sports nutrition": ["protein", "creatine", "recovery"],
+    "Organic food": ["organic", "snack", "matcha"],
+    Cosmetics: ["face cream", "toothpaste", "natural care"],
+    "Eco household": ["eco", "laundry", "refill"],
   };
-  return pick(termsByCategory[category] ?? ["meeting", "sleep", "gift"], index);
+  return pick(termsByCategory[category] ?? ["magnesium", "vitamin d", "omega"], index);
 }
 
 function slugify(value) {

@@ -1,6 +1,6 @@
 # Demo Presenter Script
 
-Use this as the short path through the Meiro CDP storytelling environment.
+Use this as the short path through the Vitaly storefront for Meiro CDP demos.
 
 ## 1. Anonymous Behavior
 
@@ -15,9 +15,9 @@ Show:
 
 Open `/demo-control` and switch to:
 
-- Marketing Burnout Visitor
-- Parenting Chaos Visitor
-- Sleep Recovery Visitor
+- Fitness Enthusiast
+- Family Health Shopper
+- Sleep & Stress Browser
 - Cart Abandoner
 
 Return to `/` after each switch.
@@ -29,7 +29,7 @@ Show:
 
 ## 3. Cart Intent
 
-Add `Monday Survival Kit` to cart and open `/cart`.
+Add **VITALY Select Magnesium Bisglycinate** to the basket (the drawer opens) and open `/cart` (or `/kosik`).
 
 Show:
 - cart opener logic

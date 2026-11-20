@@ -32,13 +32,19 @@ export type AppState = {
   personalizationDecisions: PersonalizationDecision[];
   profileApiStatus: ProfileApiStatus;
   recentlyViewed: string[];
+  wishlist: string[];
+  watchdog: string[];
   lastOrderId?: string;
 };
 
 type AppContextValue = AppState & {
   setConsent: (consent: ConsentState) => void;
-  addToCart: (productId: string) => void;
+  addToCart: (productId: string, quantity?: number, options?: { openDrawer?: boolean }) => void;
   removeFromCart: (productId: string) => void;
+  toggleWishlist: (productId: string) => void;
+  requestBackInStock: (productId: string, email?: string) => void;
+  cartDrawerOpen: boolean;
+  setCartDrawerOpen: (open: boolean) => void;
   setQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   viewProduct: (productId: string) => void;
@@ -63,6 +69,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [profileApiStatus, setProfileApiStatus] = useState<ProfileApiStatus>({ state: "idle" });
   const [mptUserId, setMptUserId] = useState(() => getMptUserIdCookie());
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => loadLocal("esc_recently_viewed", []));
+  const [wishlist, setWishlist] = useState<string[]>(() => loadLocal("esc_wishlist", []));
+  const [watchdog, setWatchdog] = useState<string[]>(() => loadLocal("esc_watchdog", []));
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [lastOrderId, setLastOrderId] = useState<string | undefined>(() => loadLocal("esc_last_order", undefined));
 
   useEffect(() => saveLocal("esc_cart", cart), [cart]);
@@ -74,6 +83,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => saveLocal("esc_personalization_decisions", personalizationDecisions), [personalizationDecisions]);
   useEffect(() => saveLocal("esc_recently_viewed", recentlyViewed), [recentlyViewed]);
   useEffect(() => saveLocal("esc_last_order", lastOrderId), [lastOrderId]);
+  useEffect(() => saveLocal("esc_wishlist", wishlist), [wishlist]);
+  useEffect(() => saveLocal("esc_watchdog", watchdog), [watchdog]);
 
   useEffect(() => {
     setMeiroEventSink((event) => setRecentEvents((events) => [event, ...events].slice(0, 30)));
@@ -167,32 +178,67 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     trackEvent("consent_updated", { consent: next });
   };
 
-  const addToCart = (productId: string) => {
+  const addToCart = (productId: string, quantity = 1, options: { openDrawer?: boolean } = {}) => {
     const product = findProductById(productId);
     if (!product) return;
-    setCart((items) => {
-      const exists = items.find((item) => item.productId === productId);
-      const next = exists
-        ? items.map((item) => (item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item))
-        : [...items, { productId, quantity: 1, cartOpener: items.length === 0 }];
-      trackEvent("product_added_to_cart", {
+    const items = cart;
+    const exists = items.find((item) => item.productId === productId);
+    const next = exists
+      ? items.map((item) => (item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item))
+      : [...items, { productId, quantity, cartOpener: items.length === 0 }];
+    setCart(next);
+    trackEvent("product_added_to_cart", {
+      product_id: product.id,
+      product_name: product.title,
+      brand: product.brand,
+      category: product.category,
+      price: product.price,
+      quantity,
+      currency: "CZK",
+      cart_value: cartTotal(next),
+      cart_size: cartItemCount(next),
+      cart_opener: next.find((item) => item.cartOpener)?.productId,
+    });
+    if (options.openDrawer !== false) setCartDrawerOpen(true);
+  };
+
+  const toggleWishlist = (productId: string) => {
+    const product = findProductById(productId);
+    if (!product) return;
+    const adding = !wishlist.includes(productId);
+    setWishlist((items) => (adding ? [productId, ...items] : items.filter((item) => item !== productId)));
+    if (adding) {
+      trackEvent("wishlist_added", {
         product_id: product.id,
-        product_name: product.name,
+        product_name: product.title,
+        brand: product.brand,
         category: product.category,
         price: product.price,
-        quantity: 1,
-        cart_value: cartTotal(next),
-        cart_size: cartItemCount(next),
-        cart_opener: next.find((item) => item.cartOpener)?.productId,
+        currency: "CZK",
+        value: product.price,
       });
-      return next;
+    }
+  };
+
+  const requestBackInStock = (productId: string, email?: string) => {
+    const product = findProductById(productId);
+    if (!product) return;
+    setWatchdog((items) => (items.includes(productId) ? items : [productId, ...items]));
+    trackEvent("back_in_stock_requested", {
+      form_id: product.stockStatus === "preorder" ? "launch_notify" : "watchdog_back_in_stock",
+      email: email || profile.email,
+      product_id: product.id,
+      product_name: product.title,
+      brand: product.brand,
+      category: product.category,
+      price: product.price,
     });
   };
 
   const removeFromCart = (productId: string) => {
     const product = findProductById(productId);
     setCart((items) => items.filter((item) => item.productId !== productId));
-    if (product) trackEvent("product_removed_from_cart", { product_id: product.id, product_name: product.name });
+    if (product) trackEvent("product_removed_from_cart", { product_id: product.id, product_name: product.title, brand: product.brand, category: product.category, price: product.price, quantity: cart.find((item) => item.productId === productId)?.quantity ?? 1, currency: "CZK" });
   };
 
   const setQuantity = (productId: string, quantity: number) => {
@@ -248,7 +294,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const completeOrder = () => {
-    const orderId = `ESC-${100001 + Math.floor(Math.random() * 899999)}`;
+    const orderId = `VIT-${100001 + Math.floor(Math.random() * 899999)}`;
     setLastOrderId(orderId);
     setProfile((current) => ({ ...current, lifecycleStage: "post_purchase", purchases: [...current.purchases, ...cart.map((item) => item.productId)] }));
     setCart([]);
@@ -279,6 +325,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       personalizationDecisions,
       profileApiStatus,
       recentlyViewed,
+      wishlist,
+      watchdog,
+      cartDrawerOpen,
+      setCartDrawerOpen,
+      toggleWishlist,
+      requestBackInStock,
       lastOrderId,
       setConsent,
       addToCart,
@@ -293,7 +345,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       recordPersonalizationDecision,
       clearDebugHistory,
     }),
-    [cart, consent, profile, personaId, recentEvents, meiroSdkCalls, personalizationDecisions, profileApiStatus, recentlyViewed, lastOrderId],
+    [cart, consent, profile, personaId, recentEvents, meiroSdkCalls, personalizationDecisions, profileApiStatus, recentlyViewed, wishlist, watchdog, cartDrawerOpen, lastOrderId],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

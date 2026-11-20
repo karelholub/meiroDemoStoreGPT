@@ -1,6 +1,7 @@
 import type { AppState } from "../../store/appState";
 import type { PersonalizationDecision, PersonalizationZoneId } from "../../types";
 import { formatProfileDate } from "../../utils/format";
+import { findProductById } from "../../utils/productLookup";
 
 type DecisionInput = Omit<PersonalizationDecision, "personaId" | "timestamp">;
 
@@ -16,7 +17,7 @@ function hasJourney(state: AppState, name: string) {
 }
 
 function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "CZK", maximumFractionDigits: 0 }).format(value);
 }
 
 function normalizedAction(action?: string) {
@@ -27,14 +28,14 @@ function heroCopyForNextBestAction(action?: string) {
   const normalized = normalizedAction(action);
   if (!normalized) return undefined;
 
-  if (normalized.includes("reorder") || normalized.includes("replenish")) return "Time to restock your coping kit.";
-  if (normalized.includes("recover_cart") || normalized.includes("cart")) return "Your cart is still emotionally available.";
-  if (normalized.includes("review")) return "Tell us how the supplies performed.";
-  if (normalized.includes("vip") || normalized.includes("perk") || normalized.includes("early_access")) return "Premium calm, unlocked.";
-  if (normalized.includes("complete_profile")) return "Make your survival shelf easier to personalize.";
-  if (normalized.includes("browse") || normalized.includes("new_arrivals")) return "Fresh supplies for your current reality.";
+  if (normalized.includes("reorder") || normalized.includes("replenish")) return "Time to restock your daily essentials.";
+  if (normalized.includes("recover_cart") || normalized.includes("cart")) return "Your basket is saved and ready when you are.";
+  if (normalized.includes("review")) return "How are your new favourites working for you?";
+  if (normalized.includes("vip") || normalized.includes("perk") || normalized.includes("early_access")) return "Vitaly Club early access is open.";
+  if (normalized.includes("complete_profile")) return "Tell us your goals and we will tailor your picks.";
+  if (normalized.includes("browse") || normalized.includes("new_arrivals")) return "New arrivals picked for your routine.";
 
-  return "Your next best supplies are ready.";
+  return "Your personal picks are ready.";
 }
 
 function heroReasonForNextBestAction(action?: string) {
@@ -56,7 +57,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
 
   const profile = state.profile;
   const cartItemIds = [...state.cart.map((item) => item.productId), ...(profile.cartItemIds ?? [])];
-  const hasMondayKit = cartItemIds.includes("monday-survival-kit");
+  const cartMagnesium = cartItemIds.map((id) => findProductById(id)).find((product) => product?.category === "Magnesium");
   const favoriteCategory = profile.categoryAffinity ?? profile.preferredCategory ?? profile.lastPurchasedCategory;
   const profileSource = profile.profileApiUpdatedAt ? "Profile API" : "local profile";
 
@@ -79,7 +80,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `${profile.firstName ? `${profile.firstName}, ` : ""}we saved your ${favoriteCategory ?? "favorite"} supplies for a calmer comeback.`,
+          content: `${profile.firstName ? `${profile.firstName}, ` : ""}welcome back. Your ${favoriteCategory ?? "favourite"} picks are waiting, with 10 % off your next order.`,
           ruleId: "profile_api.lapsed_customer.hero",
           reason: "Profile attributes indicate a lapsed or win-back customer.",
         },
@@ -91,7 +92,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "Still thinking it over? We saved the useful bits.",
+          content: "Still deciding? Your basket is saved, and we ship today.",
           ruleId: "profile_api.active_cart.hero",
           reason: "Profile attributes indicate active cart or high intent.",
         },
@@ -103,7 +104,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "Premium calm, unlocked.",
+          content: "Vitaly Club early access is open.",
           ruleId: "profile_api.vip_hero",
           reason: "Profile attributes supplied a high-value vip_tier.",
         },
@@ -115,33 +116,33 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `${profile.firstName}, we kept the supplies discreetly ready.`,
+          content: `${profile.firstName}, your wellness routine, refilled.`,
           ruleId: "profile.first_name_greeting",
           reason: "Registered profile has a first name.",
         },
         state,
       );
     }
-    if (state.personaId === "marketing_burnout") {
+    if (state.personaId === "fitness_enthusiast") {
       return decision(
         {
           zoneId,
           decision: "personalized",
-          content: "Still recovering from the attribution meeting?",
-          ruleId: "persona.marketing_burnout.hero",
-          reason: "Selected demo persona has Marketing Therapy affinity and high intent.",
+          content: "Train hard, recover smarter.",
+          ruleId: "persona.fitness_enthusiast.hero",
+          reason: "Selected demo persona has Sports nutrition affinity and high intent.",
         },
         state,
       );
     }
-    if (state.personaId === "parenting_chaos") {
+    if (state.personaId === "family_health") {
       return decision(
         {
           zoneId,
           decision: "personalized",
-          content: "Supplies for people who have already negotiated with a child before 7 AM.",
-          ruleId: "persona.parenting_chaos.hero",
-          reason: "Selected demo persona has Parenting & Chaos affinity.",
+          content: "Healthy habits for the whole family.",
+          ruleId: "persona.family_health.hero",
+          reason: "Selected demo persona shops kids' vitamins and probiotics.",
         },
         state,
       );
@@ -151,7 +152,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "Your cart is still waiting. Unlike most meetings, it has a clear purpose.",
+          content: "You left something in your basket. It is still here.",
           ruleId: "persona.cart_abandoner.hero",
           reason: "Selected demo persona is in a cart abandonment lifecycle.",
         },
@@ -166,7 +167,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `${profile.vipTier} access unlocked. Early drops and composed packaging are ready.`,
+          content: `Vitaly Club ${profile.vipTier}: free shipping on every order and early access to new VITALY Select launches.`,
           ruleId: "profile_api.vip_top_banner",
           reason: "Profile attributes supplied vip_tier.",
         },
@@ -178,7 +179,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: `Your next replenishment window is ${formatProfileDate(profile.predictedReorderDate)}.`,
+          content: `Running low? Your refill is due around ${formatProfileDate(profile.predictedReorderDate)}.`,
           ruleId: "profile_api.reorder_top_banner",
           reason: "Profile attributes supplied predicted_reorder_date.",
         },
@@ -190,7 +191,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "You are opted in for gentle lifecycle nudges and fictional launch notes.",
+          content: "Thanks for subscribing. Look out for member offers in your inbox.",
           ruleId: "profile_api.marketing_consent_banner",
           reason: "Profile attributes supplied marketing_consent.",
         },
@@ -205,7 +206,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: "Meiro next-best products for this profile",
+          content: "Picked for you",
           ruleId: "profile_api.next_best_product_title",
           reason: "Profile attributes supplied next_best_product_ids.",
         },
@@ -217,33 +218,33 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         {
           zoneId,
           decision: "personalized",
-          content: favoriteCategory ? `Picked for your ${favoriteCategory} affinity` : "Recommended from your Meiro profile tags",
+          content: favoriteCategory ? `More ${favoriteCategory.toLowerCase()} you might like` : "Recommended for you",
           ruleId: "profile_api.affinity_recommendation_title",
           reason: "Profile attributes supplied recommendation or category affinity fields.",
         },
         state,
       );
     }
-    if (state.personaId === "marketing_burnout") {
+    if (state.personaId === "fitness_enthusiast") {
       return decision(
         {
           zoneId,
           decision: "personalized",
-          content: "Recommended for your current dashboard fatigue level",
-          ruleId: "persona.marketing_burnout.recommendation_title",
-          reason: "Marketing burnout persona recommends analytics and meeting recovery products.",
+          content: "Fuel for your next training block",
+          ruleId: "persona.fitness_enthusiast.recommendation_title",
+          reason: "Fitness persona recommends sports nutrition and recovery products.",
         },
         state,
       );
     }
-    if (profile.recentlyViewedCategories.filter((category) => category === "Sleep & Recovery").length >= 3) {
+    if (profile.recentlyViewedCategories.filter((category) => category === "Magnesium").length >= 3) {
       return decision(
         {
           zoneId,
           decision: "personalized",
-          content: "Because your nervous system has opened several tabs",
-          ruleId: "behavior.sleep_recovery_depth",
-          reason: "Visitor viewed three or more Sleep & Recovery products.",
+          content: "Comparing magnesium? These are customer favourites",
+          ruleId: "behavior.magnesium_browse_depth",
+          reason: "Visitor viewed three or more Magnesium products.",
         },
         state,
       );
@@ -255,7 +256,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
       {
         zoneId,
         decision: "personalized",
-        content: `Your profile leans toward ${favoriteCategory}; this category can shift around that affinity.`,
+        content: `Because you like ${favoriteCategory.toLowerCase()}, we have put our most-loved picks first.`,
         ruleId: "profile_api.category_affinity_intro",
         reason: "Profile attributes supplied category affinity.",
       },
@@ -263,14 +264,14 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
     );
   }
 
-  if (zoneId === "cart_abandonment_banner" && hasMondayKit) {
+  if (zoneId === "cart_abandonment_banner" && cartMagnesium) {
     return decision(
       {
         zoneId,
         decision: "personalized",
-        content: "Your Monday Survival Kit is doing more planning than your calendar.",
-        ruleId: "cart.contains_monday_survival_kit",
-        reason: "Cart contains Monday Survival Kit.",
+        content: `Good choice. Pair your ${cartMagnesium.name} with Vitamin D3 for better absorption.`,
+        ruleId: "cart.contains_magnesium",
+        reason: "Cart contains a Magnesium product.",
       },
       state,
     );
@@ -282,8 +283,8 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         zoneId,
         decision: "personalized",
         content: profile.lastAbandonedCartValue
-          ? `Your previous ${formatMoney(profile.lastAbandonedCartValue)} cart can be rebuilt from Meiro cart attributes.`
-          : "Meiro says this profile has an active cart, so this slot is ready for recovery messaging.",
+          ? `Welcome back. We saved your ${formatMoney(profile.lastAbandonedCartValue)} basket.`
+          : "Welcome back. Your basket from last time is saved.",
         ruleId: "profile_api.cart_recovery_banner",
         reason: "Profile attributes supplied active-cart or abandoned-cart fields.",
       },
@@ -296,7 +297,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
       {
         zoneId,
         decision: "personalized",
-        content: "A small nudge: bundles currently look more emotionally responsible.",
+        content: "Use code VITALY10 for 10 % off today. Ends at midnight.",
         ruleId: profile.discountAffinity ? "profile_api.discount_affinity.cart_discount" : "persona.discount_sensitive.cart_discount",
         reason: profile.discountAffinity ? "Profile attributes indicate discount affinity." : "Selected persona is discount-sensitive.",
       },
@@ -310,10 +311,10 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         zoneId,
         decision: "personalized",
         content: profile.vipTier
-          ? `${profile.vipTier} checkout lane active. Still simulated, now slightly more ceremonious.`
+          ? `Vitaly Club ${profile.vipTier}: shipping is on us.`
           : profile.email
-            ? `Checkout is prefilled for ${profile.email}. The payment remains fictional.`
-            : "Checkout is simulated. The relief, regrettably, is still plausible.",
+            ? `Welcome back. We have prefilled your details for ${profile.email}.`
+            : "Secure checkout. Orders before 2 pm ship today.",
         ruleId: profile.vipTier || profile.email ? "profile.checkout_reassurance" : "route.checkout_reassurance",
         reason: profile.vipTier || profile.email ? "Known profile fields can personalize checkout reassurance." : "Checkout route always receives a reassurance message.",
       },
@@ -328,7 +329,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
         decision: "personalized",
         content: profile.vipTier
           ? `${profile.vipTier} tier profile: ${profile.purchaseCount ?? 0} orders, ${profile.lifetimeValue ? formatMoney(profile.lifetimeValue) : "value still syncing"}.`
-          : `Lifecycle stage: ${profile.lifecycleStage.replaceAll("_", " ")}. Meiro would make this useful.`,
+          : `Your stage: ${profile.lifecycleStage.replaceAll("_", " ")}.`,
         ruleId: profile.vipTier ? "profile_api.vip_lifecycle_banner" : "profile.lifecycle_banner",
         reason: profile.vipTier ? "Profile attributes supplied VIP tier and value fields." : "Account page can explain the current lifecycle stage.",
       },
@@ -341,7 +342,7 @@ export function getPersonalizationDecision(zoneId: PersonalizationZoneId, state:
       {
         zoneId,
         decision: "personalized",
-        content: profile.nextBestAction ?? (profile.lastPurchasedCategory ? `Next best action: cross-sell from ${profile.lastPurchasedCategory}.` : "Next best action: recommend recovery before the next meeting starts."),
+        content: profile.nextBestAction ?? (profile.lastPurchasedCategory ? `Customers who buy ${profile.lastPurchasedCategory.toLowerCase()} also love these.` : "Join Vitaly Club and get free shipping on your next order."),
         ruleId: profile.nextBestAction || profile.lastPurchasedCategory ? "profile_api.thank_you_next_best_action" : "lifecycle.post_purchase_next_best_action",
         reason: profile.nextBestAction || profile.lastPurchasedCategory ? "Profile attributes supplied next action or purchase category." : "Thank-you page demonstrates post-purchase activation.",
       },

@@ -69,6 +69,9 @@ export async function fetchMeiroProfile(identifierType: ProfileIdentifierType, i
   url.searchParams.set("identifier_value", identifierValue);
 
   const response = await fetch(url.toString());
+  if ((response.headers.get("content-type") ?? "").includes("text/html")) {
+    throw new Error("Profile API proxy is not running here (the SPA returned HTML). Use `netlify dev` or the deployed site.");
+  }
   const raw = await parseProfileApiResponse(response);
 
   if (!response.ok) {

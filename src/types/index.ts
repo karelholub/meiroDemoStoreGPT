@@ -1,15 +1,32 @@
-export type StockStatus = "in_stock" | "low_stock" | "fake_sold_out";
+export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "preorder";
 
 export type Product = {
   id: string;
   slug: string;
+  /** Full catalog title, identical to the Meiro catalog item title. */
+  title: string;
+  /** Short display name without brand and pack details. */
   name: string;
+  /** Strength / pack details from the catalog title. */
+  detail: string;
+  brand: string;
   category: string;
   shortDescription: string;
   longDescription: string;
+  benefits: string[];
   price: number;
   compareAtPrice?: number;
   image: string;
+  rating?: number;
+  reviewCount: number;
+  packDays?: number;
+  stockQty?: number;
+  isVegan: boolean;
+  isNew: boolean;
+  isSecondChance: boolean;
+  secondChanceReason?: string;
+  releaseDate?: string;
+  complementaryCategories: string[];
   tags: string[];
   personalityTags: string[];
   recommendationTags: string[];
@@ -22,6 +39,8 @@ export type Category = {
   slug: string;
   name: string;
   description: string;
+  image: string;
+  imageAlt: string;
 };
 
 export type CartItem = {

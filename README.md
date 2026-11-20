@@ -1,6 +1,14 @@
-# Existential Supplies Co.
+# Vitaly demo storefront
 
-A polished fake ecommerce store for demonstrating Meiro CDP concepts: anonymous behavior tracking, identity resolution, consent-aware tracking, profile enrichment, cart intent, recommendations, and local mock personalization.
+Vitaly is the fictional health & supplements brand used across Meiro demos (the English rebrand of the Natima demo on `meiro-demo.eu.pipes.meiro.io`). This repo is its storefront: a modern e-commerce site built for demonstrating Meiro CDP concepts: anonymous behaviour tracking, identity resolution, consent-aware tracking, profile enrichment, cart intent, recommendations, web push and personalization.
+
+Deployed at https://dmostoregpt.netlify.app.
+
+## Catalog
+
+`src/data/vitalyCatalog.json` is an export of the **Vitaly · Products** catalog on meiro-demo (130 items, English, CZK). Product `id` = the catalog external id (`natima-…`, immutable from the original Natima build), so `item_id` in every SDK event matches the catalog, the saved feeds and product-level attributes. 29 VITALY Select items use the brand packshots hosted on the instance; other brands use the catalog's own image links. Lifestyle photography in `public/assets/lifestyle/` is from Unsplash; brand story images and the logo in `public/assets/vitaly/` come from the Natima/Vitaly demo kit.
+
+Launch items (`release_date` + zero stock) are treated as pre-orders; past launch dates roll forward in 30-day steps so they always read as upcoming.
 
 ## Run Locally
 
@@ -34,9 +42,10 @@ If analytics consent is disabled, behavioral events are suppressed by the Meiro 
 
 ## Demo Routes
 
-- `/` homepage with personalization zones, recommendations, bestsellers, recently viewed products, newsletter, and trust section
-- `/products`, `/category/:slug`, `/product/:id`
-- `/cart`, `/checkout`, `/thank-you`
+- `/` homepage: hero + personalization zones, category tiles, recommendation rails, VITALY Select spotlight, launch pre-orders, lifecycle slots, Second chance, newsletter with interests
+- `/products`, `/category/:slug`, `/collections/:slug` (`vitaly-select`, `bestsellers`, `new`, `second-chance`) with filters and sorting
+- `/product/:slug` (also `/product/:catalogId` and the bare catalog slug `/:slug/`, so catalog `link` values map 1:1)
+- `/cart` (alias `/kosik`), `/checkout` (alias `/objednavka`), `/thank-you`. The Czech aliases match the path rules of the Vitaly web banners on the instance
 - `/register`, `/login`, `/account`
 - `/search`
 - `/playbooks` mapping common ecommerce CDP journeys to demo surfaces
@@ -65,13 +74,23 @@ See `MEIRO_INTEGRATION.md` for the SDK wiring point, consent behavior, and perso
 
 ## Tracked Events
 
-`page_view`, `product_view`, `category_view`, `product_list_view`, `search_submitted`, `search_result_clicked`, `product_added_to_cart`, `product_removed_from_cart`, `cart_view`, `checkout_started`, `checkout_step_completed`, `order_completed`, `newsletter_signup`, `user_registered`, `user_logged_in`, `profile_updated`, `recommendation_viewed`, `recommendation_clicked`, `personalization_viewed`, `personalization_clicked`, `review_submitted`, `consent_updated`.
+`page_view`, `product_view`, `category_view`, `product_list_view`, `search_submitted`, `search_result_clicked`, `product_added_to_cart`, `product_removed_from_cart`, `cart_view`, `checkout_started`, `checkout_step_completed`, `order_completed`, `newsletter_signup`, `user_registered`, `user_logged_in`, `profile_updated`, `recommendation_viewed`, `recommendation_clicked`, `personalization_viewed`, `personalization_clicked`, `review_submitted`, `wishlist_added` (→ `add_to_wishlist`), `back_in_stock_requested` (→ `generate_lead`, watchdog / launch notify), `consent_updated`. Commerce payloads use CZK and include `item_brand`.
 
 ## Demo Personas
 
-The `/demo-control` page supports anonymous visitors, returning visitors, known customers, high-value customers, cart abandoners, discount-sensitive visitors, marketing burnout, parenting chaos, sleep recovery, newsletter subscribers, post-purchase customers, and lapsed customers.
+The `/demo-control` page supports anonymous visitors, returning visitors, known customers, high-value customers, cart abandoners, discount-sensitive visitors, fitness enthusiast, family health, sleep & stress browsing, newsletter subscribers, post-purchase customers, and lapsed customers.
 
 It also includes seeded Profile API scenarios for deterministic QA of VIP replenishment, cart recovery, and review/referral personalization without depending on a live profile response.
+
+## Web push service worker
+
+`public/mpt-service-worker.js` is served at the site root (`/mpt-service-worker.js`) and only imports the instance worker:
+
+```js
+importScripts('https://meiro-demo.eu.pipes.meiro.io/mpt-service-worker.js');
+```
+
+The domain must match the `mpt.js` domain. `netlify.toml` pins a JS content type, `Cache-Control: no-cache` and an explicit 200 rule for that path before the SPA catch-all. Web push is configured on the `web-sdk` source on meiro-demo (`/web-push/web-sdk.json`), which is the source this site sends to.
 
 ## Netlify
 

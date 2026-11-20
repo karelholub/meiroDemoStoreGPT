@@ -23,6 +23,8 @@ export const trackedEvents = [
   "personalization_viewed",
   "personalization_clicked",
   "review_submitted",
+  "wishlist_added",
+  "back_in_stock_requested",
   "consent_updated",
 ] as const;
 

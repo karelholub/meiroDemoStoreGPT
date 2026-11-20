@@ -2,40 +2,36 @@
 
 ## Register
 
-product
+brand
 
 ## Users
 
-Existential Supplies Co. is for demo presenters, solution consultants, CDP implementers, and stakeholders evaluating Meiro event tracking and personalization. They use it in a live walkthrough context, often while explaining anonymous behavior capture, consent, identity resolution, cart intent, recommendations, and lifecycle signals.
-
-The primary user job is to move through believable ecommerce flows and make the underlying tracking behavior easy to inspect, explain, and trust.
+Two audiences share one surface. Shoppers in the demo story: health-conscious adults in Czechia buying vitamins, minerals, natural cosmetics and eco household products, mostly on their phones in the evening. Presenters: Meiro solution consultants and CDP implementers walking prospects through tracking, consent, identity resolution, catalog-driven recommendations, web push and personalization, often on a large screen.
 
 ## Product Purpose
 
-The product is a polished fake ecommerce store that demonstrates Meiro CDP concepts without relying on real payments or backend commerce. Success means a presenter can browse, switch personas, manage consent, add products, complete checkout, and show the exact events and SDK calls that support the story.
-
-The store must feel real enough to create authentic customer journeys, but transparent enough that debug panels, demo personas, and event logs remain easy to use.
+Vitaly is the storefront of the fictional health & supplements brand used across Meiro demos (meiro-demo instance: catalog "Vitaly · Products", campaigns, banners, journeys). It must feel like a real, current e-commerce shop so journeys look authentic, while every interaction emits clean Meiro SDK events that line up with the instance's catalog ids, feeds and attributes.
 
 ## Brand Personality
 
-Premium, wry, and precise.
-
-The voice is emotionally literate ecommerce satire: absurd product names and empathetic copy wrapped in serious, composed retail presentation. The interface should feel like a boutique store that happens to be instrumented for CDP storytelling.
+Calm, trustworthy, quietly upbeat. Pharmacist-grade honesty with a friendly tone. Violet leaf, aubergine ink, Poppins headlines. Short sentences, no hype, prices and reasons stated plainly (e.g. Second chance always says why it is discounted).
 
 ## Anti-references
 
-Avoid generic SaaS dashboards, sterile analytics tools, dark-mode purple gradients, decorative glassmorphism, stock-photo ecommerce sameness, and unbranded placeholder imagery. Do not let the demo UI feel like a technical harness with a store pasted on top.
-
-Avoid visual decisions that hide or confuse the tracking story: tiny debug controls, unclear consent state, missing event feedback, or decorative interactions that interfere with the presenter flow.
+Generic SaaS dashboards; clinical pharmacy white-and-blue; neon "wellness influencer" gradients; cream/beige "organic" templates; stock-photo sameness; demo harness UI leaking into the shopper experience.
 
 ## Design Principles
 
-1. Show the customer journey and the data trail together.
-2. Make the store charming, but keep the demo mechanics legible.
-3. Preserve consent and tracking clarity over visual cleverness.
-4. Use premium restraint so the absurd product voice has room to land.
-5. Keep every route presenter-ready: no dead ends, no mystery states, no fake polish that breaks the story.
+1. The shop comes first: presenter tooling lives behind "Presenter tools" and the event log toggle.
+2. Product imagery and price are the loudest elements on every card.
+3. Every personalization slot has a believable fallback.
+4. Consent is plain-language and never hidden.
+5. Mobile-first: thumb-reachable add-to-basket, sticky buy bar, filter sheet.
 
 ## Accessibility & Inclusion
 
-Target WCAG AA contrast for body text, form controls, navigation, and buttons. Preserve visible focus states, keyboard-operable navigation, and readable mobile layouts. Motion should be short, stateful, and safe under reduced-motion preferences. Consent controls must remain plain-language, easy to scan, and not visually buried.
+WCAG AA contrast, visible focus, keyboard-operable menus and drawers (Escape closes), reduced-motion fallbacks, Czech characters supported (latin-ext fonts).
+
+## Platform
+
+web

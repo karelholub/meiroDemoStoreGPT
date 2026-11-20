@@ -1,5 +1,12 @@
 # Meiro Integration Notes
 
+## Vitaly alignment (2026-11)
+
+- Product ids, names, brands, categories and prices come from the **Vitaly · Products** catalog on meiro-demo, so `item_id` values match catalog external ids and the saved feeds.
+- Currency is CZK everywhere (`STORE_CURRENCY` in `meiroClient.ts`).
+- Web push: `/mpt-service-worker.js` at the root imports the instance worker; the `web-sdk` source has the web-push website configured.
+- Web banners are configured **per web source**. This site sends to `web-sdk`, which currently serves "webPush Opt in" and "Newsletter signup". The Vitaly banners (exit-intent newsletter, free shipping on `/kosik`, cart reminder, …) are attached to the `natima-e-shop-web-shoptet` source, so they will not render here until they are attached to `web-sdk` (or the site's endpoint is switched, which would lose the web-push setup). The storefront already serves `/kosik` and `/objednavka` so the banner path rules work once attached.
+
 The app is intentionally built around a stable local wrapper so the UI does not need to change when the real Meiro SDK is connected.
 
 ## Files
@@ -73,7 +80,7 @@ The shop exposes a Google Merchant-style XML product feed for Meiro CDP catalog/
 https://dmostoregpt.netlify.app/product-feed.xml
 ```
 
-The checked-in feed is generated from `src/data/products.ts` and includes 42 products with stable `g:id` values, product URLs, image URLs, prices, availability, product type/category, brand, and custom labels for tags, stock state, margin score, and popularity score.
+The checked-in feed is generated from `src/data/vitalyCatalog.json` (the Vitaly catalog export) and includes 130 products. `g:id` is the Meiro catalog external id (`natima-…`); prices are CZK; custom labels carry availability, pack days and rating.
 
 Regenerate the feed after catalog changes:
 

@@ -5,6 +5,7 @@ import { getMeiroConfigStatus, getMeiroEndpoint, getMeiroScriptUrl } from "./mei
 const enabled = import.meta.env.VITE_MEIRO_SDK_ENABLED !== "false";
 const debug = import.meta.env.VITE_MEIRO_DEBUG !== "false";
 let analyticsConsent = true;
+export const STORE_CURRENCY = "CZK";
 let sdkInitialized = false;
 let currentConsent = {
   analytics: true,
@@ -65,6 +66,8 @@ const eventNameMap: Record<TrackedEventName, MptEventName | undefined> = {
   personalization_viewed: "view_promotion",
   personalization_clicked: "select_promotion",
   review_submitted: "form_submit",
+  wishlist_added: "add_to_wishlist",
+  back_in_stock_requested: "generate_lead",
   consent_updated: undefined,
 };
 
@@ -168,6 +171,7 @@ function toSdkItem(payload: Record<string, unknown>) {
   return withoutEmptyValues({
     item_id: payload.product_id,
     item_name: payload.product_name,
+    item_brand: payload.brand,
     item_category: payload.category,
     price: payload.price,
     quantity: payload.quantity,
@@ -218,7 +222,7 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
       transaction_id: payload.order_id,
       email: payload.email,
       phone: payload.phone,
-      currency: payload.currency ?? "EUR",
+      currency: payload.currency ?? STORE_CURRENCY,
       value,
       items,
     });
@@ -228,7 +232,7 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
     const shipping = nestedRecord(payload, "shipping");
     return withoutEmptyValues({
       ...base,
-      currency: payload.currency ?? "EUR",
+      currency: payload.currency ?? STORE_CURRENCY,
       value,
       items,
       shipping_tier: shipping.shipping_speed,
@@ -239,17 +243,17 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
     const payment = nestedRecord(payload, "payment");
     return withoutEmptyValues({
       ...base,
-      currency: payload.currency ?? "EUR",
+      currency: payload.currency ?? STORE_CURRENCY,
       value,
       items,
       payment_type: payment.payment_method,
     });
   }
 
-  if (mptEventName === "view_cart" || mptEventName === "begin_checkout" || mptEventName === "add_to_cart" || mptEventName === "remove_from_cart") {
+  if (mptEventName === "view_cart" || mptEventName === "begin_checkout" || mptEventName === "add_to_cart" || mptEventName === "remove_from_cart" || mptEventName === "add_to_wishlist") {
     return withoutEmptyValues({
       ...base,
-      currency: payload.currency ?? "EUR",
+      currency: payload.currency ?? STORE_CURRENCY,
       value,
       items,
     });
@@ -259,6 +263,15 @@ function buildMptEventPayload(mptEventName: MptEventName, payload: Record<string
     return withoutEmptyValues({
       ...base,
       item_list_name: payload.category ?? payload.source ?? payload.strategy,
+      items,
+    });
+  }
+
+  if (mptEventName === "generate_lead" && payload.form_id) {
+    return withoutEmptyValues({
+      ...base,
+      form_id: payload.form_id,
+      email: payload.email,
       items,
     });
   }
