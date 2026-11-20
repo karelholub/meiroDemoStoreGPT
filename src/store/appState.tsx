@@ -56,12 +56,21 @@ type AppContextValue = AppState & {
   clearDebugHistory: () => void;
 };
 
+/** Profiles saved before the Profile API fix may hold vip_tier placeholders such as "none". */
+function withoutPlaceholderTier(profile: CustomerProfile): CustomerProfile {
+  if (profile.vipTier && /^(none|no[ _-]?purchase|n\/a|null|-)$/i.test(String(profile.vipTier).trim())) {
+    const { vipTier: _drop, ...rest } = profile;
+    return rest as CustomerProfile;
+  }
+  return profile;
+}
+
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => loadLocal("esc_cart", []));
   const [consent, setConsentState] = useState<ConsentState>(() => loadLocal("esc_consent", defaultConsent));
-  const [profile, setProfile] = useState<CustomerProfile>(() => loadLocal("esc_profile", defaultProfile));
+  const [profile, setProfile] = useState<CustomerProfile>(() => withoutPlaceholderTier(loadLocal("esc_profile", defaultProfile)));
   const [personaId, setPersonaId] = useState(() => loadLocal("esc_persona", "anonymous_new"));
   const [recentEvents, setRecentEvents] = useState<TrackingEvent[]>(() => loadLocal("esc_events", []));
   const [meiroSdkCalls, setMeiroSdkCalls] = useState<MeiroSdkCall[]>(() => loadLocal("esc_meiro_sdk_calls", []));
